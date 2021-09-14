@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29519.87
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenAC.Net.DFe.Core", "OpenAC.Net.DFe.Core\OpenAC.Net.DFe.Core.csproj", "{7A26A509-DC44-4B63-9F10-6D1C141225A2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAC.Net.DFe.Core.Tests", "OpenAC.Net.DFe.Core.Tests\OpenAC.Net.DFe.Core.Tests.csproj", "{2E3DF5C2-8A38-4A03-86D7-8D463C917E47}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7A26A509-DC44-4B63-9F10-6D1C141225A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A26A509-DC44-4B63-9F10-6D1C141225A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A26A509-DC44-4B63-9F10-6D1C141225A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A26A509-DC44-4B63-9F10-6D1C141225A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E3DF5C2-8A38-4A03-86D7-8D463C917E47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E3DF5C2-8A38-4A03-86D7-8D463C917E47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E3DF5C2-8A38-4A03-86D7-8D463C917E47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E3DF5C2-8A38-4A03-86D7-8D463C917E47}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7889149A-67E6-4C77-9B52-65797006272E}
+	EndGlobalSection
+EndGlobal
