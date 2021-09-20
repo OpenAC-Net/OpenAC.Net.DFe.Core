@@ -11,7 +11,7 @@
     <Authors>Projeto OpenAC .Net</Authors>
     <PackageProjectUrl>https://openac-net.github.io/</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageIconUrl>https://avatars2.githubusercontent.com/u/7342977?v=3&amp;amp;s=200</PackageIconUrl>
+    <!--<PackageIconUrl>https://avatars2.githubusercontent.com/u/7342977?v=3&amp;amp;s=200</PackageIconUrl>-->
     <RepositoryUrl>https://github.com/OpenAC-Net/OpenAC.Net.DFe.Core</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>OpenAC .Net DFe</PackageTags>
