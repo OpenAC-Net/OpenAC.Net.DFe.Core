@@ -69,8 +69,7 @@ namespace OpenAC.Net.DFe.Core.Service
             if (certificado != null)
                 binding.Security.Transport.ClientCredentialType = HttpClientCredentialType.Certificate;
 
-            var endpointInspector = new DFeInspectorBehavior((sender, args) => BeforeSendDFeRequest(args.Message),
-                                                             (sender, args) => AfterReceiveDFeReply(args.Message));
+            var endpointInspector = new DFeInspectorBehavior(BeforeSendDFeRequest, AfterReceiveDFeReply);
 #if NETSTANDARD2_0
 			Endpoint.EndpointBehaviors.Add(endpointInspector);
 #else

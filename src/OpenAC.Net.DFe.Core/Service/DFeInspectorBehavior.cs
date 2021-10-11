@@ -1,10 +1,10 @@
 // ***********************************************************************
 // Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
-// Created          : 07-28-2016
+// Created          : 28-07-2016
 //
 // Last Modified By : RFTD
-// Last Modified On : 07-28-2016
+// Last Modified On : 11-10-2021
 // ***********************************************************************
 // <copyright file="DFeInspectorBehavior.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
@@ -40,14 +40,14 @@ namespace OpenAC.Net.DFe.Core.Service
     {
         #region Fields
 
-        private readonly EventHandler<DFeMessageEventArgs> beforeSendRequest;
-        private readonly EventHandler<DFeMessageEventArgs> afterReceiveReply;
+        private readonly Action<string> beforeSendRequest;
+        private readonly Action<string> afterReceiveReply;
 
         #endregion Fields
 
         #region Constructors
 
-        public DFeInspectorBehavior(EventHandler<DFeMessageEventArgs> beforeSendDFeRequest, EventHandler<DFeMessageEventArgs> afterReceiveDFeReply)
+        public DFeInspectorBehavior(Action<string> beforeSendDFeRequest, Action<string> afterReceiveDFeReply)
         {
             beforeSendRequest = beforeSendDFeRequest;
             afterReceiveReply = afterReceiveDFeReply;
@@ -71,11 +71,10 @@ namespace OpenAC.Net.DFe.Core.Service
 
         public void ApplyClientBehavior(ServiceEndpoint endpoint, ClientRuntime clientRuntime)
         {
-            var messageInspector = new DFeMessageInspector
-            {
-                BeforeSendDFeRequest = beforeSendRequest,
-                AfterReceiveDFeReply = afterReceiveReply
-            };
+            var messageInspector = new DFeMessageInspector();
+            messageInspector.BeforeSendDFeRequest += (sender, args) => beforeSendRequest(args.Message);
+            messageInspector.AfterReceiveDFeReply += (sender, args) => afterReceiveReply(args.Message);
+
 #if NETSTANDARD2_0
             clientRuntime.ClientMessageInspectors.Add(messageInspector);
 #else

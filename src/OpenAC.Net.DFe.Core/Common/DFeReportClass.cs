@@ -29,8 +29,7 @@
 // <summary></summary>
 // ***********************************************************************
 
-using System.ComponentModel;
-using OpenAC.Net.Core;
+using System;
 using OpenAC.Net.Core.Logging;
 
 #if NETFULL
@@ -41,15 +40,8 @@ using System.Drawing;
 
 namespace OpenAC.Net.DFe.Core.Common
 {
-    [TypeConverter(typeof(OpenExpandableObjectConverter))]
-    public abstract class DFeReportClass<TParent> : OpenComponent, IOpenLog where TParent : OpenComponent
+    public abstract class DFeReportClass<TFiltro> : IOpenLog where TFiltro : Enum
     {
-        #region Fields
-
-        protected TParent parent;
-
-        #endregion Fields
-
         #region Properties
 
 #if NETFULL
@@ -58,21 +50,7 @@ namespace OpenAC.Net.DFe.Core.Common
         public byte[] Logo { get; set; }
 #endif
 
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
-        public TParent Parent
-        {
-            get => parent;
-            set
-            {
-                if (parent == value) return;
-
-                var oldParent = parent;
-                parent = value;
-                ParentChanged(oldParent, parent);
-            }
-        }
-
-        public FiltroDFeReport Filtro { get; set; }
+        public TFiltro Filtro { get; set; }
 
         public bool MostrarPreview { get; set; }
 
@@ -91,14 +69,5 @@ namespace OpenAC.Net.DFe.Core.Common
         public string Site { get; set; }
 
         #endregion Properties
-
-        #region Methods
-
-        /// <summary>
-        /// Função executada toda vez que é mudado o Parent.
-        /// </summary>
-        protected abstract void ParentChanged(TParent oldParent, TParent newParent);
-
-        #endregion Methods
     }
 }

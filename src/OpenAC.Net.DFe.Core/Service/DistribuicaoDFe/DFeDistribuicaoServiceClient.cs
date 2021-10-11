@@ -155,7 +155,7 @@ namespace OpenAC.Net.DFe.Core.Service
 
                 var element = resultXml.GetElementsByTagName("retDistDFeInt")[0];
 
-                var response = new DistribuicaoDFeResponse(dadosMsg, element.OuterXml, EnvelopeSoap, RetornoWS);
+                var response = new DistribuicaoDFeResponse(dadosMsg, element.OuterXml, EnvelopeEnvio, EnvelopeRetorno);
                 return response;
             }
         }

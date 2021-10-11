@@ -39,12 +39,12 @@ namespace OpenAC.Net.DFe.Core.Service
     {
         #region Constructors
 
-        protected DFeResposta(string xmlEnvio, string xmlRetorno, string envelopeSoap, string respostaWs, bool loadRetorno = true)
+        protected DFeResposta(string xmlEnvio, string xmlRetorno, string envelopeEnvio, string resposta, bool loadRetorno = true)
         {
             XmlEnvio = xmlEnvio;
             XmlRetorno = xmlRetorno;
-            EnvelopeSoap = envelopeSoap;
-            RetornoWS = respostaWs;
+            EnvelopeEnvio = envelopeEnvio;
+            EnvelopeRetorno = resposta;
 
             if (typeof(DFeDocument<T>).IsAssignableFrom(typeof(T)) && loadRetorno)
             {
@@ -60,9 +60,9 @@ namespace OpenAC.Net.DFe.Core.Service
 
         public string XmlRetorno { get; }
 
-        public string EnvelopeSoap { get; }
+        public string EnvelopeEnvio { get; }
 
-        public string RetornoWS { get; }
+        public string EnvelopeRetorno { get; }
 
         public T Resultado { get; protected set; }
 

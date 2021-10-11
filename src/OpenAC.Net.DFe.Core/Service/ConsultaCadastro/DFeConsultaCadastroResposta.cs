@@ -35,7 +35,7 @@ namespace OpenAC.Net.DFe.Core.Service
     {
         #region Constructor
 
-        public DFeConsultaCadastroResposta(string xmlEnvio, string xmlRetorno, string envelopeSoap, string respostaWs) : base(xmlEnvio, xmlRetorno, envelopeSoap, respostaWs)
+        public DFeConsultaCadastroResposta(string xmlEnvio, string xmlRetorno, string envelopeEnvio, string resposta) : base(xmlEnvio, xmlRetorno, envelopeEnvio, resposta)
         {
         }
 

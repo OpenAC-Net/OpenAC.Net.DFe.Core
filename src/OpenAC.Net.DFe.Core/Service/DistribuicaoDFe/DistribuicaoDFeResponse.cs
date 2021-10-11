@@ -33,8 +33,8 @@ namespace OpenAC.Net.DFe.Core.Service
 {
     public sealed class DistribuicaoDFeResponse : DFeResposta<DistribuicaoDFeResult>
     {
-        public DistribuicaoDFeResponse(string xmlEnvio, string xmlRetorno, string envelopeSoap, string respostaWs) :
-            base(xmlEnvio, xmlRetorno, envelopeSoap, respostaWs)
+        public DistribuicaoDFeResponse(string xmlEnvio, string xmlRetorno, string envelopeEnvio, string resposta) :
+            base(xmlEnvio, xmlRetorno, envelopeEnvio, resposta)
         {
         }
     }

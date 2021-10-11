@@ -103,12 +103,12 @@ namespace OpenAC.Net.DFe.Core.Service
         /// <summary>
         ///
         /// </summary>
-        public string EnvelopeSoap { get; protected set; }
+        public string EnvelopeEnvio { get; protected set; }
 
         /// <summary>
         ///
         /// </summary>
-        public string RetornoWS { get; protected set; }
+        public string EnvelopeRetorno { get; protected set; }
 
         #endregion Properties
 
@@ -154,14 +154,14 @@ namespace OpenAC.Net.DFe.Core.Service
         /// <inheritdoc />
         protected override void BeforeSendDFeRequest(string message)
         {
-            EnvelopeSoap = message;
+            EnvelopeEnvio = message;
             GravarSoap(message, $"{DateTime.Now:yyyyMMddHHmmssfff}_{ArquivoEnvio}_env.xml");
         }
 
         /// <inheritdoc />
         protected override void AfterReceiveDFeReply(string message)
         {
-            RetornoWS = message;
+            EnvelopeRetorno = message;
             GravarSoap(message, $"{DateTime.Now:yyyyMMddHHmmssfff}_{ArquivoResposta}_ret.xml");
         }
 

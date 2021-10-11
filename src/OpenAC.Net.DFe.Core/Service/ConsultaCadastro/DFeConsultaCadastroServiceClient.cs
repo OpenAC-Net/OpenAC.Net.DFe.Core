@@ -107,7 +107,7 @@ namespace OpenAC.Net.DFe.Core.Service
                 var retVal = Channel.ConsultaCadastro(inValue);
 
                 var retorno =
-                    new DFeConsultaCadastroResposta(dadosMsg, retVal.Result.OuterXml, EnvelopeSoap, RetornoWS);
+                    new DFeConsultaCadastroResposta(dadosMsg, retVal.Result.OuterXml, EnvelopeEnvio, EnvelopeRetorno);
                 return retorno;
             }
         }
