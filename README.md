@@ -4,5 +4,7 @@
 [![Ajude-nos pelo Apoia-se https://apoia.se/openac-net](https://img.shields.io/badge/Donate-Apoia--se-red)](https://apoia.se/openac-net)
 
 # OpenAC.Net.DFe.Core
-=============
+
+==============================
+
 Biblioteca responsavel pela serialização dos xml dos documento DFe e da comunicação com os webservices.
