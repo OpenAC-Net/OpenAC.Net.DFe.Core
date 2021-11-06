@@ -31,41 +31,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using OpenAC.Net.Core;
 using OpenAC.Net.Core.Extensions;
 
 namespace OpenAC.Net.DFe.Core.Common
 {
-    public abstract class DFeArquivosConfigBase<TParent, TSchemas> : DFeArquivosConfigBase<TParent>
-        where TParent : OpenComponent
-        where TSchemas : Enum
+    public abstract class DFeArquivosConfigBase<TSchemas> : DFeArquivosConfigBase where TSchemas : Enum
     {
-        #region Constructors
-
-        /// <summary>
-        /// Inicializa uma nova instancia da classe <see cref="DFeArquivosConfigBase{TParent, TSchemas}"/>.
-        /// </summary>
-        protected DFeArquivosConfigBase(TParent parent) : base(parent)
-        {
-            SchemasCache = new Dictionary<TSchemas, string>();
-        }
-
-        #endregion Constructors
-
-        #region Properties
-
-        /// <summary>
-        /// Retorna um dicionario que contem o cache dos paths de cada schema lido.
-        /// </summary>
-        [Browsable(false)]
-        public Dictionary<TSchemas, string> SchemasCache { get; }
-
-        #endregion Properties
-
         #region Methods
 
         /// <summary>
@@ -78,8 +52,7 @@ namespace OpenAC.Net.DFe.Core.Common
         #endregion Methods
     }
 
-    public abstract class DFeArquivosConfigBase<TParent>
-        where TParent : OpenComponent
+    public abstract class DFeArquivosConfigBase
     {
         #region Fields
 
@@ -92,15 +65,13 @@ namespace OpenAC.Net.DFe.Core.Common
         #region Constructors
 
         /// <summary>
-        /// Inicializa uma nova instancia da classe <see cref="DFeArquivosConfigBase{TParent, TSchemas}"/>.
+        /// Inicializa uma nova instancia da classe <see cref="DFeArquivosConfigBase{TSchemas}"/>.
         /// </summary>
-        protected DFeArquivosConfigBase(TParent parent)
+        protected DFeArquivosConfigBase()
         {
-            Guard.Against<ArgumentNullException>(parent == null, nameof(parent));
-
-            Parent = parent;
-            PathSalvar = string.Empty;
-            PathSchemas = string.Empty;
+            var path = Path.GetDirectoryName((Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).Location) ?? string.Empty;
+            PathSalvar = Path.Combine(path, "Docs");
+            PathSchemas = Path.Combine(path, "Schemas");
             arquivoServicos = string.Empty;
 
             Salvar = true;
@@ -117,57 +88,20 @@ namespace OpenAC.Net.DFe.Core.Common
         #endregion Constructors
 
         #region Properties
-
-        /// <summary>
-        /// Componente DFe parente desta configuração.
-        /// </summary>
-        [Browsable(false)]
-        public TParent Parent { get; protected set; }
-
+        
         /// <summary>
         /// Define/retorna o caminho onde deve ser salvo os arquivos.
         /// </summary>
-        [Browsable(true)]
-        public string PathSalvar
-        {
-            get
-            {
-                if (LicenseManager.UsageMode == LicenseUsageMode.Designtime) return pathSalvar;
-
-                if (pathSalvar.IsEmpty())
-                {
-                    pathSalvar = Path.Combine(Assembly.GetExecutingAssembly().GetPath(), "Docs");
-                }
-
-                return pathSalvar;
-            }
-            set => pathSalvar = value;
-        }
+        public string PathSalvar { get; set; }
 
         /// <summary>
         /// Define/retorna o caminho onde estão so schemas.
         /// </summary>
-        [Browsable(true)]
-        public string PathSchemas
-        {
-            get
-            {
-                if (LicenseManager.UsageMode == LicenseUsageMode.Designtime) return pathSchemas;
-
-                if (pathSchemas.IsEmpty())
-                {
-                    pathSchemas = Path.Combine(Assembly.GetExecutingAssembly().GetPath(), "Schemas");
-                }
-
-                return pathSchemas;
-            }
-            set => pathSchemas = value;
-        }
+        public string PathSchemas { get; set; }
 
         /// <summary>
         /// Define/retorna o arquivo com os dados dos serviços.
         /// </summary>
-        [Browsable(true)]
         public string ArquivoServicos
         {
             get => arquivoServicos;
@@ -183,57 +117,42 @@ namespace OpenAC.Net.DFe.Core.Common
         /// <summary>
         /// Define/retorna se deve salvar os arquivos xml, trata-se de arquivos com validade jurídica.
         /// </summary>
-        [Browsable(true)]
-        [DefaultValue(true)]
         public bool Salvar { get; set; }
 
         /// <summary>
         /// Define/retorna se deve ser adicionado um literal ao caminho de salvamento.
         /// </summary>
-        [Browsable(true)]
-        [DefaultValue(false)]
         public bool AdicionarLiteral { get; set; }
 
         /// <summary>
         /// Define/retorna se deve ser adicionado o CNPJ ao caminho de salvamento.
         /// </summary>
-        [Browsable(true)]
-        [DefaultValue(false)]
         public bool SepararPorCNPJ { get; set; }
 
         /// <summary>
         /// Define/retorna se deve ser adicionado o numero do
         /// modelo do arquivo DFe ao caminho de salvamento.
         /// </summary>
-        [Browsable(true)]
-        [DefaultValue(false)]
         public bool SepararPorModelo { get; set; }
 
         /// <summary>
         /// Define/retorna se deve ser adicionado o ano ao caminho de salvamento.
         /// </summary>
-        [Browsable(true)]
-        [DefaultValue(false)]
         public bool SepararPorAno { get; set; }
 
         /// <summary>
         /// Define/retorna se deve ser adicionado o mês ao caminho de salvamento.
         /// </summary>
-        [Browsable(true)]
-        [DefaultValue(false)]
         public bool SepararPorMes { get; set; }
 
         /// <summary>
         /// Define/retorna se deve ser adicionado o dia ao caminho de salvamento.
         /// </summary>
-        [Browsable(true)]
-        [DefaultValue(false)]
         public bool SepararPorDia { get; set; }
 
         /// <summary>
         /// Retorna a ordem de criação dos caminhos para salvamento dos arquivos.
         /// </summary>
-        [Browsable(false)]
         public List<TagOrdenacaoPath> OrdenacaoPath { get; }
 
         #endregion Properties
@@ -269,43 +188,47 @@ namespace OpenAC.Net.DFe.Core.Common
 
             foreach (var ordenacaoPath in OrdenacaoPath)
             {
-                switch (ordenacaoPath)
                 {
-                    case TagOrdenacaoPath.CNPJ:
-
-                        if (!cnpj.IsEmpty())
+                    switch (ordenacaoPath)
+                    {
+                        case TagOrdenacaoPath.CNPJ:
+                            if (cnpj.IsEmpty()) continue;
+                        
                             dir = Path.Combine(dir, cnpj.OnlyNumbers());
-                        break;
+                            break;
 
-                    case TagOrdenacaoPath.Modelo:
-                        if (!modeloDescr.IsEmpty())
+                        case TagOrdenacaoPath.Modelo:
+                            if (modeloDescr.IsEmpty()) continue;
+                        
                             dir = Path.Combine(dir, modeloDescr);
-                        break;
+                            break;
 
-                    case TagOrdenacaoPath.Data:
-                        if (!data.HasValue) data = DateTime.Now;
+                        case TagOrdenacaoPath.Data:
+                            if (!data.HasValue) data = DateTime.Now;
 
-                        if (SepararPorAno)
-                            dir = Path.Combine(dir, data.Value.ToString("yyyy"));
+                            if (SepararPorAno)
+                                dir = Path.Combine(dir, data.Value.ToString("yyyy"));
 
-                        if (SepararPorMes)
-                        {
-                            dir = SepararPorAno ? Path.Combine(dir, data.Value.ToString("MM")) :
-                                                  Path.Combine(dir, data.Value.ToString("yyyy"), data.Value.ToString("MM"));
-
+                            if (SepararPorMes)
+                                dir = Path.Combine(dir, data.Value.ToString("MM"));
+                        
                             if (SepararPorDia)
                                 dir = Path.Combine(dir, data.Value.ToString("dd"));
-                        }
+                            break;
 
-                        break;
-
-                    case TagOrdenacaoPath.Literal:
-                        if (!aLiteral.IsEmpty())
-                        {
+                        case TagOrdenacaoPath.Literal:
+                            if (aLiteral.IsEmpty()) continue;
+                        
                             if (!dir.ToLower().Contains(aLiteral.ToLower()))
                                 dir = Path.Combine(dir, aLiteral);
-                        }
-                        break;
+                            break;
+
+                        case TagOrdenacaoPath.Nenhum:
+                            break;
+
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
                 }
             }
 

@@ -30,98 +30,37 @@
 // ***********************************************************************
 
 using System;
-using System.ComponentModel;
-using OpenAC.Net.Core;
 
 namespace OpenAC.Net.DFe.Core.Common
 {
-    [TypeConverter(typeof(OpenExpandableObjectConverter))]
-    public abstract class DFeConfigBase<TParent, TGeralConfig, TVersaoDFe, TWebserviceConfig,
-        TCertificadosConfig, TArquivosConfig, TSchemas> : DFeConfigBase<TParent, TGeralConfig, TWebserviceConfig, TCertificadosConfig, TArquivosConfig>
-        where TParent : OpenComponent
-        where TGeralConfig : DFeGeralConfigBase<TParent, TVersaoDFe>
-        where TVersaoDFe : Enum
-        where TWebserviceConfig : DFeWebserviceConfigBase<TParent>
-        where TCertificadosConfig : DFeCertificadosConfigBase<TParent>
-        where TArquivosConfig : DFeArquivosConfigBase<TParent, TSchemas>
-        where TSchemas : Enum
+    public abstract class DFeConfigBase<TGeralConfig, TWebserviceConfig, TCertificadosConfig, TArquivosConfig>
+        where TGeralConfig : DFeGeralConfigBase
+        where TWebserviceConfig : DFeWebserviceConfigBase
+        where TCertificadosConfig : DFeCertificadosConfigBase
+        where TArquivosConfig : DFeArquivosConfigBase
     {
-        #region Constructors
-
-        /// <summary>
-        /// Inicializa uma nova instancia da classe <see cref="DFeConfigBase{TParent, TGeralConfig, TWebserviceConfig, TCertificadosConfig, TArquivosConfig, TVersaoDFe, TSchemas}"/>.
-        /// </summary>
-        /// <param name="parent"></param>
-        protected DFeConfigBase(TParent parent) : base(parent)
-        {
-        }
-
-        #endregion Constructors
-    }
-
-    [TypeConverter(typeof(OpenExpandableObjectConverter))]
-    public abstract class DFeConfigBase<TParent, TGeralConfig, TWebserviceConfig,
-        TCertificadosConfig, TArquivosConfig>
-        where TParent : OpenComponent
-        where TGeralConfig : DFeGeralConfigBase<TParent>
-        where TWebserviceConfig : DFeWebserviceConfigBase<TParent>
-        where TCertificadosConfig : DFeCertificadosConfigBase<TParent>
-        where TArquivosConfig : DFeArquivosConfigBase<TParent>
-    {
-        #region Constructors
-
-        /// <summary>
-        /// Inicializa uma nova instancia da classe <see cref="DFeConfigBase{TParent, TGeralConfig, TWebserviceConfig, TCertificadosConfig, TArquivosConfig, TVersaoDFe, TSchemas}"/>.
-        /// </summary>
-        /// <param name="parent"></param>
-        protected DFeConfigBase(TParent parent)
-        {
-            Guard.Against<ArgumentNullException>(parent == null, nameof(parent));
-
-            Parent = parent;
-            CreateConfigs();
-        }
-
-        #endregion Constructors
-
         #region Properties
-
-        /// <summary>
-        /// Componente DFe parente desta configuração.
-        /// </summary>
-        [Browsable(false)]
-        public TParent Parent { get; protected set; }
-
+        
         /// <summary>
         /// Configurações principais do componente.
         /// </summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
         public TGeralConfig Geral { get; protected set; }
 
         /// <summary>
         /// Configurações de webservices do componente.
         /// </summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
         public TWebserviceConfig WebServices { get; protected set; }
 
         /// <summary>
         /// Configurações de certificado do componente.
         /// </summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
         public TCertificadosConfig Certificados { get; protected set; }
 
         /// <summary>
         /// Configurações de arquivos do componente.
         /// </summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
         public TArquivosConfig Arquivos { get; protected set; }
 
         #endregion Properties
-
-        #region Methods
-
-        protected abstract void CreateConfigs();
-
-        #endregion Methods
     }
 }

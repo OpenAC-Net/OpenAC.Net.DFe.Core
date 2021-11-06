@@ -38,22 +38,9 @@ namespace OpenAC.Net.DFe.Core.Common
     /// <summary>
     ///
     /// </summary>
-    public abstract class DFeGeralConfigBase<TParent, TVersaoDFe> : DFeGeralConfigBase<TParent>
-    where TParent : OpenComponent
+    public abstract class DFeGeralConfigBase<TVersaoDFe> : DFeGeralConfigBase
     where TVersaoDFe : Enum
     {
-        #region Constructor
-
-        /// <summary>
-        /// Inicializa uma nova instancia da classe <see cref="DFeGeralConfigBase{TParent, TVersaoDFe}"/>.
-        /// </summary>
-        protected DFeGeralConfigBase(TParent parent) : base(parent)
-        {
-            FormaEmissao = DFeTipoEmissao.Normal;
-        }
-
-        #endregion Constructor
-
         #region Properties
 
         /// <summary>
@@ -72,18 +59,15 @@ namespace OpenAC.Net.DFe.Core.Common
         #endregion Properties
     }
 
-    public abstract class DFeGeralConfigBase<TParent> where TParent : OpenComponent
+    public abstract class DFeGeralConfigBase
     {
         #region Constructor
 
         /// <summary>
-        /// Inicializa uma nova instancia da classe <see cref="DFeGeralConfigBase{TParent, TVersaoDFe}"/>.
+        /// Inicializa uma nova instancia da classe <see cref="DFeGeralConfigBase"/>.
         /// </summary>
-        protected DFeGeralConfigBase(TParent parent)
+        protected DFeGeralConfigBase()
         {
-            Guard.Against<ArgumentNullException>(parent == null, nameof(parent));
-
-            Parent = parent;
             Salvar = true;
             ExibirErroSchema = true;
             FormatoAlerta = "TAG:%TAG% ID:%ID%/%TAG%(%DESCRICAO%) - %MSG%.";
@@ -96,63 +80,43 @@ namespace OpenAC.Net.DFe.Core.Common
         #endregion Constructor
 
         #region Properties
-
-        /// <summary>
-        /// Componente DFe parente desta configuração.
-        /// </summary>
-        [Browsable(false)]
-        public TParent Parent { get; protected set; }
-
+        
         /// <summary>
         /// Define/retorna se deve ser salvo os arquivos gerais, ou seja, arquivos de envio e
         /// de retorno sem validade jurídica.
         /// </summary>
         /// <value><c>true</c> para salvar; caso contrário, <c>false</c>.</value>
-        [Browsable(true)]
-        [DefaultValue(true)]
         public bool Salvar { get; set; }
 
         /// <summary>
         /// Define/retorna se deve exibir os erros de validação do Schema na Execption.
         /// </summary>
-        [Browsable(true)]
-        [DefaultValue(true)]
         public bool ExibirErroSchema { get; set; }
 
         /// <summary>
         /// Define/retorna o formato do alerta do serializer.
         /// Valor Padrão = TAG:%TAG% ID:%ID%/%TAG%(%DESCRICAO%) - %MSG%.
         /// </summary>
-        [Browsable(true)]
-        [DefaultValue("TAG:%TAG% ID:%ID%/%TAG%(%DESCRICAO%) - %MSG%.")]
         public string FormatoAlerta { get; set; }
 
         /// <summary>
         /// Define/retorna se deve retirar acentos do xml antes de enviar.
         /// </summary>
-        [Browsable(true)]
-        [DefaultValue(true)]
         public bool RetirarAcentos { get; set; }
 
         /// <summary>
         /// Define/retorna se deve ser retirado os espaços na hora de gerar o xml.
         /// </summary>
-        [Browsable(true)]
-        [DefaultValue(true)]
         public bool RetirarEspacos { get; set; }
 
         /// <summary>
         /// Define/retorna se deve identar o xml na hora de gerar.
         /// </summary>
-        [Browsable(true)]
-        [DefaultValue(false)]
         public bool IdentarXml { get; set; }
 
         /// <summary>
         /// Define/retorna se deve ser validado o digest.
         /// </summary>
-        [Browsable(true)]
-        [DefaultValue(true)]
         public bool ValidarDigest { get; set; }
 
         #endregion Properties

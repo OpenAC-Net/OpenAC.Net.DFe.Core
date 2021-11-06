@@ -43,7 +43,7 @@ namespace OpenAC.Net.DFe.Core.Tests
                     (prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(List<>)) ||
                     (prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(DFeCollection<>)))
                 {
-                    var values = ((IEnumerable<object>)prop.GetValue(this, null) ?? new object[0]).ToArray();
+                    var values = ((IEnumerable<object>)prop.GetValue(this, null) ?? Array.Empty<object>()).ToArray();
                     foreach (var value in values)
                         builder.AppendLine($"{prop.Name}: {value.GetType()}{Environment.NewLine}{value}");
                 }

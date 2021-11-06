@@ -31,22 +31,16 @@
 
 using OpenAC.Net.Core.Extensions;
 using System;
-using System.ComponentModel;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
-using OpenAC.Net.Core;
 
-#if NETFULL
-using OpenAC.Net.Core.Extensions;
-#endif
 
 namespace OpenAC.Net.DFe.Core.Common
 {
     /// <summary>
     /// Class NFECFGCertificados. This class cannot be inherited.
     /// </summary>
-    public abstract class DFeCertificadosConfigBase<TParent>
-    where TParent : OpenComponent
+    public abstract class DFeCertificadosConfigBase
     {
         #region Fields
 
@@ -59,14 +53,10 @@ namespace OpenAC.Net.DFe.Core.Common
         #region Constructor
 
         /// <summary>
-        /// Inicializa uma nova instancia da classe  <see cref="DFeCertificadosConfigBase{TParent}"/>.
+        /// Inicializa uma nova instancia da classe  <see cref="DFeCertificadosConfigBase"/>.
         /// </summary>
-        protected DFeCertificadosConfigBase(TParent parent)
+        protected DFeCertificadosConfigBase()
         {
-            Guard.Against<ArgumentNullException>(parent == null, nameof(parent));
-
-            Parent = parent;
-
             dataVenc = DateTime.MinValue;
             Certificado = string.Empty;
             subjectName = string.Empty;
@@ -76,32 +66,23 @@ namespace OpenAC.Net.DFe.Core.Common
         #endregion Constructor
 
         #region Properties
-
-        /// <summary>
-        /// Componente DFe parente desta configuração.
-        /// </summary>
-        [Browsable(false)]
-        public TParent Parent { get; protected set; }
-
+        
         /// <summary>
         /// Define/retorna o certificado ou Numero de Serie.
         /// </summary>
         /// <value>O Certificado/Numero de Serie.</value>
-        [Browsable(true)]
         public string Certificado { get; set; }
 
         /// <summary>
         /// Define/retorna o certificado em bytes.
         /// </summary>
         /// <value>O Certificado.</value>
-        [Browsable(true)]
         public byte[] CertificadoBytes { get; set; }
 
         /// <summary>
         /// Define/retorna a senha do certificado.
         /// </summary>
         /// <value>A senha.</value>
-        [Browsable(true)]
         public string Senha { get; set; }
 
         /// <summary>

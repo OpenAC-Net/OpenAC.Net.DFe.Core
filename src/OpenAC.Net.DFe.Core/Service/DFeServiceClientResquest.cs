@@ -4,7 +4,7 @@
 // Created          : 11-10-2021
 //
 // Last Modified By : RFTD
-// Last Modified On : 11-10-2021
+// Last Modified On : 30-10-2021
 // ***********************************************************************
 // <copyright file="DFeServiceClientResquest.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
@@ -42,35 +42,26 @@ using System.Xml.Linq;
 using OpenAC.Net.Core;
 using OpenAC.Net.Core.Extensions;
 using OpenAC.Net.DFe.Core.Common;
+using OpenAC.Net.DFe.Core.Extensions;
 
 namespace OpenAC.Net.DFe.Core.Service
 {
-    public abstract class DFeServiceClientResquest<TDFeConfig, TParent, TGeralConfig, TVersaoDFe, TWebserviceConfig, TCertificadosConfig, TArquivosConfig, TSchemas> : DFeServiceClientBase<IRequestChannel>
-        where TDFeConfig : DFeConfigBase<TParent, TGeralConfig, TVersaoDFe, TWebserviceConfig, TCertificadosConfig, TArquivosConfig, TSchemas>
-        where TParent : OpenComponent
-        where TGeralConfig : DFeGeralConfigBase<TParent, TVersaoDFe>
+    public abstract class DFeServiceClientResquest<TDFeConfig, TGeralConfig, TVersaoDFe, TWebserviceConfig, TCertificadosConfig, TArquivosConfig, TSchemas> : DFeServiceClientBase<IRequestChannel>
+        where TDFeConfig : DFeConfigBase<TGeralConfig, TWebserviceConfig, TCertificadosConfig, TArquivosConfig>
+        where TGeralConfig : DFeGeralConfigBase<TVersaoDFe>
         where TVersaoDFe : Enum
-        where TWebserviceConfig : DFeWebserviceConfigBase<TParent>
-        where TCertificadosConfig : DFeCertificadosConfigBase<TParent>
-        where TArquivosConfig : DFeArquivosConfigBase<TParent, TSchemas>
+        where TWebserviceConfig : DFeWebserviceConfigBase
+        where TCertificadosConfig : DFeCertificadosConfigBase
+        where TArquivosConfig : DFeArquivosConfigBase<TSchemas>
         where TSchemas : Enum
     {
-        #region Fields
-
-        /// <summary>
-        /// 
-        /// </summary>
-        protected readonly object serviceLock;
-
-        #endregion Fields
-
         #region Constructors
 
         /// <inheritdoc />
         protected DFeServiceClientResquest(TDFeConfig config, string url, X509Certificate2 certificado = null) : base(url, config.WebServices.TimeOut, certificado)
         {
-            serviceLock = new object();
             Configuracoes = config;
+            ValidarCertificadoServidor = true;
         }
 
         #endregion Constructors
@@ -80,63 +71,51 @@ namespace OpenAC.Net.DFe.Core.Service
         /// <summary>
         ///
         /// </summary>
-        public TDFeConfig Configuracoes { get; }
+        protected TDFeConfig Configuracoes { get; }
         
         /// <summary>
         ///
         /// </summary>
-        public string PrefixoEnvio { get; protected set; }
+        protected string NomeArquivo { get; set; }
 
         /// <summary>
         ///
         /// </summary>
-        public string PrefixoResposta { get; protected set; }
+        protected string ArquivoEnvio { get; set; }
 
         /// <summary>
         ///
         /// </summary>
-        public string ArquivoEnvio { get; protected set; }
+        protected string ArquivoResposta { get; set; }
 
         /// <summary>
         ///
         /// </summary>
-        public string ArquivoResposta { get; protected set; }
+        protected string EnvelopeEnvio { get; set; }
 
         /// <summary>
         ///
         /// </summary>
-        public string EnvelopeEnvio { get; protected set; }
-
-        /// <summary>
-        ///
-        /// </summary>
-        public string EnvelopeRetorno { get; protected set; }
+        protected string EnvelopeRetorno { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public bool ValidarCertificadoServidor { get; set; }
+        protected bool ValidarCertificadoServidor { get; set; }
 
         #endregion Properties
 
         #region Methods
-
-        protected virtual string Execute(string soapAction, string message, string responseTag, params string[] soapNamespaces)
-        {
-            return Execute(soapAction, message, string.Empty, new[] { responseTag }, soapNamespaces);
-        }
-
-        protected virtual string Execute(string soapAction, string message, string[] responseTag, params string[] soapNamespaces)
-        {
-            return Execute(soapAction, message, string.Empty, responseTag, soapNamespaces);
-        }
-
-        protected virtual string Execute(string soapAction, string message, string soapHeader, string responseTag, params string[] soapNamespaces)
-        {
-            return Execute(soapAction, message, soapHeader, new[] { responseTag }, soapNamespaces);
-        }
-
-        protected virtual string Execute(string soapAction, string message, string soapHeader, string[] responseTag, params string[] soapNamespaces)
+        
+        /// <summary>
+        /// Executa um envio para o webservice configurado.
+        /// </summary>
+        /// <param name="soapAction"></param>
+        /// <param name="message"></param>
+        /// <param name="soapHeader"></param>
+        /// <param name="soapNamespaces"></param>
+        /// <returns></returns>
+        protected virtual string Execute(string soapAction, string message, string soapHeader, params string[] soapNamespaces)
         {
             var request = WriteSoapEnvelope(message, soapAction, soapHeader, soapNamespaces);
 
@@ -146,31 +125,36 @@ namespace OpenAC.Net.DFe.Core.Service
             if (naoValidarCertificado)
             {
                 validation = ServicePointManager.ServerCertificateValidationCallback;
-                ServicePointManager.ServerCertificateValidationCallback +=
-                    (sender, certificate, chain, sslPolicyErrors) => true;
+                ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
             }
-
-            string soapResponse;
 
             try
             {
-                lock (serviceLock)
-                {
-                    var response = Channel.Request(request);
-                    Guard.Against<OpenDFeException>(response == null, "Nenhum retorno do webservice.");
-                    var reader = response.GetReaderAtBodyContents();
-                    soapResponse = reader.ReadOuterXml();
-                }
+
+                var response = Channel.Request(request);
+                Guard.Against<OpenDFeException>(response == null, "Nenhum retorno do webservice.");
+                var reader = response.GetReaderAtBodyContents();
+                var soapResponse = reader.ReadOuterXml();
+
+                var xmlDocument = XDocument.Parse(soapResponse);
+                var retorno = TratarRetorno(xmlDocument);
+                Guard.Against<OpenDFeException>(!soapResponse.IsValidXml(), "O retorno não é um xml valido.");
+                return retorno;
             }
             finally
             {
                 if (naoValidarCertificado)
                     ServicePointManager.ServerCertificateValidationCallback = validation;
             }
-
-            var xmlDocument = XDocument.Parse(soapResponse);
-            return TratarRetorno(xmlDocument, responseTag);
         }
+
+
+        /// <summary>
+        /// Metodo para tratar o retorno do webservice.
+        /// </summary>
+        /// <param name="xmlDocument">Retorno do webservice</param>
+        /// <returns></returns>
+        protected abstract string TratarRetorno(XDocument xmlDocument);
 
         /// <summary>
         /// Metodo para gerar o pacote soap.
@@ -215,9 +199,7 @@ namespace OpenAC.Net.DFe.Core.Service
             request.Properties[HttpRequestMessageProperty.Name] = requestMessage;
             return request;
         }
-
-        protected abstract string TratarRetorno(XDocument xmlDocument, string[] responseTag);
-
+        
         /// <summary>
         /// Função para validar a menssagem a ser enviada para o webservice.
         /// </summary>
@@ -231,9 +213,7 @@ namespace OpenAC.Net.DFe.Core.Service
             Guard.Against<OpenDFeValidationException>(erros.Any(), "Erros de validação do xml." +
                                                                    $"{(Configuracoes.Geral.ExibirErroSchema ? Environment.NewLine + erros.AsString() : "")}");
         }
-
-        protected abstract void GravarXml(string conteudoArquivo, string nomeArquivo);
-
+        
         /// <summary>
         /// Salvar o arquivo xml no disco de acordo com as propriedades.
         /// </summary>
@@ -255,14 +235,16 @@ namespace OpenAC.Net.DFe.Core.Service
         protected override void BeforeSendDFeRequest(string message)
         {
             EnvelopeEnvio = message;
-            GravarSoap(message, $"{DateTime.Now:yyyyMMddHHmmssfff}_{ArquivoEnvio}_env.xml");
+            ArquivoEnvio = $"{DateTime.Now:yyyyMMddHHmmssfff}-{NomeArquivo}-env.xml";
+            GravarSoap(EnvelopeEnvio, ArquivoEnvio);
         }
 
         /// <inheritdoc />
         protected override void AfterReceiveDFeReply(string message)
         {
             EnvelopeRetorno = message;
-            GravarSoap(message, $"{DateTime.Now:yyyyMMddHHmmssfff}_{ArquivoResposta}_ret.xml");
+            ArquivoResposta = $"{DateTime.Now:yyyyMMddHHmmssfff}-{NomeArquivo}-ret.xml";
+            GravarSoap(EnvelopeRetorno, ArquivoResposta);
         }
 
         #endregion Methods

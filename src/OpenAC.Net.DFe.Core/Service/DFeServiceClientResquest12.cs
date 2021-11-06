@@ -35,21 +35,19 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Text;
 using System.Xml;
-using OpenAC.Net.Core;
 using OpenAC.Net.Core.Extensions;
 using OpenAC.Net.DFe.Core.Common;
 
 namespace OpenAC.Net.DFe.Core.Service
 {
-    public abstract class DFeServiceClientResquest12<TDFeConfig, TParent, TGeralConfig, TVersaoDFe, TWebserviceConfig, TCertificadosConfig, TArquivosConfig, TSchemas> :
-        DFeServiceClientResquest<TDFeConfig, TParent, TGeralConfig, TVersaoDFe, TWebserviceConfig, TCertificadosConfig, TArquivosConfig, TSchemas>
-        where TDFeConfig : DFeConfigBase<TParent, TGeralConfig, TVersaoDFe, TWebserviceConfig, TCertificadosConfig, TArquivosConfig, TSchemas>
-        where TParent : OpenComponent
-        where TGeralConfig : DFeGeralConfigBase<TParent, TVersaoDFe>
+    public abstract class DFeServiceClientResquest12<TDFeConfig, TGeralConfig, TVersaoDFe, TWebserviceConfig, TCertificadosConfig, TArquivosConfig, TSchemas> :
+        DFeServiceClientResquest<TDFeConfig, TGeralConfig, TVersaoDFe, TWebserviceConfig, TCertificadosConfig, TArquivosConfig, TSchemas>
+        where TDFeConfig : DFeConfigBase<TGeralConfig, TWebserviceConfig, TCertificadosConfig, TArquivosConfig>
+        where TGeralConfig : DFeGeralConfigBase<TVersaoDFe>
         where TVersaoDFe : Enum
-        where TWebserviceConfig : DFeWebserviceConfigBase<TParent>
-        where TCertificadosConfig : DFeCertificadosConfigBase<TParent>
-        where TArquivosConfig : DFeArquivosConfigBase<TParent, TSchemas>
+        where TWebserviceConfig : DFeWebserviceConfigBase
+        where TCertificadosConfig : DFeCertificadosConfigBase
+        where TArquivosConfig : DFeArquivosConfigBase<TSchemas>
         where TSchemas : Enum
     {
         #region Constructors

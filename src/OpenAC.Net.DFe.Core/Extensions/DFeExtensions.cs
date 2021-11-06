@@ -33,6 +33,7 @@ using OpenAC.Net.DFe.Core.Attributes;
 using System;
 using System.Collections;
 using System.Reflection;
+using System.Xml.Linq;
 using OpenAC.Net.Core;
 using OpenAC.Net.Core.Extensions;
 
@@ -149,6 +150,19 @@ namespace OpenAC.Net.DFe.Core.Extensions
             if (value.IsEmpty()) return false;
 
             return value.StartsWith("<![CDATA[") && value.EndsWith("]]>");
+        }
+
+        public static bool IsValidXml(this string xmlstring)
+        {
+            try
+            {
+                var xDocument = XDocument.Parse(xmlstring);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }
