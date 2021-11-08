@@ -32,6 +32,7 @@
 using OpenAC.Net.DFe.Core.Attributes;
 using System;
 using System.Collections;
+using System.IO;
 using System.Linq;
 using OpenAC.Net.Core;
 using OpenAC.Net.Core.Extensions;
@@ -62,13 +63,15 @@ namespace OpenAC.Net.DFe.Core.Serializer
 
         public static ObjectType ValueElementType => new ObjectType(9);
 
+        public static ObjectType StreamType => new ObjectType(10);
+
         #endregion ObjectsTypes
 
         #region Constructors
 
         private ObjectType(int id)
         {
-            Guard.Against<ArgumentException>(!id.IsBetween(0, 9), "Tipo de objeto desconhecido.");
+            Guard.Against<ArgumentException>(!id.IsBetween(0, 10), "Tipo de objeto desconhecido.");
 
             Id = id;
         }
@@ -109,6 +112,7 @@ namespace OpenAC.Net.DFe.Core.Serializer
             if (IsAbstract(type)) return AbstractType;
             if (IsList(type)) return ListType;
             if (IsDictionary(type)) return DictionaryType;
+            if (IsStream(type)) return StreamType;
             if (IsArray(type)) return ArrayType;
             if (IsEnumerable(type)) return EnumerableType;
             if (IsValueElement(type)) return ValueElementType;
@@ -171,6 +175,11 @@ namespace OpenAC.Net.DFe.Core.Serializer
         private static bool IsArray(Type type)
         {
             return type.IsArray;
+        }
+
+        private static bool IsStream(Type type)
+        {
+            return type == typeof(Stream);
         }
 
         private static bool IsRoot(Type type)

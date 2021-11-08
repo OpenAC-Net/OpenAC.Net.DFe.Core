@@ -248,7 +248,7 @@ namespace OpenAC.Net.DFe.Core.Serializer
             return conteudoProcessado;
         }
 
-        private static XObject ProcessContent(DFeBaseAttribute tag, string conteudoProcessado, bool estaVazio, SerializerOptions options)
+        public static XObject ProcessContent(DFeBaseAttribute tag, string conteudoProcessado, bool estaVazio, SerializerOptions options)
         {
             string alerta;
             if (tag.Ocorrencia == Ocorrencia.Obrigatoria && estaVazio && tag.Min > 0)

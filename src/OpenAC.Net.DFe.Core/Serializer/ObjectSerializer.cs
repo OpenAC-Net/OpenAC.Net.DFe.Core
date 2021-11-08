@@ -136,7 +136,9 @@ namespace OpenAC.Net.DFe.Core.Serializer
                 }
 
                 var tag = prop.GetElementAtt();
-                return new[] { PrimitiveSerializer.Serialize(tag, parentObject, prop, options) };
+
+                return objectType == ObjectType.StreamType ? new[] { StreamSerializer.Serialize(tag, parentObject, prop, options) } :
+                                                             new[] { PrimitiveSerializer.Serialize(tag, parentObject, prop, options) };
             }
             catch (Exception e)
             {
@@ -155,7 +157,6 @@ namespace OpenAC.Net.DFe.Core.Serializer
             try
             {
                 var ret = type.HasCreate() ? type.GetCreate().Invoke() : Activator.CreateInstance(type);
-
                 if (element == null) return ret;
 
                 var properties = type.GetProperties();
@@ -195,7 +196,7 @@ namespace OpenAC.Net.DFe.Core.Serializer
                 {
                     var listElement = parentElement.GetElements(prop);
 
-                    var list = (ArrayList)CollectionSerializer.Deserialize(typeof(ArrayList), listElement.ToArray(), prop, item, options);
+                    var list = (ArrayList)CollectionSerializer.Deserialize(typeof(ArrayList), listElement, prop, item, options);
                     var type = prop.PropertyType.IsArray ? prop.PropertyType.GetElementType() : prop.PropertyType.GetGenericArguments()[0];
                     return objectType == ObjectType.ArrayType ? list.ToArray(type) : list.Cast(type);
                 }
@@ -250,6 +251,9 @@ namespace OpenAC.Net.DFe.Core.Serializer
                     var xElement = parentElement.ElementsAnyNs(tag.Name).FirstOrDefault();
                     return Deserialize(prop.PropertyType, xElement, options);
                 }
+
+                if (objectType == ObjectType.StreamType)
+                    return StreamSerializer.Deserialize(parentElement.ElementsAnyNs(tag.Name).FirstOrDefault());
 
                 XObject element;
                 if (tag is DFeAttributeAttribute)
