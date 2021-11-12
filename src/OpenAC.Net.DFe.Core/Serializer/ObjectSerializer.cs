@@ -253,7 +253,10 @@ namespace OpenAC.Net.DFe.Core.Serializer
                 }
 
                 if (objectType == ObjectType.StreamType)
-                    return StreamSerializer.Deserialize(parentElement.ElementsAnyNs(tag.Name).FirstOrDefault());
+                {
+                    var xElement = parentElement.ElementsAnyNs(tag.Name).FirstOrDefault();
+                    return StreamSerializer.Deserialize(xElement);
+                }
 
                 XObject element;
                 if (tag is DFeAttributeAttribute)

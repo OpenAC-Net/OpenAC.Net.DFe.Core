@@ -86,15 +86,9 @@ namespace OpenAC.Net.DFe.Core.Serializer
 
         #region Operators
 
-        public static bool operator ==(ObjectType a, ObjectType b)
-        {
-            return a.Equals(b);
-        }
+        public static bool operator ==(ObjectType a, ObjectType b) => a.Equals(b);
 
-        public static bool operator !=(ObjectType a, ObjectType b)
-        {
-            return !(a == b);
-        }
+        public static bool operator !=(ObjectType a, ObjectType b) => !a.Equals(b);
 
         #endregion Operators
 
@@ -108,11 +102,11 @@ namespace OpenAC.Net.DFe.Core.Serializer
         public static ObjectType From(Type type)
         {
             if (IsPrimitive(type)) return PrimitiveType;
+            if (IsStream(type)) return StreamType;
             if (IsInterface(type)) return InterfaceType;
             if (IsAbstract(type)) return AbstractType;
             if (IsList(type)) return ListType;
             if (IsDictionary(type)) return DictionaryType;
-            if (IsStream(type)) return StreamType;
             if (IsArray(type)) return ArrayType;
             if (IsEnumerable(type)) return EnumerableType;
             if (IsValueElement(type)) return ValueElementType;
