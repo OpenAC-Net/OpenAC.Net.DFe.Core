@@ -57,17 +57,17 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="DFeTipo.cs" />
-    <Compile Include="IXmlItem.cs" />
+    <Compile Include="Commom\DFeTipo.cs" />
+    <Compile Include="Commom\IXmlItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SerializerTest.cs" />
-    <Compile Include="TesteEnum.cs" />
-    <Compile Include="TesteXml.cs" />
-    <Compile Include="TesteXml2.cs" />
-    <Compile Include="TesteXml3.cs" />
-    <Compile Include="TesteXml4.cs" />
-    <Compile Include="TesteXml5.cs" />
-    <Compile Include="Xml3Collection.cs" />
+    <Compile Include="Commom\TesteEnum.cs" />
+    <Compile Include="Commom\TesteXml.cs" />
+    <Compile Include="Commom\TesteXml2.cs" />
+    <Compile Include="Commom\TesteXml3.cs" />
+    <Compile Include="Commom\TesteXml4.cs" />
+    <Compile Include="Commom\TesteXml5.cs" />
+    <Compile Include="Commom\Xml3Collection.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="cdata_teste.xml">
@@ -76,13 +76,13 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.Platforms">
-      <Version>5.0.2</Version>
+      <Version>6.0.2</Version>
     </PackageReference>
     <PackageReference Include="NETStandard.Library">
       <Version>2.0.3</Version>
     </PackageReference>
     <PackageReference Include="OpenAC.Net.Core">
-      <Version>1.0.0.1</Version>
+      <Version>1.5.0-preview.1</Version>
     </PackageReference>
     <PackageReference Include="System.Collections">
       <Version>4.3.0</Version>
@@ -204,6 +204,7 @@
       <Name>OpenAC.Net.DFe.Core</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

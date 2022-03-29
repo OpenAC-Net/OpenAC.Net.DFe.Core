@@ -56,7 +56,7 @@ namespace OpenAC.Net.DFe.Core.Serializer
         public static XObject[] Serialize(PropertyInfo prop, object parentObject, SerializerOptions options)
         {
             var tag = prop.GetAttribute<DFeCollectionAttribute>();
-            var list = (ICollection)prop.GetValue(parentObject, null) ?? new ArrayList();
+            var list = (ICollection)prop.GetValue(parentObject, null) ?? new List<object>();
 
             if (list.Count < tag.MinSize || list.Count > tag.MaxSize && tag.MaxSize > 0)
             {
@@ -244,7 +244,7 @@ namespace OpenAC.Net.DFe.Core.Serializer
 
         private static Type GetListType(Type type)
         {
-            var listItemType = typeof(ArrayList).IsAssignableFrom(type) || type.IsArray ? typeof(ArrayList) :
+            var listItemType = typeof(List<object>).IsAssignableFrom(type) || type.IsArray ? typeof(List<object>) :
                                type.GetGenericArguments().Any() ? type.GetGenericArguments()[0] : type.BaseType?.GetGenericArguments()[0];
 
             return listItemType;

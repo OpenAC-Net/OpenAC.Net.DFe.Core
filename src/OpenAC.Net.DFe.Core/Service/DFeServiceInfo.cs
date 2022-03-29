@@ -38,9 +38,7 @@ using OpenAC.Net.DFe.Core.Serializer;
 
 namespace OpenAC.Net.DFe.Core.Service
 {
-    public class DFeServiceInfo<TTIpo, TVersao>
-        where TTIpo : Enum
-        where TVersao : Enum
+    public class DFeServiceInfo<TTIpo> where TTIpo : Enum
     {
         #region Constructors
 
@@ -59,19 +57,14 @@ namespace OpenAC.Net.DFe.Core.Service
         /// <param name="ambiente"></param>
         /// <param name="uf"></param>
         [DFeIgnore]
-        public DFeServiceEnvironment<TTIpo> this[DFeTipoAmbiente ambiente, DFeSiglaUF uf]
-        {
-            get { return Ambientes?.SingleOrDefault(x => x.Ambiente == ambiente && x.UF == uf); }
-        }
+        public DFeServiceEnvironment<TTIpo> this[DFeTipoAmbiente ambiente, DFeSiglaUF uf] =>
+            Ambientes?.SingleOrDefault(x => x.Ambiente == ambiente && x.UF == uf);
 
         [DFeAttribute(TipoCampo.Enum, "Tipo")]
         public DFeTipoServico Tipo { get; set; }
 
         [DFeAttribute(TipoCampo.Enum, "TipoEmissao")]
         public DFeTipoEmissao TipoEmissao { get; set; }
-
-        [DFeAttribute(TipoCampo.Enum, "Versao")]
-        public TVersao Versao { get; set; }
 
         [DFeCollection("Enderecos")]
         public DFeCollection<DFeServiceEnvironment<TTIpo>> Ambientes { get; set; }

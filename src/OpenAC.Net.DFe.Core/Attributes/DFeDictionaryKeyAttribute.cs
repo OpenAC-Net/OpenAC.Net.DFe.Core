@@ -78,6 +78,7 @@ namespace OpenAC.Net.DFe.Core.Attributes
         /// </summary>
         /// <param name="tipo">The tipo.</param>
         /// <param name="name">The name.</param>
+        /// <param name="asAttribute"></param>
         public DFeDictionaryKeyAttribute(TipoCampo tipo, string name, bool asAttribute) : this()
         {
             Tipo = tipo;
@@ -108,7 +109,7 @@ namespace OpenAC.Net.DFe.Core.Attributes
         /// Gets or sets the AsAttribute.
         /// </summary>
         /// <value>The AsAttribute.</value>
-        public bool AsAttribute { get; set; }
+        public bool AsAttribute { get; set; } = true;
 
         #endregion Properties
     }

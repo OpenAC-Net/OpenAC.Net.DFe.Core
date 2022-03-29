@@ -114,22 +114,12 @@ namespace OpenAC.Net.DFe.Core.Extensions
             return method != null;
         }
 
-        /// <summary>
-        /// Checks if a property should not be serialized.
-        /// </summary>
-        /// <param name="property">The property to check.</param>
         public static bool ShouldIgnoreProperty(this PropertyInfo property)
         {
             return property.HasAttribute<DFeIgnoreAttribute>() ||
                    !property.CanRead || !property.CanWrite;
         }
 
-        /// <summary>
-        /// Checks if a property should not be serialized.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="item">The item.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         public static bool ShouldSerializeProperty(this PropertyInfo property, object item)
         {
             var shouldSerialize = item.GetType().GetMethod($"ShouldSerialize{property.Name}", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);

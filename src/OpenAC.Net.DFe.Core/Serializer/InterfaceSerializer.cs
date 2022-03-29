@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
@@ -42,9 +43,9 @@ namespace OpenAC.Net.DFe.Core.Serializer
                 if (objectType.IsIn(ObjectType.ArrayType, ObjectType.EnumerableType))
                 {
                     var listElement = parentElement.ElementsAnyNs(att.Name);
-                    var list = (ArrayList)CollectionSerializer.Deserialize(typeof(ArrayList), listElement, options);
+                    var list = (List<object>)CollectionSerializer.Deserialize(typeof(List<object>), listElement, options);
                     var type = CollectionSerializer.GetItemType(att.Tipo);
-                    return objectType == ObjectType.ArrayType ? list.ToArray(type) : list.Cast(type);
+                    return objectType == ObjectType.ArrayType ? list.Cast(type).ToArray(type) : list.Cast(type);
                 }
 
                 if (objectType == ObjectType.ListType)

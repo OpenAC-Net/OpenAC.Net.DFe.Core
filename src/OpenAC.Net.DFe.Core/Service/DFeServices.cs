@@ -39,15 +39,14 @@ using OpenAC.Net.DFe.Core.Document;
 namespace OpenAC.Net.DFe.Core.Service
 {
     [DFeRoot("DFeServices", Namespace = "https://openac-net.github.io")]
-    public class DFeServices<TTIpo, TVersao> : DFeDocument<DFeServices<TTIpo, TVersao>>
+    public class DFeServices<TTIpo> : DFeDocument<DFeServices<TTIpo>>
         where TTIpo : Enum
-        where TVersao : Enum
     {
         #region Constructors
 
         public DFeServices()
         {
-            Webservices = new DFeCollection<DFeServiceInfo<TTIpo, TVersao>>();
+            Webservices = new DFeCollection<DFeServiceInfo<TTIpo>>();
         }
 
         #endregion Constructors
@@ -60,13 +59,13 @@ namespace OpenAC.Net.DFe.Core.Service
         /// <param name="versao"></param>
         /// <param name="emissao"></param>
         [DFeIgnore]
-        public DFeServiceInfo<TTIpo, TVersao> this[TVersao versao, DFeTipoEmissao emissao]
+        public DFeServiceInfo<TTIpo> this[DFeTipoEmissao emissao]
         {
-            get { return Webservices?.SingleOrDefault(x => x.Versao.Equals(versao) && x.TipoEmissao == emissao); }
+            get { return Webservices?.SingleOrDefault(x => x.TipoEmissao == emissao); }
         }
 
         [DFeCollection("Services")]
-        public DFeCollection<DFeServiceInfo<TTIpo, TVersao>> Webservices { get; set; }
+        public DFeCollection<DFeServiceInfo<TTIpo>> Webservices { get; set; }
 
         #endregion Properties
     }

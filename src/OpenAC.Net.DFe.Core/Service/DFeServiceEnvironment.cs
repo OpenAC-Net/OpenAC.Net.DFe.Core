@@ -68,7 +68,7 @@ namespace OpenAC.Net.DFe.Core.Service
         public DFeSiglaUF UF { get; set; }
 
         [DFeDictionary("Enderecos")]
-        [DFeDictionaryKey(TipoCampo.Enum, "Tipo", true)]
+        [DFeDictionaryKey(TipoCampo.Enum, "Tipo")]
         [DFeDictionaryValue(TipoCampo.Str, "Endereco")]
         public Dictionary<TTIpo, string> Enderecos { get; set; }
 

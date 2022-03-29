@@ -35,7 +35,7 @@ using OpenAC.Net.DFe.Core.Document;
 
 namespace OpenAC.Net.DFe.Core.Service
 {
-    public abstract class DFeResposta<T> : GenericClone<DFeResposta<T>> where T : class
+    public abstract class DFeResposta<T> where T : class
     {
         #region Constructors
 

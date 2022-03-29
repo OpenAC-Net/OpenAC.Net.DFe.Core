@@ -46,17 +46,13 @@ namespace OpenAC.Net.DFe.Core.Extensions
             Type type = null;
             var typeELement = element.Attribute("Type");
             if (typeELement != null)
-            {
                 type = Type.GetType(typeELement.Value);
-            }
 
             if (type != null) return type;
 
             var arguments = parentType.GetGenericArguments();
             if (arguments.Length > genericArgumentIndex)
-            {
                 type = arguments[genericArgumentIndex];
-            }
 
             return type;
         }

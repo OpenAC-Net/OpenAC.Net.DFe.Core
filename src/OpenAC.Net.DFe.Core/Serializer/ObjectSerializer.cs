@@ -196,9 +196,9 @@ namespace OpenAC.Net.DFe.Core.Serializer
                 {
                     var listElement = parentElement.GetElements(prop);
 
-                    var list = (ArrayList)CollectionSerializer.Deserialize(typeof(ArrayList), listElement, prop, item, options);
+                    var list = (List<object>)CollectionSerializer.Deserialize(typeof(List<object>), listElement, prop, item, options);
                     var type = prop.PropertyType.IsArray ? prop.PropertyType.GetElementType() : prop.PropertyType.GetGenericArguments()[0];
-                    return objectType == ObjectType.ArrayType ? list.ToArray(type) : list.Cast(type);
+                    return objectType == ObjectType.ArrayType ? list.Cast(type).ToArray(type) : list.Cast(type);
                 }
 
                 if (objectType == ObjectType.ListType)

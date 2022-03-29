@@ -56,7 +56,7 @@ namespace OpenAC.Net.DFe.Core.Service
         /// <param name="certificado"></param>
         protected DFeServiceClientBase(string url, TimeSpan? timeOut = null, X509Certificate2 certificado = null) : base(new BasicHttpBinding(), new EndpointAddress(url))
         {
-            if (!(Endpoint?.Binding is BasicHttpBinding binding)) return;
+            if (Endpoint?.Binding is not BasicHttpBinding binding) return;
 
             binding.UseDefaultWebProxy = true;
 

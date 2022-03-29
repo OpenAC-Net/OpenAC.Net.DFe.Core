@@ -113,7 +113,10 @@ namespace OpenAC.Net.DFe.Core.Tests
             Assert.True(xmlDocument.Root.FirstAttribute.Value == "01", "Erro ao serializar atributo id do root. Valor incorreto!");
 
             var nodes = xmlDocument.Root.Nodes();
-            Assert.True(nodes.Count() == 25, "Erro ao serializar dados do xml.");
+            Assert.Equal(39, nodes.Count());
+
+            //var testXml = TesteXml.Load("teste.xml");
+            //Assert.Equal(39, nodes.Count());
 
             File.Delete("teste.xml");
         }
@@ -134,15 +137,14 @@ namespace OpenAC.Net.DFe.Core.Tests
         [Fact]
         public void TestDFeServiceSerializer()
         {
-            var services = new DFeServices<DFeTipo, DFeVersao>();
-            services.Webservices.Add(new DFeServiceInfo<DFeTipo, DFeVersao>()
+            var services = new DFeServices<DFeTipo>();
+            services.Webservices.Add(new DFeServiceInfo<DFeTipo>()
             {
-                Versao = DFeVersao.v200,
                 Tipo = DFeTipoServico.CTe,
                 TipoEmissao = DFeTipoEmissao.Normal,
                 Ambientes = new DFeCollection<DFeServiceEnvironment<DFeTipo>>()
                 {
-                    new DFeServiceEnvironment<DFeTipo>()
+                    new DFeServiceEnvironment<DFeTipo>
                     {
                         Ambiente = DFeTipoAmbiente.Homologacao,
                         UF = DFeSiglaUF.MS,
@@ -152,7 +154,7 @@ namespace OpenAC.Net.DFe.Core.Tests
                             { DFeTipo.Consulta, "Consulta" }
                         }
                     },
-                    new DFeServiceEnvironment<DFeTipo>()
+                    new DFeServiceEnvironment<DFeTipo>
                     {
                         Ambiente = DFeTipoAmbiente.Producao,
                         UF = DFeSiglaUF.MS,
@@ -165,14 +167,13 @@ namespace OpenAC.Net.DFe.Core.Tests
                 }
             });
 
-            services.Webservices.Add(new DFeServiceInfo<DFeTipo, DFeVersao>()
+            services.Webservices.Add(new DFeServiceInfo<DFeTipo>()
             {
-                Versao = DFeVersao.v300,
                 Tipo = DFeTipoServico.CTe,
                 TipoEmissao = DFeTipoEmissao.Normal,
                 Ambientes = new DFeCollection<DFeServiceEnvironment<DFeTipo>>()
                 {
-                    new DFeServiceEnvironment<DFeTipo>()
+                    new DFeServiceEnvironment<DFeTipo>
                     {
                         Ambiente = DFeTipoAmbiente.Homologacao,
                         UF = DFeSiglaUF.MS,
@@ -182,7 +183,7 @@ namespace OpenAC.Net.DFe.Core.Tests
                             { DFeTipo.Consulta, "Consulta" }
                         }
                     },
-                    new DFeServiceEnvironment<DFeTipo>()
+                    new DFeServiceEnvironment<DFeTipo>
                     {
                         Ambiente = DFeTipoAmbiente.Producao,
                         UF = DFeSiglaUF.MS,
@@ -198,6 +199,13 @@ namespace OpenAC.Net.DFe.Core.Tests
             var xml = services.GetXml();
 
             Assert.NotEqual(string.Empty, xml);
+
+            var url = services[DFeTipoEmissao.Normal][DFeTipoAmbiente.Homologacao, DFeSiglaUF.AC][DFeTipo.Consulta];
+
+            var service = DFeServices<DFeTipo>.Load(xml);
+            var serviceXml = service.GetXml();
+
+            Assert.Equal(xml, serviceXml);
         }
     }
 }
