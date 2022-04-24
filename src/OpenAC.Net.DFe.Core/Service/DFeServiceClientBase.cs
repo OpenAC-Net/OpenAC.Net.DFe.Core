@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeServiceClientBase.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2016 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -31,93 +31,190 @@
 
 using OpenAC.Net.Core.Logging;
 using System;
+using System.Collections.Specialized;
+using System.IO;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
-using System.ServiceModel;
+using OpenAC.Net.Core;
 using OpenAC.Net.Core.Extensions;
+using OpenAC.Net.DFe.Core.Common;
 
 namespace OpenAC.Net.DFe.Core.Service
 {
     /// <summary>
     /// Class DFeServiceClientBase.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <seealso cref="ClientBase{T}" />
-    /// <seealso cref="IOpenACLog" />
-
-    public abstract class DFeServiceClientBase<T> : ClientBase<T>, IOpenLog, IDisposable where T : class
+    /// <typeparam name="TDFeConfig"></typeparam>
+    /// <typeparam name="TGeralConfig"></typeparam>
+    /// <typeparam name="TWebserviceConfig"></typeparam>
+    /// <typeparam name="TCertificadosConfig"></typeparam>
+    /// <typeparam name="TArquivosConfig"></typeparam>
+    /// <seealso cref="IOpenLog" />
+    public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebserviceConfig, TCertificadosConfig, TArquivosConfig> : IDisposable
+        where TDFeConfig : DFeConfigBase<TGeralConfig, TWebserviceConfig, TCertificadosConfig, TArquivosConfig>
+        where TGeralConfig : DFeGeralConfigBase
+        where TWebserviceConfig : DFeWebserviceConfigBase
+        where TCertificadosConfig : DFeCertificadosConfigBase
+        where TArquivosConfig : DFeArquivosConfigBase
     {
         #region Constructors
 
         /// <summary>
-        /// Inicializa uma nova instancia da classe <see cref="DFeServiceClientBase{T}"/>.
+        /// Inicializa uma nova instancia da classe <see cref="DFeServiceClientBase{T, T, T, T, T}"/>.
         /// </summary>
         /// <param name="url"></param>
-        /// <param name="timeOut"></param>
-        /// <param name="certificado"></param>
-        protected DFeServiceClientBase(string url, TimeSpan? timeOut = null, X509Certificate2 certificado = null) : base(new BasicHttpBinding(), new EndpointAddress(url))
+        protected DFeServiceClientBase(string url)
         {
-            if (Endpoint?.Binding is not BasicHttpBinding binding) return;
-
-            binding.UseDefaultWebProxy = true;
-
-            if (ClientCredentials != null)
-                ClientCredentials.ClientCertificate.Certificate = certificado;
-
-            if (url.Trim().ToLower().StartsWith("https"))
-                binding.Security.Mode = BasicHttpSecurityMode.Transport;
-
-            if (certificado != null)
-                binding.Security.Transport.ClientCredentialType = HttpClientCredentialType.Certificate;
-
-            var endpointInspector = new DFeInspectorBehavior(BeforeSendDFeRequest, AfterReceiveDFeReply);
-#if NETSTANDARD2_0
-			Endpoint.EndpointBehaviors.Add(endpointInspector);
-#else
-            Endpoint.Behaviors.Add(endpointInspector);
-#endif
-
-            if (!timeOut.HasValue) return;
-
-            binding.OpenTimeout = timeOut.Value;
-            binding.ReceiveTimeout = timeOut.Value;
-            binding.SendTimeout = timeOut.Value;
+            Url = url;
         }
 
         #endregion Constructors
 
-        #region Methods
+        #region Properties
 
         /// <summary>
         ///
         /// </summary>
-        /// <param name="message"></param>
-        protected virtual void BeforeSendDFeRequest(string message)
+        protected TDFeConfig Configuracoes { get; }
+
+        public string PrefixoEnvio { get; protected set; }
+
+        public string PrefixoResposta { get; protected set; }
+
+        public string EnvelopeEnvio { get; protected set; }
+
+        public string EnvelopeRetorno { get; protected set; }
+
+        protected string Url { get; set; }
+
+        protected X509Certificate2 Certificado => Configuracoes.Certificados.ObterCertificado();
+
+        protected bool IsDisposed { get; private set; }
+
+        #endregion Properties
+
+        #region Methods
+
+        protected void Execute(string contentType, string method, NameValueCollection headers = null)
+        {
+            var protocolos = ServicePointManager.SecurityProtocol;
+            ServicePointManager.SecurityProtocol = Configuracoes.WebServices.Protocolos;
+
+            try
+            {
+                if (!EnvelopeEnvio.IsEmpty())
+                    GravarSoap(EnvelopeEnvio, $"{DateTime.Now:yyyyMMddssfff}_{PrefixoEnvio}_envio.xml");
+
+                var request = WebRequest.CreateHttp(Url);
+                request.Method = method.IsEmpty() ? "POST" : method;
+                request.ContentType = contentType;
+
+                if (!ValidarCertificadoServidor())
+                    request.ServerCertificateValidationCallback += (_, _, _, _) => true;
+
+                if (Configuracoes.WebServices.TimeOut.HasValue)
+                    request.Timeout = Configuracoes.WebServices.TimeOut.Value.Milliseconds;
+
+                if (headers?.Count > 0)
+                    request.Headers.Add(headers);
+
+                if (Certificado != null)
+                    request.ClientCertificates.Add(Certificado);
+
+                if (!EnvelopeEnvio.IsEmpty())
+                {
+                    using var streamWriter = new StreamWriter(request.GetRequestStream());
+                    streamWriter.Write(EnvelopeEnvio);
+                    streamWriter.Flush();
+                }
+
+                var response = request.GetResponse();
+                EnvelopeRetorno = GetResponse(response);
+
+                GravarSoap(EnvelopeRetorno, $"{DateTime.Now:yyyyMMddssfff}_{PrefixoResposta}_retorno.xml");
+            }
+            catch (Exception ex) when (ex is not OpenDFeCommunicationException)
+            {
+                throw new OpenDFeCommunicationException(ex.Message, ex);
+            }
+            finally
+            {
+                ServicePointManager.SecurityProtocol = protocolos;
+            }
+        }
+
+        protected static string GetResponse(WebResponse response)
+        {
+            var stream = response.GetResponseStream();
+            Guard.Against<OpenDFeCommunicationException>(stream == null, "Erro ao ler retorno do servidor.");
+
+            using (stream)
+            {
+                using var reader = new StreamReader(stream!);
+                var retorno = reader.ReadToEnd();
+                response.Close();
+                return retorno;
+            }
+        }
+
+        protected virtual bool ValidarCertificadoServidor() => true;
+
+        /// <summary>
+        /// Salvar o arquivo xml no disco de acordo com as propriedades.
+        /// </summary>
+        /// <param name="conteudoArquivo"></param>
+        /// <param name="nomeArquivo"></param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        protected abstract void GravarSoap(string conteudoArquivo, string nomeArquivo);
+
+        /// <inheritdoc />
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            // Dispose all managed and unmanaged resources.
+            Dispose(true);
+
+            // Take this object off the finalization queue and prevent finalization code for this
+            // object from executing a second time.
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Disposes the managed resources implementing <see cref="IDisposable"/>.
+        /// </summary>
+        protected virtual void DisposeManaged()
         {
         }
 
         /// <summary>
-        ///
+        /// Disposes the unmanaged resources implementing <see cref="IDisposable"/>.
         /// </summary>
-        /// <param name="message"></param>
-        protected virtual void AfterReceiveDFeReply(string message)
+        protected virtual void DisposeUnmanaged()
         {
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources;
+        /// <c>false</c> to release only unmanaged resources, called from the finalizer only.</param>
+        private void Dispose(bool disposing)
+        {
+            // Check to see if Dispose has already been called.
+            if (IsDisposed)
+                return;
+
+            // If disposing managed and unmanaged resources.
+            if (disposing)
+                DisposeManaged();
+
+            DisposeUnmanaged();
+
+            IsDisposed = true;
         }
 
         #endregion Methods
-
-        #region IDisposable
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            if (State == CommunicationState.Faulted)
-                Abort();
-
-            if (State.IsIn(CommunicationState.Closed, CommunicationState.Closing)) return;
-
-            Close();
-        }
-
-        #endregion IDisposable
     }
 }

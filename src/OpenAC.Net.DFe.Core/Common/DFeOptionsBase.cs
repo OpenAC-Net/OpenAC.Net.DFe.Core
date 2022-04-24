@@ -1,14 +1,14 @@
-// ***********************************************************************
+﻿// ***********************************************************************
 // Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
-// Created          : 07-28-2016
+// Created          : 08-10-2018
 //
 // Last Modified By : RFTD
-// Last Modified On : 07-28-2016
+// Last Modified On : 08-10-2018
 // ***********************************************************************
-// <copyright file="DFeMessageInspector.cs" company="OpenAC .Net">
+// <copyright file="DFeOptionsBase.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2016 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -31,41 +31,41 @@
 
 using System;
 using OpenAC.Net.Core.Logging;
-using System.ServiceModel;
-using System.ServiceModel.Channels;
-using System.ServiceModel.Dispatcher;
-using OpenAC.Net.Core.Extensions;
-using OpenAC.Net.DFe.Core.Common;
+using System.Drawing;
 
-namespace OpenAC.Net.DFe.Core.Service
+namespace OpenAC.Net.DFe.Core.Common
 {
-    internal class DFeMessageInspector : IClientMessageInspector, IOpenLog
+    public abstract class DFeOptionsBase<TFiltro> : DFeOptionsBase where TFiltro : Enum
     {
-        #region Events
+        #region Properties
 
-        public EventHandler<DFeMessageEventArgs> BeforeSendDFeRequest;
+        public TFiltro Filtro { get; set; }
 
-        public EventHandler<DFeMessageEventArgs> AfterReceiveDFeReply;
+        #endregion Properties
+    }
 
-        #endregion Events
+    public abstract class DFeOptionsBase
+    {
+        #region Properties
 
-        #region Methods
+        public Image Logo { get; set; }
 
-        public object BeforeSendRequest(ref Message request, IClientChannel channel)
-        {
-            var dfeArgs = new DFeMessageEventArgs(MessageHelper.ToXml(ref request));
-            this.Log().Debug(dfeArgs.Message);
-            BeforeSendDFeRequest.Raise(this, dfeArgs);
-            return null;
-        }
+        public bool MostrarPreview { get; set; }
 
-        public void AfterReceiveReply(ref Message reply, object correlationState)
-        {
-            var dfeArgs = new DFeMessageEventArgs(MessageHelper.ToXml(ref reply));
-            this.Log().Debug(dfeArgs.Message);
-            AfterReceiveDFeReply.Raise(this, dfeArgs);
-        }
+        public bool MostrarSetup { get; set; }
 
-        #endregion Methods
+        public bool UsarPathPDF { get; set; }
+
+        public string Impressora { get; set; }
+
+        public int NumeroCopias { get; set; }
+
+        public string NomeArquivo { get; set; }
+
+        public string SoftwareHouse { get; set; }
+
+        public string Site { get; set; }
+
+        #endregion Properties
     }
 }

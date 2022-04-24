@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeArquivosConfigBase.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2016 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -88,7 +88,7 @@ namespace OpenAC.Net.DFe.Core.Common
         #endregion Constructors
 
         #region Properties
-        
+
         /// <summary>
         /// Define/retorna o caminho onde deve ser salvo os arquivos.
         /// </summary>
@@ -193,13 +193,13 @@ namespace OpenAC.Net.DFe.Core.Common
                     {
                         case TagOrdenacaoPath.CNPJ:
                             if (cnpj.IsEmpty()) continue;
-                        
+
                             dir = Path.Combine(dir, cnpj.OnlyNumbers());
                             break;
 
                         case TagOrdenacaoPath.Modelo:
                             if (modeloDescr.IsEmpty()) continue;
-                        
+
                             dir = Path.Combine(dir, modeloDescr);
                             break;
 
@@ -211,14 +211,14 @@ namespace OpenAC.Net.DFe.Core.Common
 
                             if (SepararPorMes)
                                 dir = Path.Combine(dir, data.Value.ToString("MM"));
-                        
+
                             if (SepararPorDia)
                                 dir = Path.Combine(dir, data.Value.ToString("dd"));
                             break;
 
                         case TagOrdenacaoPath.Literal:
                             if (aLiteral.IsEmpty()) continue;
-                        
+
                             if (!dir.ToLower().Contains(aLiteral.ToLower()))
                                 dir = Path.Combine(dir, aLiteral);
                             break;

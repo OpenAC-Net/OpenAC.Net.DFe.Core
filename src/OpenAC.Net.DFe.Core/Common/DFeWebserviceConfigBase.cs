@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeWebserviceConfigBase.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2016 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@
 // ***********************************************************************
 
 using System;
+using System.Net;
 using OpenAC.Net.Core.Extensions;
 using OpenAC.Net.DFe.Core.Extensions;
 
@@ -49,12 +50,20 @@ namespace OpenAC.Net.DFe.Core.Common
             AguardarConsultaRet = 1;
             Tentativas = 3;
             IntervaloTentativas = 1000;
+
+#if NETCORE
+            Protocolos = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+#else
+            Protocolos = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls |
+                         SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+
+#endif
         }
 
         #endregion Constructor
 
         #region Properties
-        
+
         /// <summary>
         /// Define/retorna se deve ou não salvar os arquivos soap.
         /// </summary>
@@ -96,7 +105,12 @@ namespace OpenAC.Net.DFe.Core.Common
         public uint AguardarConsultaRet { get; set; }
 
         /// <summary>
-        /// 
+        ///
+        /// </summary>
+        public SecurityProtocolType Protocolos { get; set; }
+
+        /// <summary>
+        ///
         /// </summary>
         public TimeSpan? TimeOut
         {

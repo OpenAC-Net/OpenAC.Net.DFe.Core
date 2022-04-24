@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeGeralConfigBase.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2016 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -80,7 +80,7 @@ namespace OpenAC.Net.DFe.Core.Common
         #endregion Constructor
 
         #region Properties
-        
+
         /// <summary>
         /// Define/retorna se deve ser salvo os arquivos gerais, ou seja, arquivos de envio e
         /// de retorno sem validade jurídica.
