@@ -46,10 +46,11 @@ public abstract class DFeRestServiceClient<TDFeConfig, TGeralConfig, TWebservice
     #region Constructors
 
     /// <summary>
-    /// Inicializa uma nova instancia da classe <see cref="DFeServiceClientBase{T, T, T, T, T}"/>.
+    /// Inicializa uma nova instancia da classe <see cref="DFeRestServiceClient{T, T, T, T, T}"/>.
     /// </summary>
+    /// <param name="config"></param>
     /// <param name="url"></param>
-    protected DFeRestServiceClient(string url) : base(url)
+    protected DFeRestServiceClient(TDFeConfig config, string url) : base(config, url)
     {
     }
 
@@ -98,6 +99,72 @@ public abstract class DFeRestServiceClient<TDFeConfig, TGeralConfig, TWebservice
             EnvelopeEnvio = message;
 
             Execute(contentyType, "POST", headers);
+            return EnvelopeRetorno;
+        }
+        finally
+        {
+            Url = url;
+        }
+    }
+
+    protected string Put(string action, string message, string contentyType)
+    {
+        var url = Url;
+
+        try
+        {
+            SetAction(action);
+
+            var auth = Authentication();
+            var headers = !auth.IsEmpty() ? new NameValueCollection { { AuthenticationHeader, auth } } : null;
+
+            EnvelopeEnvio = message;
+
+            Execute(contentyType, "PUT", headers);
+            return EnvelopeRetorno;
+        }
+        finally
+        {
+            Url = url;
+        }
+    }
+
+    protected string Patch(string action, string message, string contentyType)
+    {
+        var url = Url;
+
+        try
+        {
+            SetAction(action);
+
+            var auth = Authentication();
+            var headers = !auth.IsEmpty() ? new NameValueCollection { { AuthenticationHeader, auth } } : null;
+
+            EnvelopeEnvio = message;
+
+            Execute(contentyType, "PATCH", headers);
+            return EnvelopeRetorno;
+        }
+        finally
+        {
+            Url = url;
+        }
+    }
+
+    protected string Delete(string action, string message, string contentyType)
+    {
+        var url = Url;
+
+        try
+        {
+            SetAction(action);
+
+            var auth = Authentication();
+            var headers = !auth.IsEmpty() ? new NameValueCollection { { AuthenticationHeader, auth } } : null;
+
+            EnvelopeEnvio = message;
+
+            Execute(contentyType, "DELETE", headers);
             return EnvelopeRetorno;
         }
         finally

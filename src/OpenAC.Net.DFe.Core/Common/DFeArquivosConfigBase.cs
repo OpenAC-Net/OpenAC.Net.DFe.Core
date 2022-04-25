@@ -36,208 +36,207 @@ using System.Linq;
 using System.Reflection;
 using OpenAC.Net.Core.Extensions;
 
-namespace OpenAC.Net.DFe.Core.Common
+namespace OpenAC.Net.DFe.Core.Common;
+
+public abstract class DFeArquivosConfigBase<TSchemas> : DFeArquivosConfigBase where TSchemas : Enum
 {
-    public abstract class DFeArquivosConfigBase<TSchemas> : DFeArquivosConfigBase where TSchemas : Enum
+    #region Methods
+
+    /// <summary>
+    /// Metodo que retorna o caminho para o tipo de schema solicitado.
+    /// </summary>
+    /// <param name="schema"></param>
+    /// <returns></returns>
+    public abstract string GetSchema(TSchemas schema);
+
+    #endregion Methods
+}
+
+public abstract class DFeArquivosConfigBase
+{
+    #region Fields
+
+    private string pathSalvar;
+    private string arquivoServicos;
+    private string pathSchemas;
+
+    #endregion Fields
+
+    #region Constructors
+
+    /// <summary>
+    /// Inicializa uma nova instancia da classe <see cref="DFeArquivosConfigBase{TSchemas}"/>.
+    /// </summary>
+    protected DFeArquivosConfigBase()
     {
-        #region Methods
+        var path = Path.GetDirectoryName((Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).Location) ?? string.Empty;
+        PathSalvar = Path.Combine(path, "Docs");
+        PathSchemas = Path.Combine(path, "Schemas");
+        arquivoServicos = string.Empty;
 
-        /// <summary>
-        /// Metodo que retorna o caminho para o tipo de schema solicitado.
-        /// </summary>
-        /// <param name="schema"></param>
-        /// <returns></returns>
-        public abstract string GetSchema(TSchemas schema);
+        Salvar = true;
+        AdicionarLiteral = false;
+        SepararPorCNPJ = false;
+        SepararPorModelo = false;
+        SepararPorAno = false;
+        SepararPorMes = false;
+        SepararPorDia = false;
 
-        #endregion Methods
+        OrdenacaoPath = new List<TagOrdenacaoPath>();
     }
 
-    public abstract class DFeArquivosConfigBase
+    #endregion Constructors
+
+    #region Properties
+
+    /// <summary>
+    /// Define/retorna o caminho onde deve ser salvo os arquivos.
+    /// </summary>
+    public string PathSalvar { get; set; }
+
+    /// <summary>
+    /// Define/retorna o caminho onde estão so schemas.
+    /// </summary>
+    public string PathSchemas { get; set; }
+
+    /// <summary>
+    /// Define/retorna o arquivo com os dados dos serviços.
+    /// </summary>
+    public string ArquivoServicos
     {
-        #region Fields
-
-        private string pathSalvar;
-        private string arquivoServicos;
-        private string pathSchemas;
-
-        #endregion Fields
-
-        #region Constructors
-
-        /// <summary>
-        /// Inicializa uma nova instancia da classe <see cref="DFeArquivosConfigBase{TSchemas}"/>.
-        /// </summary>
-        protected DFeArquivosConfigBase()
+        get => arquivoServicos;
+        set
         {
-            var path = Path.GetDirectoryName((Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).Location) ?? string.Empty;
-            PathSalvar = Path.Combine(path, "Docs");
-            PathSchemas = Path.Combine(path, "Schemas");
-            arquivoServicos = string.Empty;
+            if (value == arquivoServicos) return;
 
-            Salvar = true;
-            AdicionarLiteral = false;
-            SepararPorCNPJ = false;
-            SepararPorModelo = false;
-            SepararPorAno = false;
-            SepararPorMes = false;
-            SepararPorDia = false;
+            arquivoServicos = value ?? string.Empty;
+            ArquivoServicoChange();
+        }
+    }
 
-            OrdenacaoPath = new List<TagOrdenacaoPath>();
+    /// <summary>
+    /// Define/retorna se deve salvar os arquivos xml, trata-se de arquivos com validade jurídica.
+    /// </summary>
+    public bool Salvar { get; set; }
+
+    /// <summary>
+    /// Define/retorna se deve ser adicionado um literal ao caminho de salvamento.
+    /// </summary>
+    public bool AdicionarLiteral { get; set; }
+
+    /// <summary>
+    /// Define/retorna se deve ser adicionado o CNPJ ao caminho de salvamento.
+    /// </summary>
+    public bool SepararPorCNPJ { get; set; }
+
+    /// <summary>
+    /// Define/retorna se deve ser adicionado o numero do
+    /// modelo do arquivo DFe ao caminho de salvamento.
+    /// </summary>
+    public bool SepararPorModelo { get; set; }
+
+    /// <summary>
+    /// Define/retorna se deve ser adicionado o ano ao caminho de salvamento.
+    /// </summary>
+    public bool SepararPorAno { get; set; }
+
+    /// <summary>
+    /// Define/retorna se deve ser adicionado o mês ao caminho de salvamento.
+    /// </summary>
+    public bool SepararPorMes { get; set; }
+
+    /// <summary>
+    /// Define/retorna se deve ser adicionado o dia ao caminho de salvamento.
+    /// </summary>
+    public bool SepararPorDia { get; set; }
+
+    /// <summary>
+    /// Retorna a ordem de criação dos caminhos para salvamento dos arquivos.
+    /// </summary>
+    public List<TagOrdenacaoPath> OrdenacaoPath { get; }
+
+    #endregion Properties
+
+    #region Methods
+
+    /// <summary>
+    /// Metodo chamado quando muda o caminho do arquivo de serviços.
+    /// </summary>
+    protected abstract void ArquivoServicoChange();
+
+    /// <summary>
+    /// Gera um path de salvamento.
+    /// </summary>
+    /// <param name="aPath"></param>
+    /// <param name="aLiteral"></param>
+    /// <param name="cnpj"></param>
+    /// <param name="data"></param>
+    /// <param name="modeloDescr"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    protected virtual string GetPath(string aPath, string aLiteral, string cnpj = "", DateTime? data = null, string modeloDescr = "")
+    {
+        var dir = aPath.IsEmpty() ? PathSalvar : aPath;
+
+        if (!OrdenacaoPath.Any())
+        {
+            if (SepararPorCNPJ) OrdenacaoPath.Add(TagOrdenacaoPath.CNPJ);
+            if (SepararPorModelo) OrdenacaoPath.Add(TagOrdenacaoPath.Modelo);
+            if (SepararPorAno || SepararPorMes || SepararPorDia) OrdenacaoPath.Add(TagOrdenacaoPath.Data);
+            if (AdicionarLiteral) OrdenacaoPath.Add(TagOrdenacaoPath.Literal);
         }
 
-        #endregion Constructors
-
-        #region Properties
-
-        /// <summary>
-        /// Define/retorna o caminho onde deve ser salvo os arquivos.
-        /// </summary>
-        public string PathSalvar { get; set; }
-
-        /// <summary>
-        /// Define/retorna o caminho onde estão so schemas.
-        /// </summary>
-        public string PathSchemas { get; set; }
-
-        /// <summary>
-        /// Define/retorna o arquivo com os dados dos serviços.
-        /// </summary>
-        public string ArquivoServicos
+        foreach (var ordenacaoPath in OrdenacaoPath)
         {
-            get => arquivoServicos;
-            set
             {
-                if (value == arquivoServicos) return;
-
-                arquivoServicos = value ?? string.Empty;
-                ArquivoServicoChange();
-            }
-        }
-
-        /// <summary>
-        /// Define/retorna se deve salvar os arquivos xml, trata-se de arquivos com validade jurídica.
-        /// </summary>
-        public bool Salvar { get; set; }
-
-        /// <summary>
-        /// Define/retorna se deve ser adicionado um literal ao caminho de salvamento.
-        /// </summary>
-        public bool AdicionarLiteral { get; set; }
-
-        /// <summary>
-        /// Define/retorna se deve ser adicionado o CNPJ ao caminho de salvamento.
-        /// </summary>
-        public bool SepararPorCNPJ { get; set; }
-
-        /// <summary>
-        /// Define/retorna se deve ser adicionado o numero do
-        /// modelo do arquivo DFe ao caminho de salvamento.
-        /// </summary>
-        public bool SepararPorModelo { get; set; }
-
-        /// <summary>
-        /// Define/retorna se deve ser adicionado o ano ao caminho de salvamento.
-        /// </summary>
-        public bool SepararPorAno { get; set; }
-
-        /// <summary>
-        /// Define/retorna se deve ser adicionado o mês ao caminho de salvamento.
-        /// </summary>
-        public bool SepararPorMes { get; set; }
-
-        /// <summary>
-        /// Define/retorna se deve ser adicionado o dia ao caminho de salvamento.
-        /// </summary>
-        public bool SepararPorDia { get; set; }
-
-        /// <summary>
-        /// Retorna a ordem de criação dos caminhos para salvamento dos arquivos.
-        /// </summary>
-        public List<TagOrdenacaoPath> OrdenacaoPath { get; }
-
-        #endregion Properties
-
-        #region Methods
-
-        /// <summary>
-        /// Metodo chamado quando muda o caminho do arquivo de serviços.
-        /// </summary>
-        protected abstract void ArquivoServicoChange();
-
-        /// <summary>
-        /// Gera um path de salvamento.
-        /// </summary>
-        /// <param name="aPath"></param>
-        /// <param name="aLiteral"></param>
-        /// <param name="cnpj"></param>
-        /// <param name="data"></param>
-        /// <param name="modeloDescr"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        protected virtual string GetPath(string aPath, string aLiteral, string cnpj = "", DateTime? data = null, string modeloDescr = "")
-        {
-            var dir = aPath.IsEmpty() ? PathSalvar : aPath;
-
-            if (!OrdenacaoPath.Any())
-            {
-                if (SepararPorCNPJ) OrdenacaoPath.Add(TagOrdenacaoPath.CNPJ);
-                if (SepararPorModelo) OrdenacaoPath.Add(TagOrdenacaoPath.Modelo);
-                if (SepararPorAno || SepararPorMes || SepararPorDia) OrdenacaoPath.Add(TagOrdenacaoPath.Data);
-                if (AdicionarLiteral) OrdenacaoPath.Add(TagOrdenacaoPath.Literal);
-            }
-
-            foreach (var ordenacaoPath in OrdenacaoPath)
-            {
+                switch (ordenacaoPath)
                 {
-                    switch (ordenacaoPath)
-                    {
-                        case TagOrdenacaoPath.CNPJ:
-                            if (cnpj.IsEmpty()) continue;
+                    case TagOrdenacaoPath.CNPJ:
+                        if (cnpj.IsEmpty()) continue;
 
-                            dir = Path.Combine(dir, cnpj.OnlyNumbers());
-                            break;
+                        dir = Path.Combine(dir, cnpj.OnlyNumbers());
+                        break;
 
-                        case TagOrdenacaoPath.Modelo:
-                            if (modeloDescr.IsEmpty()) continue;
+                    case TagOrdenacaoPath.Modelo:
+                        if (modeloDescr.IsEmpty()) continue;
 
-                            dir = Path.Combine(dir, modeloDescr);
-                            break;
+                        dir = Path.Combine(dir, modeloDescr);
+                        break;
 
-                        case TagOrdenacaoPath.Data:
-                            if (!data.HasValue) data = DateTime.Now;
+                    case TagOrdenacaoPath.Data:
+                        if (!data.HasValue) data = DateTime.Now;
 
-                            if (SepararPorAno)
-                                dir = Path.Combine(dir, data.Value.ToString("yyyy"));
+                        if (SepararPorAno)
+                            dir = Path.Combine(dir, data.Value.ToString("yyyy"));
 
-                            if (SepararPorMes)
-                                dir = Path.Combine(dir, data.Value.ToString("MM"));
+                        if (SepararPorMes)
+                            dir = Path.Combine(dir, data.Value.ToString("MM"));
 
-                            if (SepararPorDia)
-                                dir = Path.Combine(dir, data.Value.ToString("dd"));
-                            break;
+                        if (SepararPorDia)
+                            dir = Path.Combine(dir, data.Value.ToString("dd"));
+                        break;
 
-                        case TagOrdenacaoPath.Literal:
-                            if (aLiteral.IsEmpty()) continue;
+                    case TagOrdenacaoPath.Literal:
+                        if (aLiteral.IsEmpty()) continue;
 
-                            if (!dir.ToLower().Contains(aLiteral.ToLower()))
-                                dir = Path.Combine(dir, aLiteral);
-                            break;
+                        if (!dir.ToLower().Contains(aLiteral.ToLower()))
+                            dir = Path.Combine(dir, aLiteral);
+                        break;
 
-                        case TagOrdenacaoPath.Nenhum:
-                            break;
+                    case TagOrdenacaoPath.Nenhum:
+                        break;
 
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
-
-            if (!Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
-
-            return dir;
         }
 
-        #endregion Methods
+        if (!Directory.Exists(dir))
+            Directory.CreateDirectory(dir);
+
+        return dir;
     }
+
+    #endregion Methods
 }

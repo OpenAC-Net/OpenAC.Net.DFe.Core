@@ -34,96 +34,95 @@ using System.Net;
 using OpenAC.Net.Core.Extensions;
 using OpenAC.Net.DFe.Core.Extensions;
 
-namespace OpenAC.Net.DFe.Core.Common
-{
-    public abstract class DFeWebserviceConfigBase
-    {
-        #region Constructor
+namespace OpenAC.Net.DFe.Core.Common;
 
-        /// <summary>
-        /// Inicializa uma nova instancia da classe <see cref="DFeWebserviceConfigBase"/>.
-        /// </summary>
-        protected DFeWebserviceConfigBase()
-        {
-            Ambiente = DFeTipoAmbiente.Homologacao;
-            AjustaAguardaConsultaRet = false;
-            AguardarConsultaRet = 1;
-            Tentativas = 3;
-            IntervaloTentativas = 1000;
+public abstract class DFeWebserviceConfigBase
+{
+    #region Constructor
+
+    /// <summary>
+    /// Inicializa uma nova instancia da classe <see cref="DFeWebserviceConfigBase"/>.
+    /// </summary>
+    protected DFeWebserviceConfigBase()
+    {
+        Ambiente = DFeTipoAmbiente.Homologacao;
+        AjustaAguardaConsultaRet = false;
+        AguardarConsultaRet = 1;
+        Tentativas = 3;
+        IntervaloTentativas = 1000;
 
 #if NETCORE
-            Protocolos = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+        Protocolos = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 #else
             Protocolos = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls |
                          SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
 #endif
-        }
-
-        #endregion Constructor
-
-        #region Properties
-
-        /// <summary>
-        /// Define/retorna se deve ou não salvar os arquivos soap.
-        /// </summary>
-        public bool Salvar { get; set; }
-
-        /// <summary>
-        /// Gets or sets the ambiente.
-        /// </summary>
-        /// <value>The ambiente.</value>
-        public DFeTipoAmbiente Ambiente { get; set; }
-
-        /// <summary>
-        /// Retorna o código do ambiente.
-        /// </summary>
-        /// <value>The ambiente codigo.</value>
-        public int AmbienteCodigo => Ambiente.GetDFeValue().ToInt32();
-
-        /// <summary>
-        /// Gets or sets the tentativas.
-        /// </summary>
-        /// <value>The tentativas.</value>
-        public int Tentativas { get; set; }
-
-        /// <summary>
-        ///
-        /// </summary>
-        public int IntervaloTentativas { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [ajusta aguarda consulta ret].
-        /// </summary>
-        /// <value><c>true</c> if [ajusta aguarda consulta ret]; otherwise, <c>false</c>.</value>
-        public bool AjustaAguardaConsultaRet { get; set; }
-
-        /// <summary>
-        /// Gets or sets the aguardar consulta ret.
-        /// </summary>
-        /// <value>The aguardar consulta ret.</value>
-        public uint AguardarConsultaRet { get; set; }
-
-        /// <summary>
-        ///
-        /// </summary>
-        public SecurityProtocolType Protocolos { get; set; }
-
-        /// <summary>
-        ///
-        /// </summary>
-        public TimeSpan? TimeOut
-        {
-            get
-            {
-                TimeSpan? timeOut = null;
-                if (AjustaAguardaConsultaRet)
-                    timeOut = TimeSpan.FromSeconds((int)AguardarConsultaRet);
-
-                return timeOut;
-            }
-        }
-
-        #endregion Properties
     }
+
+    #endregion Constructor
+
+    #region Properties
+
+    /// <summary>
+    /// Define/retorna se deve ou não salvar os arquivos soap.
+    /// </summary>
+    public bool Salvar { get; set; }
+
+    /// <summary>
+    /// Gets or sets the ambiente.
+    /// </summary>
+    /// <value>The ambiente.</value>
+    public DFeTipoAmbiente Ambiente { get; set; }
+
+    /// <summary>
+    /// Retorna o código do ambiente.
+    /// </summary>
+    /// <value>The ambiente codigo.</value>
+    public int AmbienteCodigo => Ambiente.GetDFeValue().ToInt32();
+
+    /// <summary>
+    /// Gets or sets the tentativas.
+    /// </summary>
+    /// <value>The tentativas.</value>
+    public int Tentativas { get; set; }
+
+    /// <summary>
+    ///
+    /// </summary>
+    public int IntervaloTentativas { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether [ajusta aguarda consulta ret].
+    /// </summary>
+    /// <value><c>true</c> if [ajusta aguarda consulta ret]; otherwise, <c>false</c>.</value>
+    public bool AjustaAguardaConsultaRet { get; set; }
+
+    /// <summary>
+    /// Gets or sets the aguardar consulta ret.
+    /// </summary>
+    /// <value>The aguardar consulta ret.</value>
+    public uint AguardarConsultaRet { get; set; }
+
+    /// <summary>
+    ///
+    /// </summary>
+    public SecurityProtocolType Protocolos { get; set; }
+
+    /// <summary>
+    ///
+    /// </summary>
+    public TimeSpan? TimeOut
+    {
+        get
+        {
+            TimeSpan? timeOut = null;
+            if (AjustaAguardaConsultaRet)
+                timeOut = TimeSpan.FromSeconds((int)AguardarConsultaRet);
+
+            return timeOut;
+        }
+    }
+
+    #endregion Properties
 }

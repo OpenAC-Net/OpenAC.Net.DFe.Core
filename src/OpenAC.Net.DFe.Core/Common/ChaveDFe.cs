@@ -36,110 +36,109 @@ using OpenAC.Net.Core;
 using OpenAC.Net.Core.Extensions;
 using OpenAC.Net.DFe.Core.Extensions;
 
-namespace OpenAC.Net.DFe.Core.Common
+namespace OpenAC.Net.DFe.Core.Common;
+
+/// <summary>
+///
+/// </summary>
+public sealed class ChaveDFe
 {
-    /// <summary>
-    ///
-    /// </summary>
-    public sealed class ChaveDFe
+    #region Constructors
+
+    internal ChaveDFe(DFeCodUF ufEmitente, DateTime dataEmissao, string cnpjEmitente, int modelo, int serie,
+        long numero, DFeTipoEmissao tipoEmissao, int cNumerico)
     {
-        #region Constructors
+        var chave = new StringBuilder();
 
-        internal ChaveDFe(DFeCodUF ufEmitente, DateTime dataEmissao, string cnpjEmitente, int modelo, int serie,
-            long numero, DFeTipoEmissao tipoEmissao, int cNumerico)
+        chave.Append(ufEmitente.GetDFeValue())
+            .Append(dataEmissao.ToString("yyMM"))
+            .Append(cnpjEmitente)
+            .Append(modelo.ToString("D2"))
+            .Append(serie.ToString("D3"))
+            .Append(numero.ToString("D9"))
+            .Append(tipoEmissao.GetDFeValue())
+            .Append(cNumerico.ToString("D8"));
+
+        var calcDigito = new CalcDigito
         {
-            var chave = new StringBuilder();
+            FormulaDigito = CalcDigFormula.Modulo11,
+            Documento = chave.ToString(),
+            MultiplicadorInicial = 2,
+            MultiplicadorFinal = 9
+        };
 
-            chave.Append(ufEmitente.GetDFeValue())
-                .Append(dataEmissao.ToString("yyMM"))
-                .Append(cnpjEmitente)
-                .Append(modelo.ToString("D2"))
-                .Append(serie.ToString("D3"))
-                .Append(numero.ToString("D9"))
-                .Append(tipoEmissao.GetDFeValue())
-                .Append(cNumerico.ToString("D8"));
+        calcDigito.Calcular();
 
-            var calcDigito = new CalcDigito
-            {
-                FormulaDigito = CalcDigFormula.Modulo11,
-                Documento = chave.ToString(),
-                MultiplicadorInicial = 2,
-                MultiplicadorFinal = 9
-            };
+        chave.Append(calcDigito.DigitoFinal);
 
-            calcDigito.Calcular();
-
-            chave.Append(calcDigito.DigitoFinal);
-
-            Chave = chave.ToString();
-            Digito = calcDigito.DigitoFinal;
-        }
-
-        #endregion Constructors
-
-        #region Properties
-
-        public string Chave { get; }
-
-        public int Digito { get; }
-
-        #endregion Properties
-
-        #region Methods
-
-        /// <summary>
-        /// Gera a chave do documento fiscal
-        /// </summary>
-        /// <param name="ufEmitente">UF do emitente do DF-e</param>
-        /// <param name="dataEmissao">Data de emissão do DF-e</param>
-        /// <param name="cnpjEmitente">CNPJ do emitente do DF-e</param>
-        /// <param name="modelo">Modelo do DF-e</param>
-        /// <param name="serie">Série do DF-e</param>
-        /// <param name="numero">Numero do DF-e</param>
-        /// <param name="tipoEmissao">Tipo de emissão do DF-e. Informar inteiro conforme consta no manual de orientação do contribuinte para o DF-e</param>
-        /// <param name="cNumerico">Código numérico que compõe a Chave de Acesso. Número gerado pelo emitente para cada DF-e</param>
-        /// <returns>Retorna a chave DFe</returns>
-        public static ChaveDFe Gerar(DFeCodUF ufEmitente, DateTime dataEmissao, string cnpjEmitente, int modelo, int serie,
-            long numero, DFeTipoEmissao tipoEmissao, int cNumerico)
-        {
-            return new ChaveDFe(ufEmitente, dataEmissao, cnpjEmitente, modelo, serie, numero, tipoEmissao, cNumerico);
-        }
-
-        /// <summary>
-        /// Informa se a chave de um DF-e é válida
-        /// </summary>
-        /// <param name="chave"></param>
-        /// <returns></returns>
-        public static bool Validar(string chave)
-        {
-            if (chave.IsEmpty()) return false;
-
-            chave = chave.Trim();
-            if (chave.Trim().Length != 44) return false;
-
-            var digitoVerificador = chave.Substring(43, 1).ToInt32();
-
-            var calcDigito = new CalcDigito
-            {
-                Documento = chave.Substring(0, 43)
-            };
-
-            calcDigito.CalculoPadrao();
-            calcDigito.Calcular();
-
-            return digitoVerificador == calcDigito.DigitoFinal;
-        }
-
-        /// <summary>
-        /// Formata a chave do documento fiscal.
-        /// </summary>
-        /// <param name="chave"></param>
-        /// <returns></returns>
-        public static string Formatar(string chave)
-        {
-            return Regex.Replace(chave, ".{4}", "$0 ");
-        }
-
-        #endregion Methods
+        Chave = chave.ToString();
+        Digito = calcDigito.DigitoFinal;
     }
+
+    #endregion Constructors
+
+    #region Properties
+
+    public string Chave { get; }
+
+    public int Digito { get; }
+
+    #endregion Properties
+
+    #region Methods
+
+    /// <summary>
+    /// Gera a chave do documento fiscal
+    /// </summary>
+    /// <param name="ufEmitente">UF do emitente do DF-e</param>
+    /// <param name="dataEmissao">Data de emissão do DF-e</param>
+    /// <param name="cnpjEmitente">CNPJ do emitente do DF-e</param>
+    /// <param name="modelo">Modelo do DF-e</param>
+    /// <param name="serie">Série do DF-e</param>
+    /// <param name="numero">Numero do DF-e</param>
+    /// <param name="tipoEmissao">Tipo de emissão do DF-e. Informar inteiro conforme consta no manual de orientação do contribuinte para o DF-e</param>
+    /// <param name="cNumerico">Código numérico que compõe a Chave de Acesso. Número gerado pelo emitente para cada DF-e</param>
+    /// <returns>Retorna a chave DFe</returns>
+    public static ChaveDFe Gerar(DFeCodUF ufEmitente, DateTime dataEmissao, string cnpjEmitente, int modelo, int serie,
+        long numero, DFeTipoEmissao tipoEmissao, int cNumerico)
+    {
+        return new ChaveDFe(ufEmitente, dataEmissao, cnpjEmitente, modelo, serie, numero, tipoEmissao, cNumerico);
+    }
+
+    /// <summary>
+    /// Informa se a chave de um DF-e é válida
+    /// </summary>
+    /// <param name="chave"></param>
+    /// <returns></returns>
+    public static bool Validar(string chave)
+    {
+        if (chave.IsEmpty()) return false;
+
+        chave = chave.Trim();
+        if (chave.Trim().Length != 44) return false;
+
+        var digitoVerificador = chave.Substring(43, 1).ToInt32();
+
+        var calcDigito = new CalcDigito
+        {
+            Documento = chave.Substring(0, 43)
+        };
+
+        calcDigito.CalculoPadrao();
+        calcDigito.Calcular();
+
+        return digitoVerificador == calcDigito.DigitoFinal;
+    }
+
+    /// <summary>
+    /// Formata a chave do documento fiscal.
+    /// </summary>
+    /// <param name="chave"></param>
+    /// <returns></returns>
+    public static string Formatar(string chave)
+    {
+        return Regex.Replace(chave, ".{4}", "$0 ");
+    }
+
+    #endregion Methods
 }

@@ -36,37 +36,36 @@ using OpenAC.Net.DFe.Core.Collection;
 using OpenAC.Net.DFe.Core.Common;
 using OpenAC.Net.DFe.Core.Document;
 
-namespace OpenAC.Net.DFe.Core.Service
+namespace OpenAC.Net.DFe.Core.Service;
+
+[DFeRoot("DFeServices", Namespace = "https://www.openac.net.br/")]
+public class DFeServices<TTIpo> : DFeDocument<DFeServices<TTIpo>>
+    where TTIpo : Enum
 {
-    [DFeRoot("DFeServices", Namespace = "https://www.openac.net.br/")]
-    public class DFeServices<TTIpo> : DFeDocument<DFeServices<TTIpo>>
-        where TTIpo : Enum
+    #region Constructors
+
+    public DFeServices()
     {
-        #region Constructors
-
-        public DFeServices()
-        {
-            Webservices = new DFeCollection<DFeServiceInfo<TTIpo>>();
-        }
-
-        #endregion Constructors
-
-        #region Properties
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="versao"></param>
-        /// <param name="emissao"></param>
-        [DFeIgnore]
-        public DFeServiceInfo<TTIpo> this[DFeTipoEmissao emissao]
-        {
-            get { return Webservices?.SingleOrDefault(x => x.TipoEmissao == emissao); }
-        }
-
-        [DFeCollection("Services")]
-        public DFeCollection<DFeServiceInfo<TTIpo>> Webservices { get; set; }
-
-        #endregion Properties
+        Webservices = new DFeCollection<DFeServiceInfo<TTIpo>>();
     }
+
+    #endregion Constructors
+
+    #region Properties
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="versao"></param>
+    /// <param name="emissao"></param>
+    [DFeIgnore]
+    public DFeServiceInfo<TTIpo> this[DFeTipoEmissao emissao]
+    {
+        get { return Webservices?.SingleOrDefault(x => x.TipoEmissao == emissao); }
+    }
+
+    [DFeCollection("Services")]
+    public DFeCollection<DFeServiceInfo<TTIpo>> Webservices { get; set; }
+
+    #endregion Properties
 }

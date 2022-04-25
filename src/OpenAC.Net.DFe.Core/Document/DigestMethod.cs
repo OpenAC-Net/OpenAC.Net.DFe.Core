@@ -31,15 +31,14 @@
 using OpenAC.Net.DFe.Core.Attributes;
 using OpenAC.Net.DFe.Core.Serializer;
 
-namespace OpenAC.Net.DFe.Core.Document
+namespace OpenAC.Net.DFe.Core.Document;
+
+public sealed class DigestMethod
 {
-    public sealed class DigestMethod
-    {
-        /// <summary>
-        /// XS16 - Atributo Algorithm de DigestMethod: http://www.w3.org/2000/09/xmldsig#sha1
-        /// </summary>
-        /// <value>The algorithm.</value>
-        [DFeAttribute(TipoCampo.Str, "Algorithm", Id = "XS16", Min = 0, Max = 999, Ocorrencia = Ocorrencia.Obrigatoria)]
-        public string Algorithm { get; set; }
-    }
+    /// <summary>
+    /// XS16 - Atributo Algorithm de DigestMethod: http://www.w3.org/2000/09/xmldsig#sha1
+    /// </summary>
+    /// <value>The algorithm.</value>
+    [DFeAttribute(TipoCampo.Str, "Algorithm", Id = "XS16", Min = 0, Max = 999, Ocorrencia = Ocorrencia.Obrigatoria)]
+    public string Algorithm { get; set; }
 }

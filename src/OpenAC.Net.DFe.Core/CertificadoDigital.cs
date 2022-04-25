@@ -35,99 +35,99 @@ using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using OpenAC.Net.Core;
 
-namespace OpenAC.Net.DFe.Core
-{
-    /// <summary>
-    /// Classe CertificadoDigital.
-    /// </summary>
-    public static class CertificadoDigital
-    {
-        #region Methods
+namespace OpenAC.Net.DFe.Core;
 
-        /// <summary>
-        /// Busca certificados instalado se informado uma serie
-        /// senão abre caixa de dialogos de certificados.
-        /// </summary>
-        /// <param name="cerSerie">Serie do certificado.</param>
-        /// <returns>X509Certificate2.</returns>
-        /// <exception cref="System.Exception">
-        /// Nenhum certificado digital foi selecionado ou o certificado selecionado está com problemas.
-        /// or
-        /// Certificado digital não encontrado
-        /// or
-        /// </exception>
-        public static X509Certificate2 SelecionarCertificado(string cerSerie = "")
-        {
+/// <summary>
+/// Classe CertificadoDigital.
+/// </summary>
+public static class CertificadoDigital
+{
+    #region Methods
+
+    /// <summary>
+    /// Busca certificados instalado se informado uma serie
+    /// senão abre caixa de dialogos de certificados.
+    /// </summary>
+    /// <param name="cerSerie">Serie do certificado.</param>
+    /// <returns>X509Certificate2.</returns>
+    /// <exception cref="System.Exception">
+    /// Nenhum certificado digital foi selecionado ou o certificado selecionado está com problemas.
+    /// or
+    /// Certificado digital não encontrado
+    /// or
+    /// </exception>
+    public static X509Certificate2 SelecionarCertificado(string cerSerie = "")
+    {
 #if NETSTANDARD2_0
-            var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+        var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
 #else
             var store = new X509Store("MY", StoreLocation.CurrentUser);
 #endif
 
-            try
+        try
+        {
+            store.Open(OpenFlags.MaxAllowed | OpenFlags.ReadOnly);
+
+            var certificates = store.Certificates.Find(X509FindType.FindByTimeValid, DateTime.Now, true)
+                .Find(X509FindType.FindByKeyUsage, X509KeyUsageFlags.DigitalSignature, false);
+
+            X509Certificate2Collection certificadosSelecionados;
+
+            if (cerSerie.IsEmpty())
             {
-                store.Open(OpenFlags.MaxAllowed | OpenFlags.ReadOnly);
-
-                var certificates = store.Certificates.Find(X509FindType.FindByTimeValid, DateTime.Now, true)
-                                                     .Find(X509FindType.FindByKeyUsage, X509KeyUsageFlags.DigitalSignature, false);
-
-                X509Certificate2Collection certificadosSelecionados;
-
-                if (cerSerie.IsEmpty())
-                {
 #if NETSTANDARD2_0
-                    throw new OpenDFeException("Número de série obrigatório.");
+                throw new OpenDFeException("Número de série obrigatório.");
 #else
                     certificadosSelecionados = X509Certificate2UI.SelectFromCollection(certificates, "Certificados Digitais",
                         "Selecione o Certificado Digital para uso no aplicativo", X509SelectionFlag.SingleSelection);
 #endif
-                }
-                else
-                {
-                    certificadosSelecionados = certificates.Find(X509FindType.FindBySerialNumber, cerSerie, false);
-                    Guard.Against<OpenDFeException>(certificadosSelecionados.Count == 0, "Certificado digital não encontrado");
-                }
-
-                var certificado = certificadosSelecionados.Count < 1 ? null : certificadosSelecionados[0];
-                return certificado;
             }
-            finally
+            else
             {
-                store.Close();
+                certificadosSelecionados = certificates.Find(X509FindType.FindBySerialNumber, cerSerie, false);
+                Guard.Against<OpenDFeException>(certificadosSelecionados.Count == 0, "Certificado digital não encontrado");
             }
-        }
 
-        /// <summary>
-        /// Seleciona um certificado informando o caminho e a senha.
-        /// </summary>
-        /// <param name="caminho">O caminho.</param>
-        /// <param name="senha">A senha.</param>
-        /// <returns>X509Certificate2.</returns>
-        /// <exception cref="System.Exception">Arquivo do Certificado digital não encontrado</exception>
-        public static X509Certificate2 SelecionarCertificado(string caminho, string senha)
+            var certificado = certificadosSelecionados.Count < 1 ? null : certificadosSelecionados[0];
+            return certificado;
+        }
+        finally
         {
-            Guard.Against<ArgumentNullException>(caminho.IsEmpty(), "Caminho do arquivo não poder ser nulo ou vazio !");
-            Guard.Against<ArgumentException>(!File.Exists(caminho), "Arquivo do Certificado digital não encontrado !");
-
-            var cert = new X509Certificate2(caminho, senha);
-            return cert;
+            store.Close();
         }
+    }
 
-        /// <summary>
-        /// Seleciona um certificado passando um array de bytes.
-        /// </summary>
-        /// <param name="certificado">O certificado.</param>
-        /// <param name="senha">A senha.</param>
-        /// <returns>X509Certificate2.</returns>
-        /// <exception cref="System.Exception">Arquivo do Certificado digital não encontrado</exception>
-        public static X509Certificate2 SelecionarCertificado(byte[] certificado, string senha = "")
-        {
-            Guard.Against<ArgumentNullException>(certificado == null, "O certificado não poder ser nulo !");
-            Guard.Against<ArgumentException>(certificado.Length == 0, "O tamanhado do certificado não pode ser zero !");
+    /// <summary>
+    /// Seleciona um certificado informando o caminho e a senha.
+    /// </summary>
+    /// <param name="caminho">O caminho.</param>
+    /// <param name="senha">A senha.</param>
+    /// <returns>X509Certificate2.</returns>
+    /// <exception cref="System.Exception">Arquivo do Certificado digital não encontrado</exception>
+    public static X509Certificate2 SelecionarCertificado(string caminho, string senha)
+    {
+        Guard.Against<ArgumentNullException>(caminho.IsEmpty(), "Caminho do arquivo não poder ser nulo ou vazio !");
+        Guard.Against<ArgumentException>(!File.Exists(caminho), "Arquivo do Certificado digital não encontrado !");
 
-            var cert = new X509Certificate2(certificado, senha);
-            return cert;
-        }
+        var cert = new X509Certificate2(caminho, senha);
+        return cert;
+    }
+
+    /// <summary>
+    /// Seleciona um certificado passando um array de bytes.
+    /// </summary>
+    /// <param name="certificado">O certificado.</param>
+    /// <param name="senha">A senha.</param>
+    /// <returns>X509Certificate2.</returns>
+    /// <exception cref="System.Exception">Arquivo do Certificado digital não encontrado</exception>
+    public static X509Certificate2 SelecionarCertificado(byte[] certificado, string senha = "")
+    {
+        Guard.Against<ArgumentNullException>(certificado == null, "O certificado não poder ser nulo !");
+        Guard.Against<ArgumentException>(certificado.Length == 0, "O tamanhado do certificado não pode ser zero !");
+
+        var cert = new X509Certificate2(certificado, senha);
+        return cert;
+    }
 
 #if NETFULL
 
@@ -144,6 +144,5 @@ namespace OpenAC.Net.DFe.Core
 
 #endif
 
-        #endregion Methods
-    }
+    #endregion Methods
 }

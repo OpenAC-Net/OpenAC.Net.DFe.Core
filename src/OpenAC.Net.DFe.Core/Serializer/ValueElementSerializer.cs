@@ -38,81 +38,80 @@ using OpenAC.Net.Core.Extensions;
 using OpenAC.Net.DFe.Core.Attributes;
 using OpenAC.Net.DFe.Core.Extensions;
 
-namespace OpenAC.Net.DFe.Core.Serializer
+namespace OpenAC.Net.DFe.Core.Serializer;
+
+internal static class ValueElementSerializer
 {
-    internal static class ValueElementSerializer
+    #region Serialize
+
+    public static XObject[] Serialize(PropertyInfo prop, object parentObject, SerializerOptions options)
     {
-        #region Serialize
+        var properties = prop.PropertyType.GetProperties()
+            .Where(x => !x.ShouldIgnoreProperty() && x.ShouldSerializeProperty(parentObject))
+            .OrderBy(x => x.GetAttribute<DFeBaseAttribute>()?.Ordem ?? 0).ToArray();
 
-        public static XObject[] Serialize(PropertyInfo prop, object parentObject, SerializerOptions options)
-        {
-            var properties = prop.PropertyType.GetProperties()
-                .Where(x => !x.ShouldIgnoreProperty() && x.ShouldSerializeProperty(parentObject))
-                .OrderBy(x => x.GetAttribute<DFeBaseAttribute>()?.Ordem ?? 0).ToArray();
+        var valueProp = properties.Single(x => x.HasAttribute<DFeItemValueAttribute>());
 
-            var valueProp = properties.Single(x => x.HasAttribute<DFeItemValueAttribute>());
+        var valueType = ObjectType.From(valueProp.PropertyType);
+        Guard.Against<OpenDFeException>(valueType != ObjectType.PrimitiveType,
+            $"Item {prop.Name} é do tipo [ItemValue] e o [DFeItemValueAttribute] não é do tipo primitivo");
 
-            var valueType = ObjectType.From(valueProp.PropertyType);
-            Guard.Against<OpenDFeException>(valueType != ObjectType.PrimitiveType,
-                $"Item {prop.Name} é do tipo [ItemValue] e o [DFeItemValueAttribute] não é do tipo primitivo");
+        var value = prop.GetValue(parentObject, null);
+        var attribute = prop.GetAttribute<DFeElementAttribute>();
+        var attProps = properties.Where(x => x.HasAttribute<DFeAttributeAttribute>()).ToArray();
 
-            var value = prop.GetValue(parentObject, null);
-            var attribute = prop.GetAttribute<DFeElementAttribute>();
-            var attProps = properties.Where(x => x.HasAttribute<DFeAttributeAttribute>()).ToArray();
-
-            return new[] { Serialize(attribute.Name, attribute.Namespace, value, options, valueProp, attProps) };
-        }
-
-        public static XElement Serialize(string name, string nameSpace, object parentObject, SerializerOptions options, PropertyInfo valueProp, PropertyInfo[] attProps)
-        {
-            XNamespace aw = nameSpace;
-            var element = nameSpace.IsEmpty() ? new XElement(name) : new XElement(aw + name);
-
-            var valueAtt = valueProp.GetAttribute<DFeItemValueAttribute>();
-
-            var childValue = valueProp.GetValueOrIndex(parentObject);
-            var estaVazio = childValue == null || childValue.ToString().IsEmpty();
-            element.Value = PrimitiveSerializer.ProcessValue(ref estaVazio, valueAtt.Tipo, childValue,
-                valueAtt.Ocorrencia, valueAtt.Min, valueProp, parentObject);
-
-            foreach (var property in attProps)
-            {
-                var attTag = property.GetAttribute<DFeAttributeAttribute>();
-                var att = (XAttribute)PrimitiveSerializer.Serialize(attTag, parentObject, property, options);
-                element.AddAttribute(att);
-            }
-
-            return element;
-        }
-
-        #endregion Serialize
-
-        #region Deserialize
-
-        public static object Deserialize(Type type, XElement element, SerializerOptions options)
-        {
-            var attProps = type.GetProperties().Where(x => x.HasAttribute<DFeAttributeAttribute>()).ToArray();
-            var valueProp = type.GetProperties().SingleOrDefault(x => x.HasAttribute<DFeItemValueAttribute>());
-
-            var item = type.HasCreate() ? type.GetCreate().Invoke() : Activator.CreateInstance(type);
-            if (element == null) return item;
-
-            var valueAtt = valueProp.GetAttribute<DFeItemValueAttribute>();
-
-            var value = PrimitiveSerializer.GetValue(valueAtt.Tipo, element.Value, item, valueProp);
-            valueProp.SetValue(item, value);
-
-            foreach (var property in attProps)
-            {
-                var attTag = property.GetAttribute<DFeAttributeAttribute>();
-                var attElement = element.Attribute(attTag.Name);
-                value = PrimitiveSerializer.Deserialize(attTag, attElement, item, property);
-                property.SetValue(item, value);
-            }
-
-            return item;
-        }
-
-        #endregion Deserialize
+        return new[] { Serialize(attribute.Name, attribute.Namespace, value, options, valueProp, attProps) };
     }
+
+    public static XElement Serialize(string name, string nameSpace, object parentObject, SerializerOptions options, PropertyInfo valueProp, PropertyInfo[] attProps)
+    {
+        XNamespace aw = nameSpace;
+        var element = nameSpace.IsEmpty() ? new XElement(name) : new XElement(aw + name);
+
+        var valueAtt = valueProp.GetAttribute<DFeItemValueAttribute>();
+
+        var childValue = valueProp.GetValueOrIndex(parentObject);
+        var estaVazio = childValue == null || childValue.ToString().IsEmpty();
+        element.Value = PrimitiveSerializer.ProcessValue(ref estaVazio, valueAtt.Tipo, childValue,
+            valueAtt.Ocorrencia, valueAtt.Min, valueProp, parentObject);
+
+        foreach (var property in attProps)
+        {
+            var attTag = property.GetAttribute<DFeAttributeAttribute>();
+            var att = (XAttribute)PrimitiveSerializer.Serialize(attTag, parentObject, property, options);
+            element.AddAttribute(att);
+        }
+
+        return element;
+    }
+
+    #endregion Serialize
+
+    #region Deserialize
+
+    public static object Deserialize(Type type, XElement element, SerializerOptions options)
+    {
+        var attProps = type.GetProperties().Where(x => x.HasAttribute<DFeAttributeAttribute>()).ToArray();
+        var valueProp = type.GetProperties().SingleOrDefault(x => x.HasAttribute<DFeItemValueAttribute>());
+
+        var item = type.HasCreate() ? type.GetCreate().Invoke() : Activator.CreateInstance(type);
+        if (element == null) return item;
+
+        var valueAtt = valueProp.GetAttribute<DFeItemValueAttribute>();
+
+        var value = PrimitiveSerializer.GetValue(valueAtt.Tipo, element.Value, item, valueProp);
+        valueProp.SetValue(item, value);
+
+        foreach (var property in attProps)
+        {
+            var attTag = property.GetAttribute<DFeAttributeAttribute>();
+            var attElement = element.Attribute(attTag.Name);
+            value = PrimitiveSerializer.Deserialize(attTag, attElement, item, property);
+            property.SetValue(item, value);
+        }
+
+        return item;
+    }
+
+    #endregion Deserialize
 }

@@ -32,15 +32,14 @@
 using OpenAC.Net.DFe.Core.Attributes;
 using OpenAC.Net.DFe.Core.Serializer;
 
-namespace OpenAC.Net.DFe.Core.Document
+namespace OpenAC.Net.DFe.Core.Document;
+
+public sealed class X509Data
 {
-    public sealed class X509Data
-    {
-        /// <summary>
-        /// XS21 - Certificado Digital X509 em Base64
-        /// </summary>
-        /// <value>The X509 certificate.</value>
-        [DFeElement(TipoCampo.Str, "X509Certificate", Id = "XS21", Min = 0, Max = 999, Ocorrencia = Ocorrencia.Obrigatoria)]
-        public string X509Certificate { get; set; }
-    }
+    /// <summary>
+    /// XS21 - Certificado Digital X509 em Base64
+    /// </summary>
+    /// <value>The X509 certificate.</value>
+    [DFeElement(TipoCampo.Str, "X509Certificate", Id = "XS21", Min = 0, Max = 999, Ocorrencia = Ocorrencia.Obrigatoria)]
+    public string X509Certificate { get; set; }
 }

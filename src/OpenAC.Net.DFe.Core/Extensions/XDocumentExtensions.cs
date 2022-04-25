@@ -37,55 +37,54 @@ using OpenAC.Net.Core.Extensions;
 using OpenAC.Net.DFe.Core.Attributes;
 using OpenAC.Net.DFe.Core.Service;
 
-namespace OpenAC.Net.DFe.Core.Extensions
+namespace OpenAC.Net.DFe.Core.Extensions;
+
+internal static class XDocumentExtensions
 {
-    internal static class XDocumentExtensions
+    public static Type GetElementType(this XElement element, Type parentType, int genericArgumentIndex)
     {
-        public static Type GetElementType(this XElement element, Type parentType, int genericArgumentIndex)
+        Type type = null;
+        var typeELement = element.Attribute("Type");
+        if (typeELement != null)
+            type = Type.GetType(typeELement.Value);
+
+        if (type != null) return type;
+
+        var arguments = parentType.GetGenericArguments();
+        if (arguments.Length > genericArgumentIndex)
+            type = arguments[genericArgumentIndex];
+
+        return type;
+    }
+
+    public static XElement[] GetElements(this XElement element, PropertyInfo prop)
+    {
+        var listElement = new List<XElement>();
+
+        var tag = prop.GetAttribute<DFeBaseAttribute>();
+
+        var itemElement = element.ElementsAnyNs(tag.Name);
+        if (!itemElement.IsNullOrEmpty())
+            listElement.AddRange(itemElement);
+
+        foreach (var att in prop.GetAttributes<DFeItemAttribute>())
         {
-            Type type = null;
-            var typeELement = element.Attribute("Type");
-            if (typeELement != null)
-                type = Type.GetType(typeELement.Value);
-
-            if (type != null) return type;
-
-            var arguments = parentType.GetGenericArguments();
-            if (arguments.Length > genericArgumentIndex)
-                type = arguments[genericArgumentIndex];
-
-            return type;
-        }
-
-        public static XElement[] GetElements(this XElement element, PropertyInfo prop)
-        {
-            var listElement = new List<XElement>();
-
-            var tag = prop.GetAttribute<DFeBaseAttribute>();
-
-            var itemElement = element.ElementsAnyNs(tag.Name);
+            itemElement = element.ElementsAnyNs(att.Name);
             if (!itemElement.IsNullOrEmpty())
                 listElement.AddRange(itemElement);
-
-            foreach (var att in prop.GetAttributes<DFeItemAttribute>())
-            {
-                itemElement = element.ElementsAnyNs(att.Name);
-                if (!itemElement.IsNullOrEmpty())
-                    listElement.AddRange(itemElement);
-            }
-
-            return listElement.ToArray();
         }
 
-        public static void AddChilds(this XElement element, params XObject[] childs)
+        return listElement.ToArray();
+    }
+
+    public static void AddChilds(this XElement element, params XObject[] childs)
+    {
+        foreach (var child in childs)
         {
-            foreach (var child in childs)
-            {
-                if (child is XElement childElement)
-                    element.AddChild(childElement);
-                else
-                    element.AddAttribute((XAttribute)child);
-            }
+            if (child is XElement childElement)
+                element.AddChild(childElement);
+            else
+                element.AddAttribute((XAttribute)child);
         }
     }
 }

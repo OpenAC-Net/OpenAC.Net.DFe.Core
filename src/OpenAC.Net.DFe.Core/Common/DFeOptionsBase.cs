@@ -33,39 +33,38 @@ using System;
 using OpenAC.Net.Core.Logging;
 using System.Drawing;
 
-namespace OpenAC.Net.DFe.Core.Common
+namespace OpenAC.Net.DFe.Core.Common;
+
+public abstract class DFeOptionsBase<TFiltro> : DFeOptionsBase where TFiltro : Enum
 {
-    public abstract class DFeOptionsBase<TFiltro> : DFeOptionsBase where TFiltro : Enum
-    {
-        #region Properties
+    #region Properties
 
-        public TFiltro Filtro { get; set; }
+    public TFiltro Filtro { get; set; }
 
-        #endregion Properties
-    }
+    #endregion Properties
+}
 
-    public abstract class DFeOptionsBase
-    {
-        #region Properties
+public abstract class DFeOptionsBase
+{
+    #region Properties
 
-        public Image Logo { get; set; }
+    public Image Logo { get; set; }
 
-        public bool MostrarPreview { get; set; }
+    public bool MostrarPreview { get; set; }
 
-        public bool MostrarSetup { get; set; }
+    public bool MostrarSetup { get; set; }
 
-        public bool UsarPathPDF { get; set; }
+    public bool UsarPathPDF { get; set; }
 
-        public string Impressora { get; set; }
+    public string Impressora { get; set; }
 
-        public int NumeroCopias { get; set; }
+    public int NumeroCopias { get; set; }
 
-        public string NomeArquivo { get; set; }
+    public string NomeArquivo { get; set; }
 
-        public string SoftwareHouse { get; set; }
+    public string SoftwareHouse { get; set; }
 
-        public string Site { get; set; }
+    public string Site { get; set; }
 
-        #endregion Properties
-    }
+    #endregion Properties
 }

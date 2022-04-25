@@ -32,54 +32,53 @@
 using System;
 using OpenAC.Net.DFe.Core.Serializer;
 
-namespace OpenAC.Net.DFe.Core.Attributes
+namespace OpenAC.Net.DFe.Core.Attributes;
+
+[AttributeUsage(AttributeTargets.Property)]
+public sealed class DFeCollectionAttribute : DFeBaseAttribute
 {
-    [AttributeUsage(AttributeTargets.Property)]
-    public sealed class DFeCollectionAttribute : DFeBaseAttribute
+    #region Constructors
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DFeCollectionAttribute" /> class.
+    /// </summary>
+    public DFeCollectionAttribute()
     {
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DFeCollectionAttribute" /> class.
-        /// </summary>
-        public DFeCollectionAttribute()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DFeCollectionAttribute" /> class.
-        /// </summary>
-        /// <param name="tag">The Name.</param>
-        public DFeCollectionAttribute(string tag)
-        {
-            Name = tag;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DFeCollectionAttribute" /> class.
-        /// </summary>
-        /// <param name="tipo">The tipo.</param>
-        /// <param name="name">The name.</param>
-        public DFeCollectionAttribute(TipoCampo tipo, string name)
-        {
-            Tipo = tipo;
-            Name = name;
-        }
-
-        #endregion Constructors
-
-        #region Properties
-
-        /// <summary>
-        ///
-        /// </summary>
-        public int MinSize { get; set; }
-
-        /// <summary>
-        ///
-        /// </summary>
-        public int MaxSize { get; set; }
-
-        #endregion Properties
     }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DFeCollectionAttribute" /> class.
+    /// </summary>
+    /// <param name="tag">The Name.</param>
+    public DFeCollectionAttribute(string tag)
+    {
+        Name = tag;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DFeCollectionAttribute" /> class.
+    /// </summary>
+    /// <param name="tipo">The tipo.</param>
+    /// <param name="name">The name.</param>
+    public DFeCollectionAttribute(TipoCampo tipo, string name)
+    {
+        Tipo = tipo;
+        Name = name;
+    }
+
+    #endregion Constructors
+
+    #region Properties
+
+    /// <summary>
+    ///
+    /// </summary>
+    public int MinSize { get; set; }
+
+    /// <summary>
+    ///
+    /// </summary>
+    public int MaxSize { get; set; }
+
+    #endregion Properties
 }

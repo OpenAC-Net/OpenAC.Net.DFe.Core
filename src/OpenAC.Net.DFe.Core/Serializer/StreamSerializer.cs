@@ -36,25 +36,24 @@ using System.Xml.Linq;
 using OpenAC.Net.Core.Extensions;
 using OpenAC.Net.DFe.Core.Extensions;
 
-namespace OpenAC.Net.DFe.Core.Serializer
+namespace OpenAC.Net.DFe.Core.Serializer;
+
+internal static class StreamSerializer
 {
-    internal static class StreamSerializer
+    public static XObject Serialize(DFeBaseAttribute tag, object item, PropertyInfo prop, SerializerOptions options)
     {
-        public static XObject Serialize(DFeBaseAttribute tag, object item, PropertyInfo prop, SerializerOptions options)
-        {
-            var value = prop.GetValueOrIndex(item) as Stream;
-            var estaVazio = value.IsNullOrEmpty();
-            var dados = estaVazio ? "" : value.ToBase64();
+        var value = prop.GetValueOrIndex(item) as Stream;
+        var estaVazio = value.IsNullOrEmpty();
+        var dados = estaVazio ? "" : value.ToBase64();
 
-            return PrimitiveSerializer.ProcessContent(tag, dados, estaVazio, options);
-        }
+        return PrimitiveSerializer.ProcessContent(tag, dados, estaVazio, options);
+    }
 
-        public static object Deserialize(XElement parentElement)
-        {
-            if (parentElement == null) return null;
+    public static object Deserialize(XElement parentElement)
+    {
+        if (parentElement == null) return null;
 
-            var dados = parentElement.GetValue<string>();
-            return new MemoryStream(Convert.FromBase64String(dados));
-        }
+        var dados = parentElement.GetValue<string>();
+        return new MemoryStream(Convert.FromBase64String(dados));
     }
 }

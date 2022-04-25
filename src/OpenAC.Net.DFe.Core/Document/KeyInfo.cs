@@ -31,31 +31,30 @@
 
 using OpenAC.Net.DFe.Core.Attributes;
 
-namespace OpenAC.Net.DFe.Core.Document
+namespace OpenAC.Net.DFe.Core.Document;
+
+public sealed class KeyInfo
 {
-    public sealed class KeyInfo
+    #region Constructors
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KeyInfo"/> class.
+    /// </summary>
+    public KeyInfo()
     {
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="KeyInfo"/> class.
-        /// </summary>
-        public KeyInfo()
-        {
-            X509Data = new X509Data();
-        }
-
-        #endregion Constructors
-
-        #region Propriedades
-
-        /// <summary>
-        /// XS20 - Grupo X509
-        /// </summary>
-        /// <value>The X509 data.</value>
-        [DFeElement("X509Data", Id = "XS20")]
-        public X509Data X509Data { get; set; }
-
-        #endregion Propriedades
+        X509Data = new X509Data();
     }
+
+    #endregion Constructors
+
+    #region Propriedades
+
+    /// <summary>
+    /// XS20 - Grupo X509
+    /// </summary>
+    /// <value>The X509 data.</value>
+    [DFeElement("X509Data", Id = "XS20")]
+    public X509Data X509Data { get; set; }
+
+    #endregion Propriedades
 }

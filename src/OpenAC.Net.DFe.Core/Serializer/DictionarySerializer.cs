@@ -40,135 +40,134 @@ using OpenAC.Net.Core.Extensions;
 using OpenAC.Net.Core.Logging;
 using OpenAC.Net.DFe.Core.Attributes;
 
-namespace OpenAC.Net.DFe.Core.Serializer
+namespace OpenAC.Net.DFe.Core.Serializer;
+
+internal static class DictionarySerializer
 {
-    internal static class DictionarySerializer
+    #region Fields
+
+    /// <summary>
+    /// The logger
+    /// </summary>
+    internal static IOpenLogger Logger = LoggerProvider.LoggerFor<DFeSerializer>();
+
+    #endregion Fields
+
+    #region Serialize
+
+    public static XObject[] Serialize(PropertyInfo prop, object parentObject, SerializerOptions options)
     {
-        #region Fields
+        Guard.Against<OpenDFeException>(!prop.HasAttribute<DFeDictionaryAttribute>(), $"Atributo necessário não encontrado [{nameof(DFeDictionaryAttribute)}]");
+        Guard.Against<OpenDFeException>(!prop.HasAttribute<DFeDictionaryKeyAttribute>(), $"Atributo necessário não encontrado [{nameof(DFeDictionaryKeyAttribute)}]");
+        Guard.Against<OpenDFeException>(!prop.HasAttribute<DFeDictionaryValueAttribute>(), $"Atributo necessário não encontrado [{nameof(DFeDictionaryValueAttribute)}]");
 
-        /// <summary>
-        /// The logger
-        /// </summary>
-        internal static IOpenLogger Logger = LoggerProvider.LoggerFor<DFeSerializer>();
+        var tag = prop.GetAttribute<DFeDictionaryAttribute>();
+        var keyAtt = prop.GetAttribute<DFeDictionaryKeyAttribute>();
+        var valueAtt = prop.GetAttribute<DFeDictionaryValueAttribute>();
 
-        #endregion Fields
+        Guard.Against<ArgumentNullException>(!keyAtt.AsAttribute && tag.ItemName.IsEmpty(), "Se a Key não é um atributo é necessario informar o [ItemName]");
 
-        #region Serialize
-
-        public static XObject[] Serialize(PropertyInfo prop, object parentObject, SerializerOptions options)
+        var dictionary = (IDictionary)prop.GetValue(parentObject, null);
+        if (dictionary.Count < tag.MinSize || dictionary.Count > tag.MaxSize && tag.MaxSize > 0)
         {
-            Guard.Against<OpenDFeException>(!prop.HasAttribute<DFeDictionaryAttribute>(), $"Atributo necessário não encontrado [{nameof(DFeDictionaryAttribute)}]");
-            Guard.Against<OpenDFeException>(!prop.HasAttribute<DFeDictionaryKeyAttribute>(), $"Atributo necessário não encontrado [{nameof(DFeDictionaryKeyAttribute)}]");
-            Guard.Against<OpenDFeException>(!prop.HasAttribute<DFeDictionaryValueAttribute>(), $"Atributo necessário não encontrado [{nameof(DFeDictionaryValueAttribute)}]");
-
-            var tag = prop.GetAttribute<DFeDictionaryAttribute>();
-            var keyAtt = prop.GetAttribute<DFeDictionaryKeyAttribute>();
-            var valueAtt = prop.GetAttribute<DFeDictionaryValueAttribute>();
-
-            Guard.Against<ArgumentNullException>(!keyAtt.AsAttribute && tag.ItemName.IsEmpty(), "Se a Key não é um atributo é necessario informar o [ItemName]");
-
-            var dictionary = (IDictionary)prop.GetValue(parentObject, null);
-            if (dictionary.Count < tag.MinSize || dictionary.Count > tag.MaxSize && tag.MaxSize > 0)
-            {
-                var msg = dictionary.Count > tag.MaxSize ? DFeSerializer.ErrMsgMaiorMaximo : DFeSerializer.ErrMsgMenorMinimo;
-                options.AddAlerta(tag.Id, tag.Name, tag.Descricao, msg);
-            }
-
-            if (dictionary.Count == 0 && tag.MinSize == 0 && tag.Ocorrencia == Ocorrencia.NaoObrigatoria) return null;
-
-            var args = dictionary.GetType().GetGenericArguments();
-            Guard.Against<ArgumentException>(args.Length != 2);
-
-            var keyType = ObjectType.From(args[0]);
-            var valueType = ObjectType.From(args[1]);
-
-            Guard.Against<OpenDFeException>(keyType != ObjectType.PrimitiveType && keyAtt.AsAttribute);
-
-            var list = new List<XElement>();
-
-            var dicENumerator = dictionary.GetEnumerator();
-
-            while (dicENumerator.MoveNext())
-            {
-                var key = dicENumerator.Entry.Key;
-                var value = dicENumerator.Entry.Value;
-
-                var keyElement = keyType == ObjectType.PrimitiveType
-                    ? PrimitiveSerializer.Serialize(keyAtt, key, options)
-                    : ObjectSerializer.Serialize(key, key.GetType(), keyAtt.Name, keyAtt.Namespace, options);
-
-                var valueElement = valueType == ObjectType.PrimitiveType
-                    ? (XElement)PrimitiveSerializer.Serialize(valueAtt, value, options)
-                    : ObjectSerializer.Serialize(value, value.GetType(), valueAtt.Name, valueAtt.Namespace, options);
-
-                if (keyAtt.AsAttribute)
-                {
-                    valueElement.AddAttribute((XAttribute)keyElement);
-                    list.Add(valueElement);
-                }
-                else
-                {
-                    var itemElement = new XElement(tag.ItemName);
-                    itemElement.AddChild((XElement)keyElement);
-                    itemElement.AddChild(valueElement);
-
-                    list.Add(itemElement);
-                }
-            }
-
-            var element = new XElement(tag.Name, tag.Namespace);
-            element.AddChild(list.ToArray());
-
-            return new XObject[] { element };
+            var msg = dictionary.Count > tag.MaxSize ? DFeSerializer.ErrMsgMaiorMaximo : DFeSerializer.ErrMsgMenorMinimo;
+            options.AddAlerta(tag.Id, tag.Name, tag.Descricao, msg);
         }
 
-        #endregion Serialize
+        if (dictionary.Count == 0 && tag.MinSize == 0 && tag.Ocorrencia == Ocorrencia.NaoObrigatoria) return null;
 
-        #region Deserialize
+        var args = dictionary.GetType().GetGenericArguments();
+        Guard.Against<ArgumentException>(args.Length != 2);
 
-        public static object Deserialize(PropertyInfo prop, XElement parent, object parentItem, SerializerOptions options)
+        var keyType = ObjectType.From(args[0]);
+        var valueType = ObjectType.From(args[1]);
+
+        Guard.Against<OpenDFeException>(keyType != ObjectType.PrimitiveType && keyAtt.AsAttribute);
+
+        var list = new List<XElement>();
+
+        var dicENumerator = dictionary.GetEnumerator();
+
+        while (dicENumerator.MoveNext())
         {
-            Guard.Against<OpenDFeException>(!prop.HasAttribute<DFeDictionaryAttribute>(), $"Atributo necessário não encontrado [{nameof(DFeDictionaryAttribute)}]");
-            Guard.Against<OpenDFeException>(!prop.HasAttribute<DFeDictionaryKeyAttribute>(), $"Atributo necessário não encontrado [{nameof(DFeDictionaryKeyAttribute)}]");
-            Guard.Against<OpenDFeException>(!prop.HasAttribute<DFeDictionaryValueAttribute>(), $"Atributo necessário não encontrado [{nameof(DFeDictionaryValueAttribute)}]");
+            var key = dicENumerator.Entry.Key;
+            var value = dicENumerator.Entry.Value;
 
-            var tag = prop.GetAttribute<DFeDictionaryAttribute>();
-            var keyAtt = prop.GetAttribute<DFeDictionaryKeyAttribute>();
-            var valueAtt = prop.GetAttribute<DFeDictionaryValueAttribute>();
+            var keyElement = keyType == ObjectType.PrimitiveType
+                ? PrimitiveSerializer.Serialize(keyAtt, key, options)
+                : ObjectSerializer.Serialize(key, key.GetType(), keyAtt.Name, keyAtt.Namespace, options);
 
-            var dictionary = (IDictionary)Activator.CreateInstance(prop.PropertyType);
-            var args = prop.PropertyType.GetGenericArguments();
+            var valueElement = valueType == ObjectType.PrimitiveType
+                ? (XElement)PrimitiveSerializer.Serialize(valueAtt, value, options)
+                : ObjectSerializer.Serialize(value, value.GetType(), valueAtt.Name, valueAtt.Namespace, options);
 
-            var keyType = ObjectType.From(args[0]);
-            var valueType = ObjectType.From(args[1]);
-
-            var elements = parent.ElementsAnyNs(keyAtt.AsAttribute ? valueAtt.Name : tag.ItemName);
-            foreach (var element in elements)
+            if (keyAtt.AsAttribute)
             {
-                object key;
-                object value;
-                if (keyAtt.AsAttribute)
-                {
-                    var keyElement = (XObject)element.Attributes(keyAtt.Name).FirstOrDefault();
-                    key = PrimitiveSerializer.Deserialize(keyAtt, keyElement, null, prop);
-                    value = valueType == ObjectType.PrimitiveType ? PrimitiveSerializer.Deserialize(valueAtt, element, parentItem, prop) :
-                                                                    ObjectSerializer.Deserialize(args[1], element, options);
-                }
-                else
-                {
-                    key = keyType == ObjectType.PrimitiveType ? PrimitiveSerializer.Deserialize(keyAtt, element.ElementAnyNs(keyAtt.Name), parentItem, prop) :
-                                                                ObjectSerializer.Deserialize(args[0], element.ElementAnyNs(keyAtt.Name), options);
-
-                    value = valueType == ObjectType.PrimitiveType ? PrimitiveSerializer.Deserialize(valueAtt, element.ElementAnyNs(valueAtt.Name), parentItem, prop) :
-                                                                    ObjectSerializer.Deserialize(args[1], element.ElementAnyNs(valueAtt.Name), options);
-                }
-
-                dictionary.Add(key, value);
+                valueElement.AddAttribute((XAttribute)keyElement);
+                list.Add(valueElement);
             }
+            else
+            {
+                var itemElement = new XElement(tag.ItemName);
+                itemElement.AddChild((XElement)keyElement);
+                itemElement.AddChild(valueElement);
 
-            return dictionary;
+                list.Add(itemElement);
+            }
         }
 
-        #endregion Deserialize
+        var element = new XElement(tag.Name, tag.Namespace);
+        element.AddChild(list.ToArray());
+
+        return new XObject[] { element };
     }
+
+    #endregion Serialize
+
+    #region Deserialize
+
+    public static object Deserialize(PropertyInfo prop, XElement parent, object parentItem, SerializerOptions options)
+    {
+        Guard.Against<OpenDFeException>(!prop.HasAttribute<DFeDictionaryAttribute>(), $"Atributo necessário não encontrado [{nameof(DFeDictionaryAttribute)}]");
+        Guard.Against<OpenDFeException>(!prop.HasAttribute<DFeDictionaryKeyAttribute>(), $"Atributo necessário não encontrado [{nameof(DFeDictionaryKeyAttribute)}]");
+        Guard.Against<OpenDFeException>(!prop.HasAttribute<DFeDictionaryValueAttribute>(), $"Atributo necessário não encontrado [{nameof(DFeDictionaryValueAttribute)}]");
+
+        var tag = prop.GetAttribute<DFeDictionaryAttribute>();
+        var keyAtt = prop.GetAttribute<DFeDictionaryKeyAttribute>();
+        var valueAtt = prop.GetAttribute<DFeDictionaryValueAttribute>();
+
+        var dictionary = (IDictionary)Activator.CreateInstance(prop.PropertyType);
+        var args = prop.PropertyType.GetGenericArguments();
+
+        var keyType = ObjectType.From(args[0]);
+        var valueType = ObjectType.From(args[1]);
+
+        var elements = parent.ElementsAnyNs(keyAtt.AsAttribute ? valueAtt.Name : tag.ItemName);
+        foreach (var element in elements)
+        {
+            object key;
+            object value;
+            if (keyAtt.AsAttribute)
+            {
+                var keyElement = (XObject)element.Attributes(keyAtt.Name).FirstOrDefault();
+                key = PrimitiveSerializer.Deserialize(keyAtt, keyElement, null, prop);
+                value = valueType == ObjectType.PrimitiveType ? PrimitiveSerializer.Deserialize(valueAtt, element, parentItem, prop) :
+                    ObjectSerializer.Deserialize(args[1], element, options);
+            }
+            else
+            {
+                key = keyType == ObjectType.PrimitiveType ? PrimitiveSerializer.Deserialize(keyAtt, element.ElementAnyNs(keyAtt.Name), parentItem, prop) :
+                    ObjectSerializer.Deserialize(args[0], element.ElementAnyNs(keyAtt.Name), options);
+
+                value = valueType == ObjectType.PrimitiveType ? PrimitiveSerializer.Deserialize(valueAtt, element.ElementAnyNs(valueAtt.Name), parentItem, prop) :
+                    ObjectSerializer.Deserialize(args[1], element.ElementAnyNs(valueAtt.Name), options);
+            }
+
+            dictionary.Add(key, value);
+        }
+
+        return dictionary;
+    }
+
+    #endregion Deserialize
 }

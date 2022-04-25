@@ -36,39 +36,38 @@ using OpenAC.Net.DFe.Core.Collection;
 using OpenAC.Net.DFe.Core.Common;
 using OpenAC.Net.DFe.Core.Serializer;
 
-namespace OpenAC.Net.DFe.Core.Service
+namespace OpenAC.Net.DFe.Core.Service;
+
+public class DFeServiceInfo<TTIpo> where TTIpo : Enum
 {
-    public class DFeServiceInfo<TTIpo> where TTIpo : Enum
+    #region Constructors
+
+    public DFeServiceInfo()
     {
-        #region Constructors
-
-        public DFeServiceInfo()
-        {
-            Ambientes = new DFeCollection<DFeServiceEnvironment<TTIpo>>();
-        }
-
-        #endregion Constructors
-
-        #region Properties
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="ambiente"></param>
-        /// <param name="uf"></param>
-        [DFeIgnore]
-        public DFeServiceEnvironment<TTIpo> this[DFeTipoAmbiente ambiente, DFeSiglaUF uf] =>
-            Ambientes?.SingleOrDefault(x => x.Ambiente == ambiente && x.UF == uf);
-
-        [DFeAttribute(TipoCampo.Enum, "Tipo")]
-        public DFeTipoServico Tipo { get; set; }
-
-        [DFeAttribute(TipoCampo.Enum, "TipoEmissao")]
-        public DFeTipoEmissao TipoEmissao { get; set; }
-
-        [DFeCollection("Enderecos")]
-        public DFeCollection<DFeServiceEnvironment<TTIpo>> Ambientes { get; set; }
-
-        #endregion Properties
+        Ambientes = new DFeCollection<DFeServiceEnvironment<TTIpo>>();
     }
+
+    #endregion Constructors
+
+    #region Properties
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="ambiente"></param>
+    /// <param name="uf"></param>
+    [DFeIgnore]
+    public DFeServiceEnvironment<TTIpo> this[DFeTipoAmbiente ambiente, DFeSiglaUF uf] =>
+        Ambientes?.SingleOrDefault(x => x.Ambiente == ambiente && x.UF == uf);
+
+    [DFeAttribute(TipoCampo.Enum, "Tipo")]
+    public DFeTipoServico Tipo { get; set; }
+
+    [DFeAttribute(TipoCampo.Enum, "TipoEmissao")]
+    public DFeTipoEmissao TipoEmissao { get; set; }
+
+    [DFeCollection("Enderecos")]
+    public DFeCollection<DFeServiceEnvironment<TTIpo>> Ambientes { get; set; }
+
+    #endregion Properties
 }

@@ -31,23 +31,22 @@
 
 using System.ComponentModel;
 
-namespace OpenAC.Net.DFe.Core.Common
+namespace OpenAC.Net.DFe.Core.Common;
+
+public enum TagOrdenacaoPath
 {
-    public enum TagOrdenacaoPath
-    {
-        [Description("(nenhum)")]
-        Nenhum,
+    [Description("(nenhum)")]
+    Nenhum,
 
-        [Description("CNPJ")]
-        CNPJ,
+    [Description("CNPJ")]
+    CNPJ,
 
-        [Description("Modelo")]
-        Modelo,
+    [Description("Modelo")]
+    Modelo,
 
-        [Description("Data")]
-        Data,
+    [Description("Data")]
+    Data,
 
-        [Description("Literal")]
-        Literal
-    }
+    [Description("Literal")]
+    Literal
 }

@@ -30,14 +30,13 @@
 // ***********************************************************************
 using System;
 
-namespace OpenAC.Net.DFe.Core.Attributes
+namespace OpenAC.Net.DFe.Core.Attributes;
+
+/// <summary>
+/// Class DFeIgnoreAttribute.
+/// </summary>
+/// <seealso cref="System.Attribute" />
+[AttributeUsage(AttributeTargets.Property)]
+public class DFeIgnoreAttribute : Attribute
 {
-    /// <summary>
-    /// Class DFeIgnoreAttribute.
-    /// </summary>
-    /// <seealso cref="System.Attribute" />
-    [AttributeUsage(AttributeTargets.Property)]
-    public class DFeIgnoreAttribute : Attribute
-    {
-    }
 }

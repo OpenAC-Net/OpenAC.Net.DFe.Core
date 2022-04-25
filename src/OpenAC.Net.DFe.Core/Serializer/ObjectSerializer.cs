@@ -40,240 +40,239 @@ using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
 
-namespace OpenAC.Net.DFe.Core.Serializer
+namespace OpenAC.Net.DFe.Core.Serializer;
+
+internal class ObjectSerializer
 {
-    internal class ObjectSerializer
+    #region Fields
+
+    /// <summary>
+    /// The logger
+    /// </summary>
+    internal static IOpenLogger logger = LoggerProvider.LoggerFor<DFeSerializer>();
+
+    #endregion Fields
+
+    #region Serialize
+
+    public static XElement Serialize(object value, Type tipo, string name, string nameSpace, SerializerOptions options)
     {
-        #region Fields
-
-        /// <summary>
-        /// The logger
-        /// </summary>
-        internal static IOpenLogger logger = LoggerProvider.LoggerFor<DFeSerializer>();
-
-        #endregion Fields
-
-        #region Serialize
-
-        public static XElement Serialize(object value, Type tipo, string name, string nameSpace, SerializerOptions options)
+        try
         {
-            try
+            XNamespace aw = nameSpace ?? string.Empty;
+            var objectElement = nameSpace.IsEmpty() ? new XElement(name) : new XElement(aw + name);
+
+            var properties = tipo.GetProperties()
+                .Where(x => !x.ShouldIgnoreProperty() && x.ShouldSerializeProperty(value))
+                .OrderBy(x => x.GetAttribute<DFeBaseAttribute>()?.Ordem ?? 0).ToArray();
+
+            foreach (var prop in properties)
             {
-                XNamespace aw = nameSpace ?? string.Empty;
-                var objectElement = nameSpace.IsEmpty() ? new XElement(name) : new XElement(aw + name);
+                var elements = Serialize(prop, value, options);
+                if (elements == null) continue;
 
-                var properties = tipo.GetProperties()
-                    .Where(x => !x.ShouldIgnoreProperty() && x.ShouldSerializeProperty(value))
-                    .OrderBy(x => x.GetAttribute<DFeBaseAttribute>()?.Ordem ?? 0).ToArray();
-
-                foreach (var prop in properties)
-                {
-                    var elements = Serialize(prop, value, options);
-                    if (elements == null) continue;
-
-                    objectElement.AddChilds(elements.ToArray());
-                }
-
-                return objectElement;
+                objectElement.AddChilds(elements.ToArray());
             }
-            catch (Exception e)
-            {
-                var msg = $"Erro ao serializar o objeto:{Environment.NewLine}{value}";
-                logger.Error(msg, e);
-                throw new OpenDFeException(msg, e);
-            }
+
+            return objectElement;
         }
-
-        public static IEnumerable<XObject> Serialize(PropertyInfo prop, object parentObject, SerializerOptions options)
+        catch (Exception e)
         {
-            try
+            var msg = $"Erro ao serializar o objeto:{Environment.NewLine}{value}";
+            logger.Error(msg, e);
+            throw new OpenDFeException(msg, e);
+        }
+    }
+
+    public static IEnumerable<XObject> Serialize(PropertyInfo prop, object parentObject, SerializerOptions options)
+    {
+        try
+        {
+            var objectType = ObjectType.From(prop.PropertyType);
+
+            if (objectType == ObjectType.DictionaryType)
+                return DictionarySerializer.Serialize(prop, parentObject, options);
+
+            if (objectType.IsIn(ObjectType.ListType, ObjectType.ArrayType, ObjectType.EnumerableType))
+                return CollectionSerializer.Serialize(prop, parentObject, options);
+
+            var value = prop.GetValue(parentObject, null);
+
+            if (objectType.IsIn(ObjectType.InterfaceType, ObjectType.AbstractType))
+                return value == null ? null : InterfaceSerializer.Serialize(prop, parentObject, options);
+
+            if (objectType == ObjectType.ValueElementType)
+                return value == null ? null : ValueElementSerializer.Serialize(prop, parentObject, options);
+
+            if (objectType == ObjectType.ClassType)
             {
-                var objectType = ObjectType.From(prop.PropertyType);
+                var attribute = prop.GetAttribute<DFeElementAttribute>();
+                if (attribute.Ocorrencia == Ocorrencia.NaoObrigatoria && value == null) return null;
 
-                if (objectType == ObjectType.DictionaryType)
-                    return DictionarySerializer.Serialize(prop, parentObject, options);
+                return new XObject[] { Serialize(value, prop.PropertyType, attribute.Name, attribute.Namespace, options) };
+            }
 
-                if (objectType.IsIn(ObjectType.ListType, ObjectType.ArrayType, ObjectType.EnumerableType))
-                    return CollectionSerializer.Serialize(prop, parentObject, options);
-
-                var value = prop.GetValue(parentObject, null);
-
-                if (objectType.IsIn(ObjectType.InterfaceType, ObjectType.AbstractType))
-                    return value == null ? null : InterfaceSerializer.Serialize(prop, parentObject, options);
-
-                if (objectType == ObjectType.ValueElementType)
-                    return value == null ? null : ValueElementSerializer.Serialize(prop, parentObject, options);
-
-                if (objectType == ObjectType.ClassType)
+            if (objectType == ObjectType.RootType)
+            {
+                if (prop.HasAttribute<DFeElementAttribute>())
                 {
                     var attribute = prop.GetAttribute<DFeElementAttribute>();
                     if (attribute.Ocorrencia == Ocorrencia.NaoObrigatoria && value == null) return null;
-
                     return new XObject[] { Serialize(value, prop.PropertyType, attribute.Name, attribute.Namespace, options) };
                 }
 
-                if (objectType == ObjectType.RootType)
+                if (value == null) return null;
+                var rooTag = prop.PropertyType.GetAttribute<DFeRootAttribute>();
+                var rootName = rooTag.Name;
+
+                if (rootName.IsEmpty())
                 {
-                    if (prop.HasAttribute<DFeElementAttribute>())
-                    {
-                        var attribute = prop.GetAttribute<DFeElementAttribute>();
-                        if (attribute.Ocorrencia == Ocorrencia.NaoObrigatoria && value == null) return null;
-                        return new XObject[] { Serialize(value, prop.PropertyType, attribute.Name, attribute.Namespace, options) };
-                    }
-
-                    if (value == null) return null;
-                    var rooTag = prop.PropertyType.GetAttribute<DFeRootAttribute>();
-                    var rootName = rooTag.Name;
-
-                    if (rootName.IsEmpty())
-                    {
-                        var root = prop.PropertyType.GetRootName(value);
-                        rootName = root.IsEmpty() ? prop.PropertyType.Name : root;
-                    }
-
-                    var rootElement = Serialize(value, prop.PropertyType, rootName, rooTag.Namespace, options);
-                    return new XObject[] { rootElement };
+                    var root = prop.PropertyType.GetRootName(value);
+                    rootName = root.IsEmpty() ? prop.PropertyType.Name : root;
                 }
 
-                var tag = prop.GetElementAtt();
+                var rootElement = Serialize(value, prop.PropertyType, rootName, rooTag.Namespace, options);
+                return new XObject[] { rootElement };
+            }
 
-                return objectType == ObjectType.StreamType ? new[] { StreamSerializer.Serialize(tag, parentObject, prop, options) } :
-                                                             new[] { PrimitiveSerializer.Serialize(tag, parentObject, prop, options) };
-            }
-            catch (Exception e)
-            {
-                var msg = $"Erro ao serializar a propriedade:{Environment.NewLine}{prop.DeclaringType?.Name ?? prop.PropertyType.Name} - {prop.Name}";
-                logger.Error(msg, e);
-                throw new OpenDFeException(msg, e);
-            }
+            var tag = prop.GetElementAtt();
+
+            return objectType == ObjectType.StreamType ? new[] { StreamSerializer.Serialize(tag, parentObject, prop, options) } :
+                new[] { PrimitiveSerializer.Serialize(tag, parentObject, prop, options) };
         }
-
-        #endregion Serialize
-
-        #region Deserialize
-
-        public static object Deserialize(Type type, XElement element, SerializerOptions options)
+        catch (Exception e)
         {
-            try
-            {
-                var ret = type.HasCreate() ? type.GetCreate().Invoke() : Activator.CreateInstance(type);
-                if (element == null) return ret;
-
-                var properties = type.GetProperties();
-                foreach (var prop in properties)
-                {
-                    if (prop.ShouldIgnoreProperty()) continue;
-
-                    var value = Deserialize(prop, element, ret, options);
-                    prop.SetValue(ret, value, null);
-                }
-
-                return ret;
-            }
-            catch (Exception e)
-            {
-                var msg = $"Erro ao deserializar o objeto:{Environment.NewLine}{type.Name} - {element.Name}";
-                logger.Error(msg, e);
-                throw new OpenDFeException(msg, e);
-            }
+            var msg = $"Erro ao serializar a propriedade:{Environment.NewLine}{prop.DeclaringType?.Name ?? prop.PropertyType.Name} - {prop.Name}";
+            logger.Error(msg, e);
+            throw new OpenDFeException(msg, e);
         }
+    }
 
-        public static object Deserialize(PropertyInfo prop, XElement parentElement, object item, SerializerOptions options)
+    #endregion Serialize
+
+    #region Deserialize
+
+    public static object Deserialize(Type type, XElement element, SerializerOptions options)
+    {
+        try
         {
-            try
+            var ret = type.HasCreate() ? type.GetCreate().Invoke() : Activator.CreateInstance(type);
+            if (element == null) return ret;
+
+            var properties = type.GetProperties();
+            foreach (var prop in properties)
             {
-                var tag = prop.GetElementAtt();
+                if (prop.ShouldIgnoreProperty()) continue;
 
-                var objectType = ObjectType.From(prop.PropertyType);
-                if (objectType == ObjectType.DictionaryType)
-                {
-                    var dicTag = prop.GetAttribute<DFeDictionaryAttribute>();
-                    var dictionaryElement = parentElement.ElementAnyNs(dicTag.Name);
-                    return DictionarySerializer.Deserialize(prop, dictionaryElement, item, options);
-                }
+                var value = Deserialize(prop, element, ret, options);
+                prop.SetValue(ret, value, null);
+            }
 
-                if (objectType.IsIn(ObjectType.ArrayType, ObjectType.EnumerableType))
-                {
-                    var listElement = parentElement.GetElements(prop);
+            return ret;
+        }
+        catch (Exception e)
+        {
+            var msg = $"Erro ao deserializar o objeto:{Environment.NewLine}{type.Name} - {element.Name}";
+            logger.Error(msg, e);
+            throw new OpenDFeException(msg, e);
+        }
+    }
 
-                    var list = (List<object>)CollectionSerializer.Deserialize(typeof(List<object>), listElement, prop, item, options);
-                    var type = prop.PropertyType.IsArray ? prop.PropertyType.GetElementType() : prop.PropertyType.GetGenericArguments()[0];
-                    return objectType == ObjectType.ArrayType ? list.Cast(type).ToArray(type) : list.Cast(type);
-                }
+    public static object Deserialize(PropertyInfo prop, XElement parentElement, object item, SerializerOptions options)
+    {
+        try
+        {
+            var tag = prop.GetElementAtt();
 
-                if (objectType == ObjectType.ListType)
-                {
-                    var listElement = parentElement.GetElements(prop);
-                    return CollectionSerializer.Deserialize(prop.PropertyType, listElement.ToArray(), prop, item, options);
-                }
+            var objectType = ObjectType.From(prop.PropertyType);
+            if (objectType == ObjectType.DictionaryType)
+            {
+                var dicTag = prop.GetAttribute<DFeDictionaryAttribute>();
+                var dictionaryElement = parentElement.ElementAnyNs(dicTag.Name);
+                return DictionarySerializer.Deserialize(prop, dictionaryElement, item, options);
+            }
 
-                if (objectType.IsIn(ObjectType.InterfaceType, ObjectType.AbstractType))
-                {
-                    return InterfaceSerializer.Deserialize(prop, parentElement, item, options);
-                }
+            if (objectType.IsIn(ObjectType.ArrayType, ObjectType.EnumerableType))
+            {
+                var listElement = parentElement.GetElements(prop);
 
-                if (objectType == ObjectType.ValueElementType)
-                {
-                    var xElement = parentElement.ElementsAnyNs(tag.Name).FirstOrDefault();
-                    return ValueElementSerializer.Deserialize(prop.PropertyType, xElement, options);
-                }
+                var list = (List<object>)CollectionSerializer.Deserialize(typeof(List<object>), listElement, prop, item, options);
+                var type = prop.PropertyType.IsArray ? prop.PropertyType.GetElementType() : prop.PropertyType.GetGenericArguments()[0];
+                return objectType == ObjectType.ArrayType ? list.Cast(type).ToArray(type) : list.Cast(type);
+            }
 
-                if (objectType == ObjectType.RootType)
-                {
-                    if (tag != null)
-                    {
-                        var xElement = parentElement.ElementsAnyNs(tag.Name).FirstOrDefault();
-                        return Deserialize(prop.PropertyType, xElement, options);
-                    }
+            if (objectType == ObjectType.ListType)
+            {
+                var listElement = parentElement.GetElements(prop);
+                return CollectionSerializer.Deserialize(prop.PropertyType, listElement.ToArray(), prop, item, options);
+            }
 
-                    var rootTag = prop.PropertyType.GetAttribute<DFeRootAttribute>();
-                    var rootNames = new List<string>();
-                    if (!rootTag.Name.IsEmpty())
-                    {
-                        rootNames.Add(rootTag.Name);
-                        rootNames.Add(prop.PropertyType.Name);
-                    }
-                    else
-                    {
-                        rootNames.AddRange(prop.PropertyType.GetRootNames());
-                        rootNames.Add(prop.PropertyType.Name);
-                    }
+            if (objectType.IsIn(ObjectType.InterfaceType, ObjectType.AbstractType))
+            {
+                return InterfaceSerializer.Deserialize(prop, parentElement, item, options);
+            }
 
-                    var xmlNode = (from node in parentElement.Elements()
-                                   where node.Name.LocalName.IsIn(rootNames)
-                                   select node).FirstOrDefault();
+            if (objectType == ObjectType.ValueElementType)
+            {
+                var xElement = parentElement.ElementsAnyNs(tag.Name).FirstOrDefault();
+                return ValueElementSerializer.Deserialize(prop.PropertyType, xElement, options);
+            }
 
-                    return Deserialize(prop.PropertyType, xmlNode, options);
-                }
-
-                if (objectType == ObjectType.ClassType)
+            if (objectType == ObjectType.RootType)
+            {
+                if (tag != null)
                 {
                     var xElement = parentElement.ElementsAnyNs(tag.Name).FirstOrDefault();
                     return Deserialize(prop.PropertyType, xElement, options);
                 }
 
-                if (objectType == ObjectType.StreamType)
+                var rootTag = prop.PropertyType.GetAttribute<DFeRootAttribute>();
+                var rootNames = new List<string>();
+                if (!rootTag.Name.IsEmpty())
                 {
-                    var xElement = parentElement.ElementsAnyNs(tag.Name).FirstOrDefault();
-                    return StreamSerializer.Deserialize(xElement);
+                    rootNames.Add(rootTag.Name);
+                    rootNames.Add(prop.PropertyType.Name);
+                }
+                else
+                {
+                    rootNames.AddRange(prop.PropertyType.GetRootNames());
+                    rootNames.Add(prop.PropertyType.Name);
                 }
 
-                XObject element;
-                if (tag is DFeAttributeAttribute)
-                    element = parentElement.Attributes(tag.Name).FirstOrDefault();
-                else
-                    element = parentElement.ElementsAnyNs(tag.Name).FirstOrDefault();
+                var xmlNode = (from node in parentElement.Elements()
+                    where node.Name.LocalName.IsIn(rootNames)
+                    select node).FirstOrDefault();
 
-                return PrimitiveSerializer.Deserialize(tag, element, item, prop);
+                return Deserialize(prop.PropertyType, xmlNode, options);
             }
-            catch (Exception e)
+
+            if (objectType == ObjectType.ClassType)
             {
-                var msg = $"Erro ao deserializar a propriedade:{Environment.NewLine}{prop.DeclaringType?.Name ?? prop.PropertyType.Name} - {prop.Name}";
-                logger.Error(msg, e);
-                throw new OpenDFeException(msg, e);
+                var xElement = parentElement.ElementsAnyNs(tag.Name).FirstOrDefault();
+                return Deserialize(prop.PropertyType, xElement, options);
             }
-        }
 
-        #endregion Deserialize
+            if (objectType == ObjectType.StreamType)
+            {
+                var xElement = parentElement.ElementsAnyNs(tag.Name).FirstOrDefault();
+                return StreamSerializer.Deserialize(xElement);
+            }
+
+            XObject element;
+            if (tag is DFeAttributeAttribute)
+                element = parentElement.Attributes(tag.Name).FirstOrDefault();
+            else
+                element = parentElement.ElementsAnyNs(tag.Name).FirstOrDefault();
+
+            return PrimitiveSerializer.Deserialize(tag, element, item, prop);
+        }
+        catch (Exception e)
+        {
+            var msg = $"Erro ao deserializar a propriedade:{Environment.NewLine}{prop.DeclaringType?.Name ?? prop.PropertyType.Name} - {prop.Name}";
+            logger.Error(msg, e);
+            throw new OpenDFeException(msg, e);
+        }
     }
+
+    #endregion Deserialize
 }

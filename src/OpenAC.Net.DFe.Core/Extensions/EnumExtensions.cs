@@ -34,42 +34,41 @@ using System.Linq;
 using OpenAC.Net.DFe.Core.Attributes;
 using OpenAC.Net.DFe.Core.Common;
 
-namespace OpenAC.Net.DFe.Core.Extensions
+namespace OpenAC.Net.DFe.Core.Extensions;
+
+public static class EnumExtensions
 {
-    public static class EnumExtensions
+    /// <summary>
+    /// Retorna o valor do Enum definido pelo DFeEnumAttribute.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="value">The value.</param>
+    /// <returns>System.String.</returns>
+    public static string GetDFeValue<T>(this T value) where T : Enum
     {
-        /// <summary>
-        /// Retorna o valor do Enum definido pelo DFeEnumAttribute.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="value">The value.</param>
-        /// <returns>System.String.</returns>
-        public static string GetDFeValue<T>(this T value) where T : Enum
-        {
-            var member = typeof(T).GetMember(value.ToString()).FirstOrDefault();
-            var enumAttribute = member?.GetCustomAttributes(false).OfType<DFeEnumAttribute>().FirstOrDefault();
-            var enumValue = enumAttribute?.Value;
-            return enumValue ?? value.ToString();
-        }
+        var member = typeof(T).GetMember(value.ToString()).FirstOrDefault();
+        var enumAttribute = member?.GetCustomAttributes(false).OfType<DFeEnumAttribute>().FirstOrDefault();
+        var enumValue = enumAttribute?.Value;
+        return enumValue ?? value.ToString();
+    }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="uf"></param>
-        /// <returns></returns>
-        public static DFeCodUF ToCodeUf(this DFeSiglaUF uf)
-        {
-            return (DFeCodUF)Enum.Parse(typeof(DFeCodUF), uf.ToString());
-        }
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="uf"></param>
+    /// <returns></returns>
+    public static DFeCodUF ToCodeUf(this DFeSiglaUF uf)
+    {
+        return (DFeCodUF)Enum.Parse(typeof(DFeCodUF), uf.ToString());
+    }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="uf"></param>
-        /// <returns></returns>
-        public static DFeSiglaUF ToSiglaUF(this DFeCodUF uf)
-        {
-            return (DFeSiglaUF)Enum.Parse(typeof(DFeSiglaUF), uf.ToString());
-        }
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="uf"></param>
+    /// <returns></returns>
+    public static DFeSiglaUF ToSiglaUF(this DFeCodUF uf)
+    {
+        return (DFeSiglaUF)Enum.Parse(typeof(DFeSiglaUF), uf.ToString());
     }
 }

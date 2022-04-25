@@ -31,9 +31,11 @@
 
 using System;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using OpenAC.Net.Core;
 using OpenAC.Net.Core.Extensions;
 using OpenAC.Net.DFe.Core.Common;
 using OpenAC.Net.DFe.Core.Extensions;
@@ -60,8 +62,15 @@ public abstract class DFeSoapServiceClient<TDFeConfig, TGeralConfig, TWebservice
 
     #region Constructors
 
-    protected DFeSoapServiceClient(string url) : base(url)
+    /// <summary>
+    /// Inicializa uma nova instancia da classe <see cref="DFeSoapServiceClient{T, T, T, T, T}"/>.
+    /// </summary>
+    /// <param name="config"></param>
+    /// <param name="url"></param>
+    /// <param name="version"></param>
+    protected DFeSoapServiceClient(TDFeConfig config, string url, SoapVersion version) : base(config, url)
     {
+        MessageVersion = version;
     }
 
     #endregion Constructors
@@ -75,21 +84,6 @@ public abstract class DFeSoapServiceClient<TDFeConfig, TGeralConfig, TWebservice
     #endregion Properties
 
     #region Methods
-
-    protected virtual string Execute(string soapAction, string message, string responseTag, params string[] soapNamespaces)
-    {
-        return Execute(soapAction, message, string.Empty, new[] { responseTag }, soapNamespaces);
-    }
-
-    protected virtual string Execute(string soapAction, string message, string[] responseTag, params string[] soapNamespaces)
-    {
-        return Execute(soapAction, message, string.Empty, responseTag, soapNamespaces);
-    }
-
-    protected virtual string Execute(string soapAction, string message, string soapHeader, string responseTag, params string[] soapNamespaces)
-    {
-        return Execute(soapAction, message, soapHeader, new[] { responseTag }, soapNamespaces);
-    }
 
     protected virtual string Execute(string soapAction, string message, string soapHeader, string[] responseTag, params string[] soapNamespaces)
     {
@@ -139,9 +133,41 @@ public abstract class DFeSoapServiceClient<TDFeConfig, TGeralConfig, TWebservice
         var xmlDocument = XDocument.Parse(EnvelopeRetorno);
         var body = xmlDocument.ElementAnyNs("Envelope").ElementAnyNs("Body");
         var retorno = TratarRetorno(body, responseTag);
+
         if (retorno.IsValidXml()) return retorno;
 
         throw new OpenDFeCommunicationException(retorno);
+    }
+
+    /// <summary>
+    /// Salvar o arquivo xml no disco de acordo com as propriedades.
+    /// </summary>
+    /// <param name="conteudoArquivo"></param>
+    /// <param name="nomeArquivo"></param>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    protected override void GravarSoap(string conteudoArquivo, string nomeArquivo)
+    {
+        if (Configuracoes.WebServices.Salvar == false) return;
+
+        if (!Directory.Exists(Configuracoes.Arquivos.PathSalvar))
+            Directory.CreateDirectory(Configuracoes.Arquivos.PathSalvar);
+
+        nomeArquivo = Path.Combine(Configuracoes.Arquivos.PathSalvar, nomeArquivo);
+        File.WriteAllText(nomeArquivo, conteudoArquivo, Encoding.UTF8);
+    }
+
+    /// <summary>
+    /// Função para validar a menssagem a ser enviada para o webservice.
+    /// </summary>
+    /// <param name="xml"></param>
+    /// <param name="schemaFile"></param>
+    protected virtual void ValidateMessage(string xml, string schemaFile)
+    {
+        Guard.Against<FileNotFoundException>(!File.Exists(schemaFile), "Schema não encontrado.");
+        XmlSchemaValidation.ValidarXml(xml, schemaFile, out var erros, out _);
+
+        Guard.Against<OpenDFeValidationException>(erros.Any(), "Erros de validação do xml." +
+                                                               $"{(Configuracoes.Geral.ExibirErroSchema ? Environment.NewLine + erros.AsString() : "")}");
     }
 
     protected abstract string TratarRetorno(XElement xmlDocument, string[] responseTag);

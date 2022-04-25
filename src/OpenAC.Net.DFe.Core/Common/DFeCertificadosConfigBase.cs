@@ -34,184 +34,183 @@ using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
-namespace OpenAC.Net.DFe.Core.Common
+namespace OpenAC.Net.DFe.Core.Common;
+
+/// <summary>
+/// Class NFECFGCertificados. This class cannot be inherited.
+/// </summary>
+public abstract class DFeCertificadosConfigBase
 {
+    #region Fields
+
+    private DateTime dataVenc;
+    private string subjectName;
+    private string cnpj;
+
+    #endregion Fields
+
+    #region Constructor
+
     /// <summary>
-    /// Class NFECFGCertificados. This class cannot be inherited.
+    /// Inicializa uma nova instancia da classe  <see cref="DFeCertificadosConfigBase"/>.
     /// </summary>
-    public abstract class DFeCertificadosConfigBase
+    protected DFeCertificadosConfigBase()
     {
-        #region Fields
+        dataVenc = DateTime.MinValue;
+        Certificado = string.Empty;
+        subjectName = string.Empty;
+        cnpj = string.Empty;
+    }
 
-        private DateTime dataVenc;
-        private string subjectName;
-        private string cnpj;
+    #endregion Constructor
 
-        #endregion Fields
+    #region Properties
 
-        #region Constructor
+    /// <summary>
+    /// Define/retorna o certificado ou Numero de Serie.
+    /// </summary>
+    /// <value>O Certificado/Numero de Serie.</value>
+    public string Certificado { get; set; }
 
-        /// <summary>
-        /// Inicializa uma nova instancia da classe  <see cref="DFeCertificadosConfigBase"/>.
-        /// </summary>
-        protected DFeCertificadosConfigBase()
+    /// <summary>
+    /// Define/retorna o certificado em bytes.
+    /// </summary>
+    /// <value>O Certificado.</value>
+    public byte[] CertificadoBytes { get; set; }
+
+    /// <summary>
+    /// Define/retorna a senha do certificado.
+    /// </summary>
+    /// <value>A senha.</value>
+    public string Senha { get; set; }
+
+    /// <summary>
+    /// Retorna a data de vencimento do certificado.
+    /// </summary>
+    /// <value>A data de vencimento.</value>
+    public DateTime DataVenc
+    {
+        get
         {
-            dataVenc = DateTime.MinValue;
-            Certificado = string.Empty;
-            subjectName = string.Empty;
-            cnpj = string.Empty;
+            if (dataVenc == DateTime.MinValue && !Certificado.IsEmpty() && !CertificadoBytes.IsNullOrEmpty())
+                GetCertificado();
+
+            return dataVenc;
+        }
+    }
+
+    /// <summary>
+    /// Define/retorna o nome do responsável pelo certificado.
+    /// </summary>
+    /// <value>The name of the subject.</value>
+    public string Nome
+    {
+        get
+        {
+            if (subjectName.IsEmpty() && !Certificado.IsEmpty() && !CertificadoBytes.IsNullOrEmpty())
+                GetCertificado();
+
+            return subjectName;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the CNPJ.
+    /// </summary>
+    /// <value>The CNPJ.</value>
+    public string CNPJ
+    {
+        get
+        {
+            if (cnpj.IsEmpty() && !Certificado.IsEmpty() && !CertificadoBytes.IsNullOrEmpty())
+                GetCertificado();
+
+            return cnpj;
+        }
+    }
+
+    #endregion Properties
+
+    #region Methods
+
+    /// <summary>
+    /// Seleciona um certificado digital instalado na maquina retornando o numero de serie do mesmo.
+    /// </summary>
+    /// <returns>Numero de Serie.</returns>
+    public string SelecionarCertificado()
+    {
+        var cert = CertificadoDigital.SelecionarCertificado(string.Empty);
+        return cert?.GetSerialNumberString() ?? string.Empty;
+    }
+
+    /// <summary>
+    /// retorna o certificado digital de acordo com os dados informados.
+    /// </summary>
+    /// <returns>X509Certificate2.</returns>
+    public X509Certificate2 ObterCertificado()
+    {
+        if (CertificadoBytes?.Length > 0)
+        {
+            return CertificadoDigital.SelecionarCertificado(CertificadoBytes, Senha);
         }
 
-        #endregion Constructor
-
-        #region Properties
-
-        /// <summary>
-        /// Define/retorna o certificado ou Numero de Serie.
-        /// </summary>
-        /// <value>O Certificado/Numero de Serie.</value>
-        public string Certificado { get; set; }
-
-        /// <summary>
-        /// Define/retorna o certificado em bytes.
-        /// </summary>
-        /// <value>O Certificado.</value>
-        public byte[] CertificadoBytes { get; set; }
-
-        /// <summary>
-        /// Define/retorna a senha do certificado.
-        /// </summary>
-        /// <value>A senha.</value>
-        public string Senha { get; set; }
-
-        /// <summary>
-        /// Retorna a data de vencimento do certificado.
-        /// </summary>
-        /// <value>A data de vencimento.</value>
-        public DateTime DataVenc
+        if (File.Exists(Certificado))
         {
-            get
-            {
-                if (dataVenc == DateTime.MinValue && !Certificado.IsEmpty() && !CertificadoBytes.IsNullOrEmpty())
-                    GetCertificado();
-
-                return dataVenc;
-            }
+            return CertificadoDigital.SelecionarCertificado(Certificado, Senha);
         }
 
-        /// <summary>
-        /// Define/retorna o nome do responsável pelo certificado.
-        /// </summary>
-        /// <value>The name of the subject.</value>
-        public string Nome
-        {
-            get
-            {
-                if (subjectName.IsEmpty() && !Certificado.IsEmpty() && !CertificadoBytes.IsNullOrEmpty())
-                    GetCertificado();
-
-                return subjectName;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the CNPJ.
-        /// </summary>
-        /// <value>The CNPJ.</value>
-        public string CNPJ
-        {
-            get
-            {
-                if (cnpj.IsEmpty() && !Certificado.IsEmpty() && !CertificadoBytes.IsNullOrEmpty())
-                    GetCertificado();
-
-                return cnpj;
-            }
-        }
-
-        #endregion Properties
-
-        #region Methods
-
-        /// <summary>
-        /// Seleciona um certificado digital instalado na maquina retornando o numero de serie do mesmo.
-        /// </summary>
-        /// <returns>Numero de Serie.</returns>
-        public string SelecionarCertificado()
-        {
-            var cert = CertificadoDigital.SelecionarCertificado(string.Empty);
-            return cert?.GetSerialNumberString() ?? string.Empty;
-        }
-
-        /// <summary>
-        /// retorna o certificado digital de acordo com os dados informados.
-        /// </summary>
-        /// <returns>X509Certificate2.</returns>
-        public X509Certificate2 ObterCertificado()
-        {
-            if (CertificadoBytes?.Length > 0)
-            {
-                return CertificadoDigital.SelecionarCertificado(CertificadoBytes, Senha);
-            }
-
-            if (File.Exists(Certificado))
-            {
-                return CertificadoDigital.SelecionarCertificado(Certificado, Senha);
-            }
-
-            var ret = CertificadoDigital.SelecionarCertificado(Certificado);
+        var ret = CertificadoDigital.SelecionarCertificado(Certificado);
 
 #if NETFULL
-            if (!Senha.IsEmpty())
-            {
-                ret.SetPin(Senha);
-            }
+        if (!Senha.IsEmpty())
+        {
+            ret.SetPin(Senha);
+        }
 #endif
 
-            return ret;
-        }
+        return ret;
+    }
 
-        /// <summary>
-        /// Gets the certificado.
-        /// </summary>
-        protected void GetCertificado()
+    /// <summary>
+    /// Gets the certificado.
+    /// </summary>
+    protected void GetCertificado()
+    {
+        var cert = ObterCertificado();
+
+        try
         {
-            var cert = ObterCertificado();
-
-            try
-            {
-                dataVenc = cert.GetExpirationDateString().ToData();
-                subjectName = cert.SubjectName.Name;
-                cnpj = cert.GetCNPJ();
-            }
-            finally
-            {
+            dataVenc = cert.GetExpirationDateString().ToData();
+            subjectName = cert.SubjectName.Name;
+            cnpj = cert.GetCNPJ();
+        }
+        finally
+        {
 #if NETSTANDARD2_0
                 cert?.Reset();
 #else
-                try
+            try
+            {
+                if (cert != null && cert.IsA3())
                 {
-                    if (cert != null && cert.IsA3())
-                    {
 #if NETFULL
-                        cert.ForceUnload();
+                    cert.ForceUnload();
 #else
                         cert.Dispose();
 #endif
-                    }
-                    else
-                    {
-                        cert?.Reset();
-                    }
                 }
-                catch (Exception)
+                else
                 {
-                    //
+                    cert?.Reset();
                 }
-#endif
             }
+            catch (Exception)
+            {
+                //
+            }
+#endif
         }
-
-        #endregion Methods
     }
+
+    #endregion Methods
 }

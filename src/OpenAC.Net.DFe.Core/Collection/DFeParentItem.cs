@@ -32,53 +32,52 @@
 using OpenAC.Net.Core.Generics;
 using OpenAC.Net.DFe.Core.Attributes;
 
-namespace OpenAC.Net.DFe.Core.Collection
+namespace OpenAC.Net.DFe.Core.Collection;
+
+///  <summary>
+///
+///  </summary>
+///  <typeparam name="TParent"></typeparam>
+/// <typeparam name="TTipo"></typeparam>
+public abstract class DFeParentItem<TTipo, TParent> : GenericClone<DFeParentItem<TTipo, TParent>>
+    where TParent : class
+    where TTipo : class
 {
-    ///  <summary>
-    ///
-    ///  </summary>
-    ///  <typeparam name="TParent"></typeparam>
-    /// <typeparam name="TTipo"></typeparam>
-    public abstract class DFeParentItem<TTipo, TParent> : GenericClone<DFeParentItem<TTipo, TParent>>
-        where TParent : class
-        where TTipo : class
+    #region Fields
+
+    protected TParent parent;
+
+    #endregion Fields
+
+    #region Properties
+
+    /// <summary>
+    /// Define/retorna a classe NFe parente deste elemento.
+    /// </summary>
+    [DFeIgnore]
+    public TParent Parent
     {
-        #region Fields
-
-        protected TParent parent;
-
-        #endregion Fields
-
-        #region Properties
-
-        /// <summary>
-        /// Define/retorna a classe NFe parente deste elemento.
-        /// </summary>
-        [DFeIgnore]
-        public TParent Parent
+        get => parent;
+        set
         {
-            get => parent;
-            set
-            {
-                if (value == parent) return;
+            if (value == parent) return;
 
-                parent = value;
-                OnParentChanged();
-            }
+            parent = value;
+            OnParentChanged();
         }
-
-        #endregion Properties
-
-        #region Methods
-
-        /// <summary>
-        /// Metodo chamado quando muda o parent.
-        /// </summary>
-        protected virtual void OnParentChanged()
-        {
-            //
-        }
-
-        #endregion Methods
     }
+
+    #endregion Properties
+
+    #region Methods
+
+    /// <summary>
+    /// Metodo chamado quando muda o parent.
+    /// </summary>
+    protected virtual void OnParentChanged()
+    {
+        //
+    }
+
+    #endregion Methods
 }

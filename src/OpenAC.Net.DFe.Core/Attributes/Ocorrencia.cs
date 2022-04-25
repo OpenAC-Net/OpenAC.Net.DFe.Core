@@ -29,12 +29,11 @@
 // <summary></summary>
 // ***********************************************************************
 
-namespace OpenAC.Net.DFe.Core.Attributes
+namespace OpenAC.Net.DFe.Core.Attributes;
+
+public enum Ocorrencia
 {
-    public enum Ocorrencia
-    {
-        NaoObrigatoria,
-        Obrigatoria,
-        MaiorQueZero
-    }
+    NaoObrigatoria,
+    Obrigatoria,
+    MaiorQueZero
 }

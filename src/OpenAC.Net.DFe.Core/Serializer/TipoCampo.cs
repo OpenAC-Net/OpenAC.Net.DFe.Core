@@ -29,101 +29,100 @@
 // <summary></summary>
 // ***********************************************************************
 
-namespace OpenAC.Net.DFe.Core.Serializer
+namespace OpenAC.Net.DFe.Core.Serializer;
+
+/// <summary>
+/// Enum TipoCampo
+/// </summary>
+public enum TipoCampo
 {
     /// <summary>
-    /// Enum TipoCampo
+    /// The string
     /// </summary>
-    public enum TipoCampo
-    {
-        /// <summary>
-        /// The string
-        /// </summary>
-        Str = 0,
+    Str = 0,
 
-        /// <summary>
-        /// The int
-        /// </summary>
-        Int = 1,
+    /// <summary>
+    /// The int
+    /// </summary>
+    Int = 1,
 
-        /// <summary>
-        /// The int
-        /// </summary>
-        Long = 17,
+    /// <summary>
+    /// The int
+    /// </summary>
+    Long = 17,
 
-        /// <summary>
-        /// The dat
-        /// </summary>
-        Dat = 2,
+    /// <summary>
+    /// The dat
+    /// </summary>
+    Dat = 2,
 
-        /// <summary>
-        /// The dat hor
-        /// </summary>
-        DatHor = 3,
+    /// <summary>
+    /// The dat hor
+    /// </summary>
+    DatHor = 3,
 
-        /// <summary>
-        /// The dat hor tz
-        /// </summary>
-        DatHorTz = 4,
+    /// <summary>
+    /// The dat hor tz
+    /// </summary>
+    DatHorTz = 4,
 
-        /// <summary>
-        /// The esp
-        /// </summary>
-        StrNumber = 5,
+    /// <summary>
+    /// The esp
+    /// </summary>
+    StrNumber = 5,
 
-        /// <summary>
-        /// The string number fill
-        /// </summary>
-        StrNumberFill = 6,
+    /// <summary>
+    /// The string number fill
+    /// </summary>
+    StrNumberFill = 6,
 
-        /// <summary>
-        /// The de2
-        /// </summary>
-        De2 = 7,
+    /// <summary>
+    /// The de2
+    /// </summary>
+    De2 = 7,
 
-        /// <summary>
-        /// The de3
-        /// </summary>
-        De3 = 8,
+    /// <summary>
+    /// The de3
+    /// </summary>
+    De3 = 8,
 
-        /// <summary>
-        /// The de4
-        /// </summary>
-        De4 = 9,
+    /// <summary>
+    /// The de4
+    /// </summary>
+    De4 = 9,
 
-        /// <summary>
-        /// The de10
-        /// </summary>
-        De10 = 10,
+    /// <summary>
+    /// The de10
+    /// </summary>
+    De10 = 10,
 
-        /// <summary>
-        /// The hor
-        /// </summary>
-        Hor = 11,
+    /// <summary>
+    /// The hor
+    /// </summary>
+    Hor = 11,
 
-        /// <summary>
-        /// The de6
-        /// </summary>
-        De6 = 12,
+    /// <summary>
+    /// The de6
+    /// </summary>
+    De6 = 12,
 
-        /// <summary>
-        /// The dat c fe
-        /// </summary>
-        DatCFe = 13,
+    /// <summary>
+    /// The dat c fe
+    /// </summary>
+    DatCFe = 13,
 
-        /// <summary>
-        /// The hor c fe
-        /// </summary>
-        HorCFe = 14,
+    /// <summary>
+    /// The hor c fe
+    /// </summary>
+    HorCFe = 14,
 
-        /// <summary>
-        /// The enum
-        /// </summary>
-        Enum = 15,
+    /// <summary>
+    /// The enum
+    /// </summary>
+    Enum = 15,
 
-        /// <summary>
-        /// The custom
-        /// </summary>
-        Custom = 16
-    }
+    /// <summary>
+    /// The custom
+    /// </summary>
+    Custom = 16
 }

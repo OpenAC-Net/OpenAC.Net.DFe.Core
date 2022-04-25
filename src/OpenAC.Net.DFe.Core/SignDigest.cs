@@ -29,11 +29,10 @@
 // <summary></summary>
 // ***********************************************************************
 
-namespace OpenAC.Net.DFe.Core
+namespace OpenAC.Net.DFe.Core;
+
+public enum SignDigest
 {
-    public enum SignDigest
-    {
-        SHA1,
-        SHA256
-    }
+    SHA1,
+    SHA256
 }

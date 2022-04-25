@@ -33,15 +33,14 @@
 using OpenAC.Net.DFe.Core.Attributes;
 using OpenAC.Net.DFe.Core.Serializer;
 
-namespace OpenAC.Net.DFe.Core.Document
+namespace OpenAC.Net.DFe.Core.Document;
+
+public sealed class SignatureMethod
 {
-    public sealed class SignatureMethod
-    {
-        /// <summary>
-        /// XS06 - Atributo Algorithm de SignatureMethod: http://www.w3.org/2000/09/xmldsig#rsa-sha1
-        /// </summary>
-        /// <value>The algorithm.</value>
-        [DFeAttribute(TipoCampo.Str, "Algorithm", Id = "XS06", Min = 0, Max = 999, Ocorrencia = Ocorrencia.Obrigatoria)]
-        public string Algorithm { get; set; }
-    }
+    /// <summary>
+    /// XS06 - Atributo Algorithm de SignatureMethod: http://www.w3.org/2000/09/xmldsig#rsa-sha1
+    /// </summary>
+    /// <value>The algorithm.</value>
+    [DFeAttribute(TipoCampo.Str, "Algorithm", Id = "XS06", Min = 0, Max = 999, Ocorrencia = Ocorrencia.Obrigatoria)]
+    public string Algorithm { get; set; }
 }

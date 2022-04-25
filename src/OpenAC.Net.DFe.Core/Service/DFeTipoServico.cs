@@ -31,23 +31,22 @@
 
 using OpenAC.Net.DFe.Core.Attributes;
 
-namespace OpenAC.Net.DFe.Core.Service
+namespace OpenAC.Net.DFe.Core.Service;
+
+public enum DFeTipoServico
 {
-    public enum DFeTipoServico
-    {
-        [DFeEnum("CTe")]
-        CTe,
+    [DFeEnum("CTe")]
+    CTe,
 
-        [DFeEnum("MDFe")]
-        MDFe,
+    [DFeEnum("MDFe")]
+    MDFe,
 
-        [DFeEnum("NFe")]
-        NFe,
+    [DFeEnum("NFe")]
+    NFe,
 
-        [DFeEnum("NFCe")]
-        NFCe,
+    [DFeEnum("NFCe")]
+    NFCe,
 
-        [DFeEnum("NFSe")]
-        NFSe
-    }
+    [DFeEnum("NFSe")]
+    NFSe
 }

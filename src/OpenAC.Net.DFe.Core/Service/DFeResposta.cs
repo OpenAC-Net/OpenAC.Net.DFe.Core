@@ -33,39 +33,38 @@ using System.Text;
 using OpenAC.Net.Core.Generics;
 using OpenAC.Net.DFe.Core.Document;
 
-namespace OpenAC.Net.DFe.Core.Service
+namespace OpenAC.Net.DFe.Core.Service;
+
+public abstract class DFeResposta<T> where T : class
 {
-    public abstract class DFeResposta<T> where T : class
+    #region Constructors
+
+    protected DFeResposta(string xmlEnvio, string xmlRetorno, string envelopeEnvio, string resposta, bool loadRetorno = true)
     {
-        #region Constructors
+        XmlEnvio = xmlEnvio;
+        XmlRetorno = xmlRetorno;
+        EnvelopeEnvio = envelopeEnvio;
+        EnvelopeRetorno = resposta;
 
-        protected DFeResposta(string xmlEnvio, string xmlRetorno, string envelopeEnvio, string resposta, bool loadRetorno = true)
+        if (typeof(DFeDocument<T>).IsAssignableFrom(typeof(T)) && loadRetorno)
         {
-            XmlEnvio = xmlEnvio;
-            XmlRetorno = xmlRetorno;
-            EnvelopeEnvio = envelopeEnvio;
-            EnvelopeRetorno = resposta;
-
-            if (typeof(DFeDocument<T>).IsAssignableFrom(typeof(T)) && loadRetorno)
-            {
-                Resultado = DFeDocument<T>.Load(xmlRetorno, Encoding.UTF8);
-            }
+            Resultado = DFeDocument<T>.Load(xmlRetorno, Encoding.UTF8);
         }
-
-        #endregion Constructors
-
-        #region Properties
-
-        public string XmlEnvio { get; }
-
-        public string XmlRetorno { get; }
-
-        public string EnvelopeEnvio { get; }
-
-        public string EnvelopeRetorno { get; }
-
-        public T Resultado { get; protected set; }
-
-        #endregion Properties
     }
+
+    #endregion Constructors
+
+    #region Properties
+
+    public string XmlEnvio { get; }
+
+    public string XmlRetorno { get; }
+
+    public string EnvelopeEnvio { get; }
+
+    public string EnvelopeRetorno { get; }
+
+    public T Resultado { get; protected set; }
+
+    #endregion Properties
 }

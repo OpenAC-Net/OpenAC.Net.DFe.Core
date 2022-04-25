@@ -32,28 +32,26 @@
 using OpenAC.Net.DFe.Core.Attributes;
 using System.ComponentModel;
 
-namespace OpenAC.Net.DFe.Core.Common
+namespace OpenAC.Net.DFe.Core.Common;
+
+/// <summary>
+///     Identificação do Ambiente
+///     <para>1 - Produção</para>
+///     <para>2 - Homologação</para>
+/// </summary>
+public enum DFeTipoAmbiente : byte
 {
     /// <summary>
-    ///     Identificação do Ambiente
-    ///     <para>1 - Produção</para>
-    ///     <para>2 - Homologação</para>
+    /// Produção
     /// </summary>
+    [DFeEnum("1")]
+    [Description("Produção")]
+    Producao = 1,
 
-    public enum DFeTipoAmbiente : byte
-    {
-        /// <summary>
-        /// Produção
-        /// </summary>
-        [DFeEnum("1")]
-        [Description("Produção")]
-        Producao = 1,
-
-        /// <summary>
-        /// Homologação
-        /// </summary>
-        [DFeEnum("2")]
-        [Description("Homologação")]
-        Homologacao = 2
-    }
+    /// <summary>
+    /// Homologação
+    /// </summary>
+    [DFeEnum("2")]
+    [Description("Homologação")]
+    Homologacao = 2
 }

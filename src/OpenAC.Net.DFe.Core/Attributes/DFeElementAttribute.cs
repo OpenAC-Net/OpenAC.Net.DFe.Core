@@ -32,51 +32,50 @@
 using OpenAC.Net.DFe.Core.Serializer;
 using System;
 
-namespace OpenAC.Net.DFe.Core.Attributes
+namespace OpenAC.Net.DFe.Core.Attributes;
+
+/// <summary>
+/// Classe DFeElementAttribute.
+/// </summary>
+/// <seealso cref="System.Attribute" />
+/// <seealso cref="DFeBaseAttribute" />
+[AttributeUsage(AttributeTargets.Property)]
+public class DFeElementAttribute : DFeBaseAttribute
 {
+    #region Constructors
+
     /// <summary>
-    /// Classe DFeElementAttribute.
+    /// Initializes a new instance of the <see cref="DFeElementAttribute" /> class.
     /// </summary>
-    /// <seealso cref="System.Attribute" />
-    /// <seealso cref="DFeBaseAttribute" />
-    [AttributeUsage(AttributeTargets.Property)]
-    public class DFeElementAttribute : DFeBaseAttribute
+    public DFeElementAttribute()
     {
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DFeElementAttribute" /> class.
-        /// </summary>
-        public DFeElementAttribute()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DFeElementAttribute" /> class.
-        /// </summary>
-        /// <param name="tag">The Name.</param>
-        public DFeElementAttribute(string tag)
-        {
-            Name = tag;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DFeElementAttribute" /> class.
-        /// </summary>
-        /// <param name="tipo">The tipo.</param>
-        /// <param name="name">The name.</param>
-        public DFeElementAttribute(TipoCampo tipo, string name)
-        {
-            Tipo = tipo;
-            Name = name;
-        }
-
-        #endregion Constructors
-
-        #region Properties
-
-        public bool UseCData { get; set; }
-
-        #endregion Properties
     }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DFeElementAttribute" /> class.
+    /// </summary>
+    /// <param name="tag">The Name.</param>
+    public DFeElementAttribute(string tag)
+    {
+        Name = tag;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DFeElementAttribute" /> class.
+    /// </summary>
+    /// <param name="tipo">The tipo.</param>
+    /// <param name="name">The name.</param>
+    public DFeElementAttribute(TipoCampo tipo, string name)
+    {
+        Tipo = tipo;
+        Name = name;
+    }
+
+    #endregion Constructors
+
+    #region Properties
+
+    public bool UseCData { get; set; }
+
+    #endregion Properties
 }

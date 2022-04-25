@@ -29,12 +29,11 @@
 // <summary></summary>
 // ***********************************************************************
 
-namespace OpenAC.Net.DFe.Core.Common
+namespace OpenAC.Net.DFe.Core.Common;
+
+public enum FiltroDFeReport
 {
-    public enum FiltroDFeReport
-    {
-        Nenhum,
-        PDF,
-        HTML
-    }
+    Nenhum,
+    PDF,
+    HTML
 }

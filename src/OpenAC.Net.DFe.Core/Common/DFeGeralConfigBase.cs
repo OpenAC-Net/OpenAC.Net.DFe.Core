@@ -33,92 +33,91 @@ using System;
 using System.ComponentModel;
 using OpenAC.Net.Core;
 
-namespace OpenAC.Net.DFe.Core.Common
-{
-    /// <summary>
-    ///
-    /// </summary>
-    public abstract class DFeGeralConfigBase<TVersaoDFe> : DFeGeralConfigBase
+namespace OpenAC.Net.DFe.Core.Common;
+
+/// <summary>
+///
+/// </summary>
+public abstract class DFeGeralConfigBase<TVersaoDFe> : DFeGeralConfigBase
     where TVersaoDFe : Enum
+{
+    #region Properties
+
+    /// <summary>
+    /// Define/retorna a versão do documento DFe.
+    /// </summary>
+    [Browsable(true)]
+    public TVersaoDFe VersaoDFe { get; set; }
+
+    /// <summary>
+    /// Define/retorna o tipo de emissão.
+    /// </summary>
+    [Browsable(true)]
+    [DefaultValue(DFeTipoEmissao.Normal)]
+    public DFeTipoEmissao FormaEmissao { get; set; }
+
+    #endregion Properties
+}
+
+public abstract class DFeGeralConfigBase
+{
+    #region Constructor
+
+    /// <summary>
+    /// Inicializa uma nova instancia da classe <see cref="DFeGeralConfigBase"/>.
+    /// </summary>
+    protected DFeGeralConfigBase()
     {
-        #region Properties
-
-        /// <summary>
-        /// Define/retorna a versão do documento DFe.
-        /// </summary>
-        [Browsable(true)]
-        public TVersaoDFe VersaoDFe { get; set; }
-
-        /// <summary>
-        /// Define/retorna o tipo de emissão.
-        /// </summary>
-        [Browsable(true)]
-        [DefaultValue(DFeTipoEmissao.Normal)]
-        public DFeTipoEmissao FormaEmissao { get; set; }
-
-        #endregion Properties
+        Salvar = true;
+        ExibirErroSchema = true;
+        FormatoAlerta = "TAG:%TAG% ID:%ID%/%TAG%(%DESCRICAO%) - %MSG%.";
+        RetirarAcentos = true;
+        RetirarEspacos = true;
+        IdentarXml = false;
+        ValidarDigest = false;
     }
 
-    public abstract class DFeGeralConfigBase
-    {
-        #region Constructor
+    #endregion Constructor
 
-        /// <summary>
-        /// Inicializa uma nova instancia da classe <see cref="DFeGeralConfigBase"/>.
-        /// </summary>
-        protected DFeGeralConfigBase()
-        {
-            Salvar = true;
-            ExibirErroSchema = true;
-            FormatoAlerta = "TAG:%TAG% ID:%ID%/%TAG%(%DESCRICAO%) - %MSG%.";
-            RetirarAcentos = true;
-            RetirarEspacos = true;
-            IdentarXml = false;
-            ValidarDigest = false;
-        }
+    #region Properties
 
-        #endregion Constructor
+    /// <summary>
+    /// Define/retorna se deve ser salvo os arquivos gerais, ou seja, arquivos de envio e
+    /// de retorno sem validade jurídica.
+    /// </summary>
+    /// <value><c>true</c> para salvar; caso contrário, <c>false</c>.</value>
+    public bool Salvar { get; set; }
 
-        #region Properties
+    /// <summary>
+    /// Define/retorna se deve exibir os erros de validação do Schema na Execption.
+    /// </summary>
+    public bool ExibirErroSchema { get; set; }
 
-        /// <summary>
-        /// Define/retorna se deve ser salvo os arquivos gerais, ou seja, arquivos de envio e
-        /// de retorno sem validade jurídica.
-        /// </summary>
-        /// <value><c>true</c> para salvar; caso contrário, <c>false</c>.</value>
-        public bool Salvar { get; set; }
+    /// <summary>
+    /// Define/retorna o formato do alerta do serializer.
+    /// Valor Padrão = TAG:%TAG% ID:%ID%/%TAG%(%DESCRICAO%) - %MSG%.
+    /// </summary>
+    public string FormatoAlerta { get; set; }
 
-        /// <summary>
-        /// Define/retorna se deve exibir os erros de validação do Schema na Execption.
-        /// </summary>
-        public bool ExibirErroSchema { get; set; }
+    /// <summary>
+    /// Define/retorna se deve retirar acentos do xml antes de enviar.
+    /// </summary>
+    public bool RetirarAcentos { get; set; }
 
-        /// <summary>
-        /// Define/retorna o formato do alerta do serializer.
-        /// Valor Padrão = TAG:%TAG% ID:%ID%/%TAG%(%DESCRICAO%) - %MSG%.
-        /// </summary>
-        public string FormatoAlerta { get; set; }
+    /// <summary>
+    /// Define/retorna se deve ser retirado os espaços na hora de gerar o xml.
+    /// </summary>
+    public bool RetirarEspacos { get; set; }
 
-        /// <summary>
-        /// Define/retorna se deve retirar acentos do xml antes de enviar.
-        /// </summary>
-        public bool RetirarAcentos { get; set; }
+    /// <summary>
+    /// Define/retorna se deve identar o xml na hora de gerar.
+    /// </summary>
+    public bool IdentarXml { get; set; }
 
-        /// <summary>
-        /// Define/retorna se deve ser retirado os espaços na hora de gerar o xml.
-        /// </summary>
-        public bool RetirarEspacos { get; set; }
+    /// <summary>
+    /// Define/retorna se deve ser validado o digest.
+    /// </summary>
+    public bool ValidarDigest { get; set; }
 
-        /// <summary>
-        /// Define/retorna se deve identar o xml na hora de gerar.
-        /// </summary>
-        public bool IdentarXml { get; set; }
-
-        /// <summary>
-        /// Define/retorna se deve ser validado o digest.
-        /// </summary>
-        public bool ValidarDigest { get; set; }
-
-        #endregion Properties
-    }
+    #endregion Properties
 }

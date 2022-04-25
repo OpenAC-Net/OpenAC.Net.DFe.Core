@@ -35,43 +35,42 @@ using OpenAC.Net.DFe.Core.Attributes;
 using OpenAC.Net.DFe.Core.Common;
 using OpenAC.Net.DFe.Core.Serializer;
 
-namespace OpenAC.Net.DFe.Core.Service
+namespace OpenAC.Net.DFe.Core.Service;
+
+public class DFeServiceEnvironment<TTIpo> where TTIpo : Enum
 {
-    public class DFeServiceEnvironment<TTIpo> where TTIpo : Enum
+    #region Constructors
+
+    public DFeServiceEnvironment()
     {
-        #region Constructors
-
-        public DFeServiceEnvironment()
-        {
-            Enderecos = new Dictionary<TTIpo, string>();
-        }
-
-        #endregion Constructors
-
-        #region Properties
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="tipo"></param>
-        [DFeIgnore]
-        public string this[TTIpo tipo]
-        {
-            get => Enderecos[tipo];
-            set => Enderecos[tipo] = value;
-        }
-
-        [DFeAttribute(TipoCampo.Enum, "Ambiente")]
-        public DFeTipoAmbiente Ambiente { get; set; }
-
-        [DFeAttribute(TipoCampo.Enum, "UF")]
-        public DFeSiglaUF UF { get; set; }
-
-        [DFeDictionary("Enderecos")]
-        [DFeDictionaryKey(TipoCampo.Enum, "Tipo")]
-        [DFeDictionaryValue(TipoCampo.Str, "Endereco")]
-        public Dictionary<TTIpo, string> Enderecos { get; set; }
-
-        #endregion Properties
+        Enderecos = new Dictionary<TTIpo, string>();
     }
+
+    #endregion Constructors
+
+    #region Properties
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="tipo"></param>
+    [DFeIgnore]
+    public string this[TTIpo tipo]
+    {
+        get => Enderecos[tipo];
+        set => Enderecos[tipo] = value;
+    }
+
+    [DFeAttribute(TipoCampo.Enum, "Ambiente")]
+    public DFeTipoAmbiente Ambiente { get; set; }
+
+    [DFeAttribute(TipoCampo.Enum, "UF")]
+    public DFeSiglaUF UF { get; set; }
+
+    [DFeDictionary("Enderecos")]
+    [DFeDictionaryKey(TipoCampo.Enum, "Tipo")]
+    [DFeDictionaryValue(TipoCampo.Str, "Endereco")]
+    public Dictionary<TTIpo, string> Enderecos { get; set; }
+
+    #endregion Properties
 }
