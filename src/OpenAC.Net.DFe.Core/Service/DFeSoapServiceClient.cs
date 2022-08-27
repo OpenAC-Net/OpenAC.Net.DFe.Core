@@ -85,7 +85,7 @@ public abstract class DFeSoapServiceClient<TDFeConfig, TGeralConfig, TWebservice
 
     #region Methods
 
-    protected virtual string Execute(string soapAction, string message, string soapHeader, string[] responseTag, params string[] soapNamespaces)
+    protected virtual string Execute(string soapAction, string message, string soapHeader, params string[] soapNamespaces)
     {
         string contetType;
         NameValueCollection headers;
@@ -132,7 +132,7 @@ public abstract class DFeSoapServiceClient<TDFeConfig, TGeralConfig, TWebservice
 
         var xmlDocument = XDocument.Parse(EnvelopeRetorno);
         var body = xmlDocument.ElementAnyNs("Envelope").ElementAnyNs("Body");
-        var retorno = TratarRetorno(body, responseTag);
+        var retorno = TratarRetorno(body);
 
         if (retorno.IsValidXml()) return retorno;
 
@@ -170,7 +170,7 @@ public abstract class DFeSoapServiceClient<TDFeConfig, TGeralConfig, TWebservice
                                                                $"{(Configuracoes.Geral.ExibirErroSchema ? Environment.NewLine + erros.AsString() : "")}");
     }
 
-    protected abstract string TratarRetorno(XElement xmlDocument, string[] responseTag);
+    protected abstract string TratarRetorno(XElement xmlDocument);
 
     #endregion Methods
 }

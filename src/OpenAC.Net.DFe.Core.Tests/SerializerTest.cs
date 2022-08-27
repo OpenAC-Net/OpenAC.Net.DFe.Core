@@ -167,40 +167,9 @@ namespace OpenAC.Net.DFe.Core.Tests
                 }
             });
 
-            services.Webservices.Add(new DFeServiceInfo<DFeTipo>()
-            {
-                Tipo = DFeTipoServico.CTe,
-                TipoEmissao = DFeTipoEmissao.Normal,
-                Ambientes = new DFeCollection<DFeServiceEnvironment<DFeTipo>>()
-                {
-                    new DFeServiceEnvironment<DFeTipo>
-                    {
-                        Ambiente = DFeTipoAmbiente.Homologacao,
-                        UF = DFeSiglaUF.MS,
-                        Enderecos = new Dictionary<DFeTipo, string>()
-                        {
-                            { DFeTipo.Envio, "Envio" },
-                            { DFeTipo.Consulta, "Consulta" }
-                        }
-                    },
-                    new DFeServiceEnvironment<DFeTipo>
-                    {
-                        Ambiente = DFeTipoAmbiente.Producao,
-                        UF = DFeSiglaUF.MS,
-                        Enderecos = new Dictionary<DFeTipo, string>()
-                        {
-                            { DFeTipo.Envio, "Envio" },
-                            { DFeTipo.Consulta, "Consulta" }
-                        }
-                    }
-                }
-            });
-
             var xml = services.GetXml();
 
             Assert.NotEqual(string.Empty, xml);
-
-            var url = services[DFeTipoEmissao.Normal][DFeTipoAmbiente.Homologacao, DFeSiglaUF.AC][DFeTipo.Consulta];
 
             var service = DFeServices<DFeTipo>.Load(xml);
             var serviceXml = service.GetXml();
