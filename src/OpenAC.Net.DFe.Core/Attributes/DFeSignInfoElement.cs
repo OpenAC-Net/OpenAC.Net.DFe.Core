@@ -39,7 +39,7 @@ public sealed class DFeSignInfoElement : Attribute
     #region Constructors
 
     /// <summary>
-    /// Inicializa uma nova int‚ncia da classe <see cref="DFeSignInfoElement"/>.
+    /// Inicializa uma nova int√¢ncia da classe <see cref="DFeSignInfoElement"/>.
     /// </summary>
     public DFeSignInfoElement()
     {
@@ -48,7 +48,7 @@ public sealed class DFeSignInfoElement : Attribute
     }
 
     /// <summary>
-    /// Inicializa uma nova int‚ncia da classe <see cref="DFeSignInfoElement"/>.
+    /// Inicializa uma nova int√¢ncia da classe <see cref="DFeSignInfoElement"/>.
     /// </summary>
     /// <param name="signElement">O elemento a ser assinado.</param>
     public DFeSignInfoElement(string signElement)

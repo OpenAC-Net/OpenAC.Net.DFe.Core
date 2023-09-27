@@ -65,7 +65,7 @@ public abstract class DFeWebserviceConfigBase
     #region Properties
 
     /// <summary>
-    /// Define/retorna se deve ou n„o salvar os arquivos soap.
+    /// Define/retorna se deve ou n√£o salvar os arquivos soap.
     /// </summary>
     public bool Salvar { get; set; }
 
@@ -76,7 +76,7 @@ public abstract class DFeWebserviceConfigBase
     public DFeTipoAmbiente Ambiente { get; set; }
 
     /// <summary>
-    /// Retorna o cÛdigo do ambiente.
+    /// Retorna o c√≥digo do ambiente.
     /// </summary>
     /// <value>The ambiente codigo.</value>
     public int AmbienteCodigo => Ambiente.GetDFeValue().ToInt32();

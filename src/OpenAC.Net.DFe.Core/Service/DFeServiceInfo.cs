@@ -38,7 +38,8 @@ using OpenAC.Net.DFe.Core.Serializer;
 
 namespace OpenAC.Net.DFe.Core.Service;
 
-public class DFeServiceInfo<TTIpo> where TTIpo : Enum
+public class DFeServiceInfo<TTIpo> 
+    where TTIpo : Enum
 {
     #region Constructors
 
@@ -65,8 +66,8 @@ public class DFeServiceInfo<TTIpo> where TTIpo : Enum
 
     [DFeAttribute(TipoCampo.Enum, "TipoEmissao")]
     public DFeTipoEmissao TipoEmissao { get; set; }
-
-    [DFeCollection("Enderecos")]
+    
+    [DFeCollection("Ambiente")]
     public DFeCollection<DFeServiceEnvironment<TTIpo>> Ambientes { get; set; }
 
     #endregion Properties

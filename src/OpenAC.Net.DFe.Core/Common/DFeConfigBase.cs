@@ -43,22 +43,22 @@ public abstract class DFeConfigBase<TGeralConfig, TWebserviceConfig, TCertificad
     #region Properties
 
     /// <summary>
-    /// Configurações principais do componente.
+    /// ConfiguraÃ§Ãµes principais do componente.
     /// </summary>
     public TGeralConfig Geral { get; protected set; }
 
     /// <summary>
-    /// Configurações de webservices do componente.
+    /// ConfiguraÃ§Ãµes de webservices do componente.
     /// </summary>
     public TWebserviceConfig WebServices { get; protected set; }
 
     /// <summary>
-    /// Configurações de certificado do componente.
+    /// ConfiguraÃ§Ãµes de certificado do componente.
     /// </summary>
     public TCertificadosConfig Certificados { get; protected set; }
 
     /// <summary>
-    /// Configurações de arquivos do componente.
+    /// ConfiguraÃ§Ãµes de arquivos do componente.
     /// </summary>
     public TArquivosConfig Arquivos { get; protected set; }
 

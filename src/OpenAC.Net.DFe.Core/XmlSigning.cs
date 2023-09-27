@@ -54,7 +54,7 @@ using OpenAC.Net.DFe.Core.Cryptography;
 namespace OpenAC.Net.DFe.Core
 {
     /// <summary>
-    /// Classe com os metodos para assinatura e validaÁ„o de assinatura de xml usando Hash Sha1.
+    /// Classe com os metodos para assinatura e valida√ß√£o de assinatura de xml usando Hash Sha1.
     /// </summary>
     public static class XmlSigning
     {
@@ -82,8 +82,8 @@ namespace OpenAC.Net.DFe.Core
         /// <param name="pCertificado">O certificado.</param>
         /// <param name="comments">Se for <c>true</c> vai inserir a tag #withcomments no transform.</param>
         /// <param name="identado">Se for <c>true</c> vai identar o xml de retorno</param>
-        /// <param name="showDeclaration">Se for <c>true</c> vai incluir a declaraÁ„o do xml</param>
-        /// <param name="digest">Algoritmo usando para gerar o hash por padr„o SHA1.</param>
+        /// <param name="showDeclaration">Se for <c>true</c> vai incluir a declara√ß√£o do xml</param>
+        /// <param name="digest">Algoritmo usando para gerar o hash por padr√£o SHA1.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
         /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
@@ -103,8 +103,8 @@ namespace OpenAC.Net.DFe.Core
         /// <param name="pCertificado">O certificado.</param>
         /// <param name="comments">Se for <c>true</c> vai inserir a tag #withcomments no transform.</param>
         /// <param name="identado">Se for <c>true</c> vai identar o xml de retorno</param>
-        /// <param name="showDeclaration">Se for <c>true</c> vai incluir a declaraÁ„o do xml</param>
-        /// <param name="digest">Algoritmo usando para gerar o hash por padr„o SHA1.</param>
+        /// <param name="showDeclaration">Se for <c>true</c> vai incluir a declara√ß√£o do xml</param>
+        /// <param name="digest">Algoritmo usando para gerar o hash por padr√£o SHA1.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
         /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
@@ -133,8 +133,8 @@ namespace OpenAC.Net.DFe.Core
         /// <param name="certificado">O certificado.</param>
         /// <param name="comments">Se for <c>true</c> vai inserir a tag #withcomments no transform.</param>
         /// <param name="identado">Se for <c>true</c> vai identar o xml de retorno</param>
-        /// <param name="showDeclaration">Se for <c>true</c> vai incluir a declaraÁ„o do xml</param>
-        /// <param name="digest">Algoritmo usando para gerar o hash por padr„o SHA1.</param>
+        /// <param name="showDeclaration">Se for <c>true</c> vai incluir a declara√ß√£o do xml</param>
+        /// <param name="digest">Algoritmo usando para gerar o hash por padr√£o SHA1.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
         /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
@@ -154,8 +154,8 @@ namespace OpenAC.Net.DFe.Core
         /// <param name="certificado">O certificado.</param>
         /// <param name="comments">Se for <c>true</c> vai inserir a tag #withcomments no transform.</param>
         /// <param name="identado">Se for <c>true</c> vai identar o xml de retorno</param>
-        /// <param name="showDeclaration">Se for <c>true</c> vai incluir a declaraÁ„o do xml</param>
-        /// <param name="digest">Algoritmo usando para gerar o hash por padr„o SHA1.</param>
+        /// <param name="showDeclaration">Se for <c>true</c> vai incluir a declara√ß√£o do xml</param>
+        /// <param name="digest">Algoritmo usando para gerar o hash por padr√£o SHA1.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
         /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
@@ -208,20 +208,20 @@ namespace OpenAC.Net.DFe.Core
         /// <param name="signAtribute">O atributo identificador do elemento a ser assinado.</param>
         /// <param name="certificado">O certificado.</param>
         /// <param name="comments">Se for <c>true</c> vai inserir a tag #withcomments no transform.</param>
-        /// <param name="digest">Algoritmo usando para gerar o hash por padr„o SHA1.</param>
+        /// <param name="digest">Algoritmo usando para gerar o hash por padr√£o SHA1.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
         /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
         public static void AssinarDocumento(XmlDocument doc, string docElement, string infoElement, string signAtribute,
             X509Certificate2 certificado, bool comments = false, SignDigest digest = SignDigest.SHA1)
         {
-            Guard.Against<ArgumentNullException>(doc == null, "XmlDOcument n„o pode ser nulo.");
-            Guard.Against<ArgumentException>(docElement.IsEmpty(), "docElement n„o pode ser nulo ou vazio.");
+            Guard.Against<ArgumentNullException>(doc == null, "XmlDOcument n√£o pode ser nulo.");
+            Guard.Against<ArgumentException>(docElement.IsEmpty(), "docElement n√£o pode ser nulo ou vazio.");
 
             var xmlDigitalSignature = GerarAssinatura(doc, infoElement, signAtribute, certificado, comments, digest);
             var xmlElement = doc.GetElementsByTagName(docElement).Cast<XmlElement>().FirstOrDefault();
 
-            Guard.Against<OpenDFeException>(xmlElement == null, "Elemento principal n„o encontrado.");
+            Guard.Against<OpenDFeException>(xmlElement == null, "Elemento principal n√£o encontrado.");
 
             var element = doc.ImportNode(xmlDigitalSignature, true);
             xmlElement.AppendChild(element);
@@ -242,7 +242,7 @@ namespace OpenAC.Net.DFe.Core
             X509Certificate2 certificado, bool comments, SignDigest digest,
             DFeSaveOptions options, out string signedXml) where TDocument : class
         {
-            Guard.Against<ArgumentException>(!typeof(TDocument).HasAttribute<DFeSignInfoElement>(), "Atributo [DFeSignInfoElement] n„o encontrado.");
+            Guard.Against<ArgumentException>(!typeof(TDocument).HasAttribute<DFeSignInfoElement>(), "Atributo [DFeSignInfoElement] n√£o encontrado.");
 
             var xml = document.GetXml(options, Encoding.UTF8);
             var xmlDoc = new XmlDocument { PreserveWhitespace = true };
@@ -277,7 +277,7 @@ namespace OpenAC.Net.DFe.Core
         private static XmlElement GerarAssinatura(XmlDocument doc, string infoElement, string signAtribute,
             X509Certificate2 certificado, bool comments, SignDigest digest)
         {
-            Guard.Against<ArgumentException>(!infoElement.IsEmpty() && doc.GetElementsByTagName(infoElement).Count != 1, "Referencia invalida ou n„o È unica.");
+            Guard.Against<ArgumentException>(!infoElement.IsEmpty() && doc.GetElementsByTagName(infoElement).Count != 1, "Referencia invalida ou n√£o √© unica.");
 
             //Adiciona Certificado ao Key Info
             var keyInfo = new KeyInfo();
@@ -304,7 +304,7 @@ namespace OpenAC.Net.DFe.Core
                 DigestMethod = GetDigestMethod(digest)
             };
 
-            // Adiciona transformaÁ„o a referencia
+            // Adiciona transforma√ß√£o a referencia
             reference.AddTransform(new XmlDsigEnvelopedSignatureTransform());
             reference.AddTransform(new XmlDsigC14NTransform(comments));
 
@@ -314,7 +314,7 @@ namespace OpenAC.Net.DFe.Core
             // Calcula Assinatura
             signedDocument.ComputeSignature();
 
-            // Pega representaÁ„o da assinatura
+            // Pega representa√ß√£o da assinatura
             return signedDocument.GetXml();
         }
 
@@ -328,12 +328,12 @@ namespace OpenAC.Net.DFe.Core
             try
             {
                 var signElement = doc.GetElementsByTagName("Signature");
-                Guard.Against<OpenDFeException>(signElement.Count < 1, "VerificaÁ„o falhou: Elemento [Signature] n„o encontrado no documento.");
-                Guard.Against<OpenDFeException>(signElement.Count > 1, "VerificaÁ„o falhou: Mais de um elemento [Signature] encontrado no documento.");
+                Guard.Against<OpenDFeException>(signElement.Count < 1, "Verifica√ß√£o falhou: Elemento [Signature] n√£o encontrado no documento.");
+                Guard.Against<OpenDFeException>(signElement.Count > 1, "Verifica√ß√£o falhou: Mais de um elemento [Signature] encontrado no documento.");
 
                 var certificateElement = doc.GetElementsByTagName("X509Certificate");
-                Guard.Against<OpenDFeException>(certificateElement.Count < 1, "VerificaÁ„o falhou: Elemento [X509Certificate] n„o encontrado no documento.");
-                Guard.Against<OpenDFeException>(certificateElement.Count > 1, "VerificaÁ„o falhou: Mais de um elemento [X509Certificate] encontrado no documento.");
+                Guard.Against<OpenDFeException>(certificateElement.Count < 1, "Verifica√ß√£o falhou: Elemento [X509Certificate] n√£o encontrado no documento.");
+                Guard.Against<OpenDFeException>(certificateElement.Count > 1, "Verifica√ß√£o falhou: Mais de um elemento [X509Certificate] encontrado no documento.");
 
                 var signedXml = new SignedXml(doc);
                 signedXml.LoadXml((XmlElement)signElement[0]);

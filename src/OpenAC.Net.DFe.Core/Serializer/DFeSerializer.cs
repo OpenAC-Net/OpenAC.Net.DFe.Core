@@ -48,12 +48,12 @@ public class DFeSerializer
     /// <summary>
     /// The er r_ ms g_ maior
     /// </summary>
-    internal const string ErrMsgMaior = "Tamanho maior que o máximo permitido";
+    internal const string ErrMsgMaior = "Tamanho maior que o mÃ¡ximo permitido";
 
     /// <summary>
     /// The er r_ ms g_ menor
     /// </summary>
-    internal const string ErrMsgMenor = "Tamanho menor que o mínimo permitido";
+    internal const string ErrMsgMenor = "Tamanho menor que o mÃ­nimo permitido";
 
     /// <summary>
     /// The er r_ ms g_ vazio
@@ -63,27 +63,27 @@ public class DFeSerializer
     /// <summary>
     /// The er r_ ms g_ invalido
     /// </summary>
-    internal const string ErrMsgInvalido = "Conteúdo inválido";
+    internal const string ErrMsgInvalido = "ConteÃºdo invÃ¡lido";
 
     /// <summary>
     /// The er r_ ms g_ maxim o_ decimais
     /// </summary>
-    internal const string ErrMsgMaximoDecimais = "Numero máximo de casas decimais permitidas";
+    internal const string ErrMsgMaximoDecimais = "Numero mÃ¡ximo de casas decimais permitidas";
 
     /// <summary>
     /// The er r_ ms g_ maio r_ maximo
     /// </summary>
-    internal const string ErrMsgMaiorMaximo = "Número de ocorrências maior que o máximo permitido - Máximo ";
+    internal const string ErrMsgMaiorMaximo = "NÃºmero de ocorrÃªncias maior que o mÃ¡ximo permitido - MÃ¡ximo ";
 
     /// <summary>
     /// The er r_ ms g_ fina l_ meno r_ inicial
     /// </summary>
-    internal const string ErrMsgFinalMenorInicial = "O numero final não pode ser menor que o inicial";
+    internal const string ErrMsgFinalMenorInicial = "O numero final nÃ£o pode ser menor que o inicial";
 
     /// <summary>
     /// The er r_ ms g_ arquiv o_ na o_ encontrado
     /// </summary>
-    internal const string ErrMsgArquivoNaoEncontrado = "Arquivo não encontrado";
+    internal const string ErrMsgArquivoNaoEncontrado = "Arquivo nÃ£o encontrado";
 
     /// <summary>
     /// The er r_ ms g_ soment e_ um
@@ -93,7 +93,7 @@ public class DFeSerializer
     /// <summary>
     /// The er r_ ms g_ meno r_ minimo
     /// </summary>
-    internal const string ErrMsgMenorMinimo = "Número de ocorrências menor que o mínimo permitido - Mínimo ";
+    internal const string ErrMsgMenorMinimo = "NÃºmero de ocorrÃªncias menor que o mÃ­nimo permitido - MÃ­nimo ";
 
     /// <summary>
     /// The ds c_ CNPJ
@@ -120,7 +120,7 @@ public class DFeSerializer
     /// </summary>
     internal DFeSerializer(Type tipo)
     {
-        Guard.Against<ArgumentException>(!tipo.HasAttribute<DFeRootAttribute>(), "Não é uma classe DFe !");
+        Guard.Against<ArgumentException>(!tipo.HasAttribute<DFeRootAttribute>(), "NÃ£o Ã© uma classe DFe !");
 
         tipoDFe = tipo;
         Options = new SerializerOptions();
@@ -169,7 +169,7 @@ public class DFeSerializer
 
         if (item.IsNull())
         {
-            Options.ErrosAlertas.Add("O item é nulo !");
+            Options.ErrosAlertas.Add("O item Ã© nulo !");
             return false;
         }
 
@@ -194,7 +194,7 @@ public class DFeSerializer
         Options.ErrosAlertas.Clear();
         if (item.IsNull())
         {
-            Options.ErrosAlertas.Add("O item é nulo !");
+            Options.ErrosAlertas.Add("O item Ã© nulo !");
             return false;
         }
 

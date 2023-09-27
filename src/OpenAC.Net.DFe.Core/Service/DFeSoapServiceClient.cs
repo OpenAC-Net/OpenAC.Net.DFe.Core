@@ -157,16 +157,16 @@ public abstract class DFeSoapServiceClient<TDFeConfig, TGeralConfig, TWebservice
     }
 
     /// <summary>
-    /// FunÁ„o para validar a menssagem a ser enviada para o webservice.
+    /// Fun√ß√£o para validar a menssagem a ser enviada para o webservice.
     /// </summary>
     /// <param name="xml"></param>
     /// <param name="schemaFile"></param>
     protected virtual void ValidateMessage(string xml, string schemaFile)
     {
-        Guard.Against<FileNotFoundException>(!File.Exists(schemaFile), "Schema n„o encontrado.");
+        Guard.Against<FileNotFoundException>(!File.Exists(schemaFile), "Schema n√£o encontrado.");
         XmlSchemaValidation.ValidarXml(xml, schemaFile, out var erros, out _);
 
-        Guard.Against<OpenDFeValidationException>(erros.Any(), "Erros de validaÁ„o do xml." +
+        Guard.Against<OpenDFeValidationException>(erros.Any(), "Erros de valida√ß√£o do xml." +
                                                                $"{(Configuracoes.Geral.ExibirErroSchema ? Environment.NewLine + erros.AsString() : "")}");
     }
 

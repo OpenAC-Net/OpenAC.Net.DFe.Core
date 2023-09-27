@@ -61,14 +61,14 @@ public class DFeServiceEnvironment<TTIpo> where TTIpo : Enum
         set => Enderecos[tipo] = value;
     }
 
-    [DFeAttribute(TipoCampo.Enum, "Ambiente")]
+    [DFeAttribute(TipoCampo.Enum, "Tipo")]
     public DFeTipoAmbiente Ambiente { get; set; }
 
     [DFeAttribute(TipoCampo.Enum, "UF")]
     public DFeSiglaUF UF { get; set; }
 
     [DFeDictionary("Enderecos")]
-    [DFeDictionaryKey(TipoCampo.Enum, "Tipo")]
+    [DFeDictionaryKey(TipoCampo.Enum, "Tipo", AsAttribute = true)]
     [DFeDictionaryValue(TipoCampo.Str, "Endereco")]
     public Dictionary<TTIpo, string> Enderecos { get; set; }
 

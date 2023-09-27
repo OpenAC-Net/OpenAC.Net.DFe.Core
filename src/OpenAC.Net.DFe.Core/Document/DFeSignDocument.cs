@@ -40,7 +40,7 @@ public abstract class DFeSignDocument<TDocument> : DFeDocument<TDocument> where 
     }
 
     /// <summary>
-    /// Metodo que define se deve ou n„o serialziar a assinatura.
+    /// Metodo que define se deve ou n√£o serialziar a assinatura.
     /// </summary>
     /// <returns></returns>
     protected virtual bool ShouldSerializeSignature()

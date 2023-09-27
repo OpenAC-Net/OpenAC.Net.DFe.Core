@@ -54,7 +54,7 @@ internal static class ValueElementSerializer
 
         var valueType = ObjectType.From(valueProp.PropertyType);
         Guard.Against<OpenDFeException>(valueType != ObjectType.PrimitiveType,
-            $"Item {prop.Name} È do tipo [ItemValue] e o [DFeItemValueAttribute] n„o È do tipo primitivo");
+            $"Item {prop.Name} √© do tipo [ItemValue] e o [DFeItemValueAttribute] n√£o √© do tipo primitivo");
 
         var value = prop.GetValue(parentObject, null);
         var attribute = prop.GetAttribute<DFeElementAttribute>();

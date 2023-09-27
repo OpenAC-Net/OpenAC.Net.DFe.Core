@@ -35,7 +35,7 @@ using OpenAC.Net.DFe.Core.Attributes;
 namespace OpenAC.Net.DFe.Core.Common;
 
 /// <summary>
-/// Estados brasileiros por cÛdigo
+/// Estados brasileiros por c√≥digo
 /// </summary>
 public enum DFeCodUF
 {
@@ -61,10 +61,10 @@ public enum DFeCodUF
     AM = 13,
 
     /// <summary>
-    /// 16 - Amap·
+    /// 16 - Amap√°
     /// </summary>
     [DFeEnum("16")]
-    [Description("Amap·")]
+    [Description("Amap√°")]
     AP = 16,
 
     /// <summary>
@@ -75,10 +75,10 @@ public enum DFeCodUF
     BA = 29,
 
     /// <summary>
-    /// 23 - Cear·
+    /// 23 - Cear√°
     /// </summary>
     [DFeEnum("23")]
-    [Description("Cear·")]
+    [Description("Cear√°")]
     CE = 23,
 
     /// <summary>
@@ -89,24 +89,24 @@ public enum DFeCodUF
     DF = 53,
 
     /// <summary>
-    /// 32 - EspÌrito Santo
+    /// 32 - Esp√≠rito Santo
     /// </summary>
     [DFeEnum("32")]
-    [Description("EspÌrito Santo")]
+    [Description("Esp√≠rito Santo")]
     ES = 32,
 
     /// <summary>
-    /// 53 - Goi·s
+    /// 53 - Goi√°s
     /// </summary>
     [DFeEnum("52")]
-    [Description("Goi·s")]
+    [Description("Goi√°s")]
     GO = 52,
 
     /// <summary>
-    /// 21 - Maranh„o
+    /// 21 - Maranh√£o
     /// </summary>
     [DFeEnum("21")]
-    [Description("Maranh„o")]
+    [Description("Maranh√£o")]
     MA = 21,
 
     /// <summary>
@@ -131,17 +131,17 @@ public enum DFeCodUF
     MT = 51,
 
     /// <summary>
-    /// 15 - Par·
+    /// 15 - Par√°
     /// </summary>
     [DFeEnum("15")]
-    [Description("Par·")]
+    [Description("Par√°")]
     PA = 15,
 
     /// <summary>
-    /// 25 - ParaÌba
+    /// 25 - Para√≠ba
     /// </summary>
     [DFeEnum("25")]
-    [Description("ParaÌba")]
+    [Description("Para√≠ba")]
     PB = 25,
 
     /// <summary>
@@ -152,17 +152,17 @@ public enum DFeCodUF
     PE = 26,
 
     /// <summary>
-    /// 22 - PiauÌ
+    /// 22 - Piau√≠
     /// </summary>
     [DFeEnum("22")]
-    [Description("PiauÌ")]
+    [Description("Piau√≠")]
     PI = 22,
 
     /// <summary>
-    /// 41 - Paran·
+    /// 41 - Paran√°
     /// </summary>
     [DFeEnum("41")]
-    [Description("Paran·")]
+    [Description("Paran√°")]
     PR = 41,
 
     /// <summary>
@@ -180,10 +180,10 @@ public enum DFeCodUF
     RN = 24,
 
     /// <summary>
-    /// 11 - RondÙnia
+    /// 11 - Rond√¥nia
     /// </summary>
     [DFeEnum("11")]
-    [Description("RondÙnia")]
+    [Description("Rond√¥nia")]
     RO = 11,
 
     /// <summary>
@@ -215,10 +215,10 @@ public enum DFeCodUF
     SE = 28,
 
     /// <summary>
-    /// 35 - S„o Paulo
+    /// 35 - S√£o Paulo
     /// </summary>
     [DFeEnum("35")]
-    [Description("S„o Paulo")]
+    [Description("S√£o Paulo")]
     SP = 35,
 
     /// <summary>

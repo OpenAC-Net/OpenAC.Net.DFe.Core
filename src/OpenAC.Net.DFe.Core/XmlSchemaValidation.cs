@@ -38,7 +38,7 @@ using System.Xml.Schema;
 namespace OpenAC.Net.DFe.Core;
 
 /// <summary>
-/// Classe estatica para validaÁ„o de xml usando schema.
+/// Classe estatica para valida√ß√£o de xml usando schema.
 /// </summary>
 public static class XmlSchemaValidation
 {
@@ -57,7 +57,7 @@ public static class XmlSchemaValidation
 
         if (string.IsNullOrEmpty(arquivoXml))
         {
-            errorList.Add("Arquivo Xml n„o encontrado.");
+            errorList.Add("Arquivo Xml n√£o encontrado.");
             erros = errorList.ToArray();
             avisos = avisosList.ToArray();
             return false;
@@ -65,7 +65,7 @@ public static class XmlSchemaValidation
 
         if (!File.Exists(schema))
         {
-            errorList.Add("Arquivo de Schema n„o encontrado.");
+            errorList.Add("Arquivo de Schema n√£o encontrado.");
             erros = errorList.ToArray();
             avisos = avisosList.ToArray();
             return false;
@@ -88,7 +88,7 @@ public static class XmlSchemaValidation
                         break;
                 }
 
-                // Erro na validaÁ„o do schema XSD
+                // Erro na valida√ß√£o do schema XSD
                 if (args.Exception != null)
                 {
                     // ReSharper disable once AccessToModifiedClosure

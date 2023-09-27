@@ -100,7 +100,7 @@ public abstract class DFeCertificadosConfigBase
     }
 
     /// <summary>
-    /// Define/retorna o nome do respons·vel pelo certificado.
+    /// Define/retorna o nome do respons√°vel pelo certificado.
     /// </summary>
     /// <value>The name of the subject.</value>
     public string Nome
@@ -161,7 +161,7 @@ public abstract class DFeCertificadosConfigBase
 
         var ret = CertificadoDigital.SelecionarCertificado(Certificado);
 
-#if NETFULL
+#if NETFRAMEWORK
         if (!Senha.IsEmpty())
         {
             ret.SetPin(Senha);
@@ -186,14 +186,14 @@ public abstract class DFeCertificadosConfigBase
         }
         finally
         {
-#if NETSTANDARD2_0
+#if NET || NETSTANDARD
                 cert?.Reset();
 #else
             try
             {
                 if (cert != null && cert.IsA3())
                 {
-#if NETFULL
+#if NETFRAMEWORK
                     cert.ForceUnload();
 #else
                         cert.Dispose();

@@ -94,7 +94,7 @@ internal static class CollectionSerializer
         foreach (var value in values)
         {
             var itemTag = itemTags.SingleOrDefault(x => x.Tipo == value.GetType());
-            Guard.Against<OpenDFeException>(itemTag == null, $"Item {value.GetType().Name} não presente na lista de itens.");
+            Guard.Against<OpenDFeException>(itemTag == null, $"Item {value.GetType().Name} nÃ£o presente na lista de itens.");
 
             var childElement = ObjectSerializer.Serialize(value, value.GetType(), itemTag.Name, itemTag.Namespace, options);
             childElements.Add(childElement);
@@ -131,7 +131,7 @@ internal static class CollectionSerializer
         foreach (var value in values)
         {
             var itemTag = itemTags.SingleOrDefault(x => x.Tipo == value.GetType());
-            Guard.Against<OpenDFeException>(itemTag == null, $"Item {value.GetType().Name} não presente na lista de itens.");
+            Guard.Against<OpenDFeException>(itemTag == null, $"Item {value.GetType().Name} nÃ£o presente na lista de itens.");
 
             var properties = value.GetType().GetProperties()
                 .Where(x => !x.ShouldIgnoreProperty() && x.ShouldSerializeProperty(value))
@@ -141,7 +141,7 @@ internal static class CollectionSerializer
 
             var valueType = ObjectType.From(valueProp.PropertyType);
             Guard.Against<OpenDFeException>(valueType != ObjectType.PrimitiveType,
-                $"Item {value.GetType().Name} é do tipo [ItemValue] e o [DFeItemValueAttribute] não é do tipo primitivo");
+                $"Item {value.GetType().Name} Ã© do tipo [ItemValue] e o [DFeItemValueAttribute] nÃ£o Ã© do tipo primitivo");
 
             var attProps = properties.Where(x => x.HasAttribute<DFeAttributeAttribute>()).ToArray();
 

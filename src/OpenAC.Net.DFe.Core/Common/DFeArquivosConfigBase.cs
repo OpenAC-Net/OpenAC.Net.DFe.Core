@@ -95,12 +95,12 @@ public abstract class DFeArquivosConfigBase
     public string PathSalvar { get; set; }
 
     /// <summary>
-    /// Define/retorna o caminho onde estão so schemas.
+    /// Define/retorna o caminho onde estÃ£o so schemas.
     /// </summary>
     public string PathSchemas { get; set; }
 
     /// <summary>
-    /// Define/retorna o arquivo com os dados dos serviços.
+    /// Define/retorna o arquivo com os dados dos serviÃ§os.
     /// </summary>
     public string ArquivoServicos
     {
@@ -115,7 +115,7 @@ public abstract class DFeArquivosConfigBase
     }
 
     /// <summary>
-    /// Define/retorna se deve salvar os arquivos xml, trata-se de arquivos com validade jurídica.
+    /// Define/retorna se deve salvar os arquivos xml, trata-se de arquivos com validade jurÃ­dica.
     /// </summary>
     public bool Salvar { get; set; }
 
@@ -141,7 +141,7 @@ public abstract class DFeArquivosConfigBase
     public bool SepararPorAno { get; set; }
 
     /// <summary>
-    /// Define/retorna se deve ser adicionado o mês ao caminho de salvamento.
+    /// Define/retorna se deve ser adicionado o mÃªs ao caminho de salvamento.
     /// </summary>
     public bool SepararPorMes { get; set; }
 
@@ -151,7 +151,7 @@ public abstract class DFeArquivosConfigBase
     public bool SepararPorDia { get; set; }
 
     /// <summary>
-    /// Retorna a ordem de criação dos caminhos para salvamento dos arquivos.
+    /// Retorna a ordem de criaÃ§Ã£o dos caminhos para salvamento dos arquivos.
     /// </summary>
     public List<TagOrdenacaoPath> OrdenacaoPath { get; }
 
@@ -160,7 +160,7 @@ public abstract class DFeArquivosConfigBase
     #region Methods
 
     /// <summary>
-    /// Metodo chamado quando muda o caminho do arquivo de serviços.
+    /// Metodo chamado quando muda o caminho do arquivo de serviÃ§os.
     /// </summary>
     protected abstract void ArquivoServicoChange();
 

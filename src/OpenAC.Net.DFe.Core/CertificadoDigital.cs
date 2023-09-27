@@ -46,14 +46,14 @@ public static class CertificadoDigital
 
     /// <summary>
     /// Busca certificados instalado se informado uma serie
-    /// sen„o abre caixa de dialogos de certificados.
+    /// sen√£o abre caixa de dialogos de certificados.
     /// </summary>
     /// <param name="cerSerie">Serie do certificado.</param>
     /// <returns>X509Certificate2.</returns>
     /// <exception cref="System.Exception">
-    /// Nenhum certificado digital foi selecionado ou o certificado selecionado est· com problemas.
+    /// Nenhum certificado digital foi selecionado ou o certificado selecionado est√° com problemas.
     /// or
-    /// Certificado digital n„o encontrado
+    /// Certificado digital n√£o encontrado
     /// or
     /// </exception>
     public static X509Certificate2 SelecionarCertificado(string cerSerie = "")
@@ -76,7 +76,7 @@ public static class CertificadoDigital
             if (cerSerie.IsEmpty())
             {
 #if NETSTANDARD2_0
-                throw new OpenDFeException("N˙mero de sÈrie obrigatÛrio.");
+                throw new OpenDFeException("N√∫mero de s√©rie obrigat√≥rio.");
 #else
                     certificadosSelecionados = X509Certificate2UI.SelectFromCollection(certificates, "Certificados Digitais",
                         "Selecione o Certificado Digital para uso no aplicativo", X509SelectionFlag.SingleSelection);
@@ -85,7 +85,7 @@ public static class CertificadoDigital
             else
             {
                 certificadosSelecionados = certificates.Find(X509FindType.FindBySerialNumber, cerSerie, false);
-                Guard.Against<OpenDFeException>(certificadosSelecionados.Count == 0, "Certificado digital n„o encontrado");
+                Guard.Against<OpenDFeException>(certificadosSelecionados.Count == 0, "Certificado digital n√£o encontrado");
             }
 
             var certificado = certificadosSelecionados.Count < 1 ? null : certificadosSelecionados[0];
@@ -103,11 +103,11 @@ public static class CertificadoDigital
     /// <param name="caminho">O caminho.</param>
     /// <param name="senha">A senha.</param>
     /// <returns>X509Certificate2.</returns>
-    /// <exception cref="System.Exception">Arquivo do Certificado digital n„o encontrado</exception>
+    /// <exception cref="System.Exception">Arquivo do Certificado digital n√£o encontrado</exception>
     public static X509Certificate2 SelecionarCertificado(string caminho, string senha)
     {
-        Guard.Against<ArgumentNullException>(caminho.IsEmpty(), "Caminho do arquivo n„o poder ser nulo ou vazio !");
-        Guard.Against<ArgumentException>(!File.Exists(caminho), "Arquivo do Certificado digital n„o encontrado !");
+        Guard.Against<ArgumentNullException>(caminho.IsEmpty(), "Caminho do arquivo n√£o poder ser nulo ou vazio !");
+        Guard.Against<ArgumentException>(!File.Exists(caminho), "Arquivo do Certificado digital n√£o encontrado !");
 
         var cert = new X509Certificate2(caminho, senha);
         return cert;
@@ -119,11 +119,11 @@ public static class CertificadoDigital
     /// <param name="certificado">O certificado.</param>
     /// <param name="senha">A senha.</param>
     /// <returns>X509Certificate2.</returns>
-    /// <exception cref="System.Exception">Arquivo do Certificado digital n„o encontrado</exception>
+    /// <exception cref="System.Exception">Arquivo do Certificado digital n√£o encontrado</exception>
     public static X509Certificate2 SelecionarCertificado(byte[] certificado, string senha = "")
     {
-        Guard.Against<ArgumentNullException>(certificado == null, "O certificado n„o poder ser nulo !");
-        Guard.Against<ArgumentException>(certificado.Length == 0, "O tamanhado do certificado n„o pode ser zero !");
+        Guard.Against<ArgumentNullException>(certificado == null, "O certificado n√£o poder ser nulo !");
+        Guard.Against<ArgumentException>(certificado.Length == 0, "O tamanhado do certificado n√£o pode ser zero !");
 
         var cert = new X509Certificate2(certificado, senha);
         return cert;

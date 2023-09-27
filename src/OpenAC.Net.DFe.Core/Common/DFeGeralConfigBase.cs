@@ -44,13 +44,13 @@ public abstract class DFeGeralConfigBase<TVersaoDFe> : DFeGeralConfigBase
     #region Properties
 
     /// <summary>
-    /// Define/retorna a vers„o do documento DFe.
+    /// Define/retorna a vers√£o do documento DFe.
     /// </summary>
     [Browsable(true)]
     public TVersaoDFe VersaoDFe { get; set; }
 
     /// <summary>
-    /// Define/retorna o tipo de emiss„o.
+    /// Define/retorna o tipo de emiss√£o.
     /// </summary>
     [Browsable(true)]
     [DefaultValue(DFeTipoEmissao.Normal)]
@@ -83,19 +83,19 @@ public abstract class DFeGeralConfigBase
 
     /// <summary>
     /// Define/retorna se deve ser salvo os arquivos gerais, ou seja, arquivos de envio e
-    /// de retorno sem validade jurÌdica.
+    /// de retorno sem validade jur√≠dica.
     /// </summary>
-    /// <value><c>true</c> para salvar; caso contr·rio, <c>false</c>.</value>
+    /// <value><c>true</c> para salvar; caso contr√°rio, <c>false</c>.</value>
     public bool Salvar { get; set; }
 
     /// <summary>
-    /// Define/retorna se deve exibir os erros de validaÁ„o do Schema na Execption.
+    /// Define/retorna se deve exibir os erros de valida√ß√£o do Schema na Execption.
     /// </summary>
     public bool ExibirErroSchema { get; set; }
 
     /// <summary>
     /// Define/retorna o formato do alerta do serializer.
-    /// Valor Padr„o = TAG:%TAG% ID:%ID%/%TAG%(%DESCRICAO%) - %MSG%.
+    /// Valor Padr√£o = TAG:%TAG% ID:%ID%/%TAG%(%DESCRICAO%) - %MSG%.
     /// </summary>
     public string FormatoAlerta { get; set; }
 
@@ -105,7 +105,7 @@ public abstract class DFeGeralConfigBase
     public bool RetirarAcentos { get; set; }
 
     /// <summary>
-    /// Define/retorna se deve ser retirado os espaÁos na hora de gerar o xml.
+    /// Define/retorna se deve ser retirado os espa√ßos na hora de gerar o xml.
     /// </summary>
     public bool RetirarEspacos { get; set; }
 

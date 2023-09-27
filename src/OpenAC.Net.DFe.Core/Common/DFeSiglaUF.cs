@@ -61,10 +61,10 @@ public enum DFeSiglaUF
     AM,
 
     /// <summary>
-    /// AP - Amap·
+    /// AP - Amap√°
     /// </summary>
     [DFeEnum("AP")]
-    [Description("Amap·")]
+    [Description("Amap√°")]
     AP,
 
     /// <summary>
@@ -75,10 +75,10 @@ public enum DFeSiglaUF
     BA,
 
     /// <summary>
-    /// CE - Cear·
+    /// CE - Cear√°
     /// </summary>
     [DFeEnum("CE")]
-    [Description("Cear·")]
+    [Description("Cear√°")]
     CE,
 
     /// <summary>
@@ -89,24 +89,24 @@ public enum DFeSiglaUF
     DF,
 
     /// <summary>
-    /// ES - EspÌrito Santo
+    /// ES - Esp√≠rito Santo
     /// </summary>
     [DFeEnum("ES")]
-    [Description("EspÌrito Santo")]
+    [Description("Esp√≠rito Santo")]
     ES,
 
     /// <summary>
-    /// GO - Goi·s
+    /// GO - Goi√°s
     /// </summary>
     [DFeEnum("GO")]
-    [Description("Goi·s")]
+    [Description("Goi√°s")]
     GO,
 
     /// <summary>
-    /// MA - Maranh„o
+    /// MA - Maranh√£o
     /// </summary>
     [DFeEnum("MA")]
-    [Description("Maranh„o")]
+    [Description("Maranh√£o")]
     MA,
 
     /// <summary>
@@ -131,17 +131,17 @@ public enum DFeSiglaUF
     MT,
 
     /// <summary>
-    /// PA - Par·
+    /// PA - Par√°
     /// </summary>
     [DFeEnum("PA")]
-    [Description("Par·")]
+    [Description("Par√°")]
     PA,
 
     /// <summary>
-    /// PB - ParaÌba
+    /// PB - Para√≠ba
     /// </summary>
     [DFeEnum("PB")]
-    [Description("ParaÌba")]
+    [Description("Para√≠ba")]
     PB,
 
     /// <summary>
@@ -152,17 +152,17 @@ public enum DFeSiglaUF
     PE,
 
     /// <summary>
-    /// PI - PiauÌ
+    /// PI - Piau√≠
     /// </summary>
     [DFeEnum("PI")]
-    [Description("PiauÌ")]
+    [Description("Piau√≠")]
     PI,
 
     /// <summary>
-    /// PR - Paran·
+    /// PR - Paran√°
     /// </summary>
     [DFeEnum("PR")]
-    [Description("Paran·")]
+    [Description("Paran√°")]
     PR,
 
     /// <summary>
@@ -180,10 +180,10 @@ public enum DFeSiglaUF
     RN,
 
     /// <summary>
-    /// RO - RondÙnia
+    /// RO - Rond√¥nia
     /// </summary>
     [DFeEnum("RO")]
-    [Description("RondÙnia")]
+    [Description("Rond√¥nia")]
     RO,
 
     /// <summary>
@@ -215,10 +215,10 @@ public enum DFeSiglaUF
     SE,
 
     /// <summary>
-    /// SP - S„o Paulo
+    /// SP - S√£o Paulo
     /// </summary>
     [DFeEnum("SP")]
-    [Description("S„o Paulo")]
+    [Description("S√£o Paulo")]
     SP,
 
     /// <summary>

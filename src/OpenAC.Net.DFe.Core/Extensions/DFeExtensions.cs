@@ -60,7 +60,7 @@ internal static class DFeExtensions
 
     public static Func<string> GetSerializer(this PropertyInfo prop, object item)
     {
-        Guard.Against<ArgumentException>(prop.DeclaringType != item.GetType(), "O item informado n„o declara esta propriedade");
+        Guard.Against<ArgumentException>(prop.DeclaringType != item.GetType(), "O item informado n√£o declara esta propriedade");
 
         var method = item.GetType().GetMethod($"Serialize{prop.Name}", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
         return method.ToDelegate<Func<string>>(item);
@@ -86,7 +86,7 @@ internal static class DFeExtensions
 
     public static Func<string, object> GetDeserializer(this PropertyInfo prop, object item)
     {
-        Guard.Against<ArgumentException>(prop.DeclaringType != item.GetType(), "O item informado n„o declara esta propriedade");
+        Guard.Against<ArgumentException>(prop.DeclaringType != item.GetType(), "O item informado n√£o declara esta propriedade");
         var method = item.GetType().GetMethod($"Deserialize{prop.Name}", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
         return method.ToDelegate<Func<string, object>>(item);
     }

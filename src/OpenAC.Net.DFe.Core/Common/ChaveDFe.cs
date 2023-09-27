@@ -91,13 +91,13 @@ public sealed class ChaveDFe
     /// Gera a chave do documento fiscal
     /// </summary>
     /// <param name="ufEmitente">UF do emitente do DF-e</param>
-    /// <param name="dataEmissao">Data de emiss„o do DF-e</param>
+    /// <param name="dataEmissao">Data de emiss√£o do DF-e</param>
     /// <param name="cnpjEmitente">CNPJ do emitente do DF-e</param>
     /// <param name="modelo">Modelo do DF-e</param>
-    /// <param name="serie">SÈrie do DF-e</param>
+    /// <param name="serie">S√©rie do DF-e</param>
     /// <param name="numero">Numero do DF-e</param>
-    /// <param name="tipoEmissao">Tipo de emiss„o do DF-e. Informar inteiro conforme consta no manual de orientaÁ„o do contribuinte para o DF-e</param>
-    /// <param name="cNumerico">CÛdigo numÈrico que compıe a Chave de Acesso. N˙mero gerado pelo emitente para cada DF-e</param>
+    /// <param name="tipoEmissao">Tipo de emiss√£o do DF-e. Informar inteiro conforme consta no manual de orienta√ß√£o do contribuinte para o DF-e</param>
+    /// <param name="cNumerico">C√≥digo num√©rico que comp√µe a Chave de Acesso. N√∫mero gerado pelo emitente para cada DF-e</param>
     /// <returns>Retorna a chave DFe</returns>
     public static ChaveDFe Gerar(DFeCodUF ufEmitente, DateTime dataEmissao, string cnpjEmitente, int modelo, int serie,
         long numero, DFeTipoEmissao tipoEmissao, int cNumerico)
@@ -106,7 +106,7 @@ public sealed class ChaveDFe
     }
 
     /// <summary>
-    /// Informa se a chave de um DF-e È v·lida
+    /// Informa se a chave de um DF-e √© v√°lida
     /// </summary>
     /// <param name="chave"></param>
     /// <returns></returns>
