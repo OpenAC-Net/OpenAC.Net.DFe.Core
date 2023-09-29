@@ -45,12 +45,6 @@ using OpenAC.Net.DFe.Core.Document;
 using KeyInfo = System.Security.Cryptography.Xml.KeyInfo;
 using Reference = System.Security.Cryptography.Xml.Reference;
 
-#if NETFULL
-
-using OpenAC.Net.DFe.Core.Cryptography;
-
-#endif
-
 namespace OpenAC.Net.DFe.Core
 {
     /// <summary>
@@ -58,19 +52,6 @@ namespace OpenAC.Net.DFe.Core
     /// </summary>
     public static class XmlSigning
     {
-        #region Constructors
-
-#if NETFULL
-
-        static XmlSigning()
-        {
-            CryptoConfig.AddAlgorithm(typeof(RSAPKCS1SHA256SignatureDescription), "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256");
-        }
-
-#endif
-
-        #endregion Constructors
-
         #region Methods
 
         /// <summary>
@@ -274,50 +255,6 @@ namespace OpenAC.Net.DFe.Core
             return ValidarAssinatura(xmlDoc);
         }
 
-        private static XmlElement GerarAssinatura(XmlDocument doc, string infoElement, string signAtribute,
-            X509Certificate2 certificado, bool comments, SignDigest digest)
-        {
-            Guard.Against<ArgumentException>(!infoElement.IsEmpty() && doc.GetElementsByTagName(infoElement).Count != 1, "Referencia invalida ou não é unica.");
-
-            //Adiciona Certificado ao Key Info
-            var keyInfo = new KeyInfo();
-            keyInfo.AddClause(new KeyInfoX509Data(certificado));
-
-            //Seta chaves
-            var signedDocument = new SignedXml(doc)
-            {
-                SigningKey = certificado.PrivateKey,
-                KeyInfo = keyInfo,
-                SignedInfo =
-                {
-                    SignatureMethod = GetSignatureMethod(digest)
-                }
-            };
-
-            var uri = infoElement.IsEmpty() || signAtribute.IsEmpty() ? "" :
-                $"#{doc.GetElementsByTagName(infoElement)[0].Attributes?[signAtribute]?.InnerText}";
-
-            // Cria referencia
-            var reference = new Reference
-            {
-                Uri = uri,
-                DigestMethod = GetDigestMethod(digest)
-            };
-
-            // Adiciona transformação a referencia
-            reference.AddTransform(new XmlDsigEnvelopedSignatureTransform());
-            reference.AddTransform(new XmlDsigC14NTransform(comments));
-
-            // Adiciona referencia ao xml
-            signedDocument.AddReference(reference);
-
-            // Calcula Assinatura
-            signedDocument.ComputeSignature();
-
-            // Pega representação da assinatura
-            return signedDocument.GetXml();
-        }
-
         /// <summary>
         /// Validar a assinatura do Xml
         /// </summary>
@@ -349,16 +286,60 @@ namespace OpenAC.Net.DFe.Core
                 return false;
             }
         }
+        
+        private static XmlElement GerarAssinatura(XmlDocument doc, string infoElement, string signAtribute,
+            X509Certificate2 certificado, bool comments, SignDigest digest)
+        {
+            Guard.Against<ArgumentException>(!infoElement.IsEmpty() && doc.GetElementsByTagName(infoElement).Count != 1, "Referencia invalida ou não é unica.");
+
+            var uri = infoElement.IsEmpty() || signAtribute.IsEmpty() ? "" :
+                $"#{doc.GetElementsByTagName(infoElement)[0].Attributes?[signAtribute]?.InnerText}";
+            
+            //Adiciona Certificado ao Key Info
+            var keyInfo = new KeyInfo();
+            keyInfo.AddClause(new KeyInfoX509Data(certificado));
+
+            //Seta chaves
+            var signedDocument = new SignedXml(doc)
+            {
+                SigningKey = certificado.GetRSAPrivateKey(),
+                KeyInfo = keyInfo,
+                SignedInfo =
+                {
+                    CanonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl,
+                    SignatureMethod = GetSignatureMethod(digest)
+                }
+            };
+
+            // Cria referencia
+            var reference = new Reference
+            {
+                Uri = uri,
+                DigestMethod = GetDigestMethod(digest)
+            };
+            // Adiciona referencia ao xml
+            signedDocument.AddReference(reference);
+
+            // Adiciona transformação a referencia
+            reference.AddTransform(new XmlDsigEnvelopedSignatureTransform());
+            reference.AddTransform(new XmlDsigC14NTransform(comments));
+
+            // Calcula Assinatura
+            signedDocument.ComputeSignature();
+
+            // Pega representação da assinatura
+            return signedDocument.GetXml();
+        }
 
         private static string GetSignatureMethod(SignDigest digest)
         {
             switch (digest)
             {
                 case SignDigest.SHA1:
-                    return "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
+                    return SignedXml.XmlDsigRSASHA1Url;
 
                 case SignDigest.SHA256:
-                    return "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
+                    return SignedXml.XmlDsigRSASHA256Url;
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(digest), digest, null);
@@ -370,10 +351,10 @@ namespace OpenAC.Net.DFe.Core
             switch (digest)
             {
                 case SignDigest.SHA1:
-                    return "http://www.w3.org/2000/09/xmldsig#sha1";
+                    return SignedXml.XmlDsigSHA1Url;
 
                 case SignDigest.SHA256:
-                    return "http://www.w3.org/2001/04/xmlenc#sha256";
+                    return SignedXml.XmlDsigSHA256Url;
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(digest), digest, null);
