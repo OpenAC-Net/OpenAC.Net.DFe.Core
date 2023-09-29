@@ -42,15 +42,6 @@ namespace OpenAC.Net.DFe.Core.Service;
 public class DFeServices<TTIpo> : DFeDocument<DFeServices<TTIpo>>
     where TTIpo : Enum
 {
-    #region Constructors
-
-    public DFeServices()
-    {
-        Webservices = new DFeCollection<DFeServiceInfo<TTIpo>>();
-    }
-
-    #endregion Constructors
-
     #region Properties
 
     /// <summary>
@@ -65,7 +56,7 @@ public class DFeServices<TTIpo> : DFeDocument<DFeServices<TTIpo>>
     }
 
     [DFeCollection("Services")]
-    public DFeCollection<DFeServiceInfo<TTIpo>> Webservices { get; set; }
+    public DFeCollection<DFeServiceInfo<TTIpo>> Webservices { get; set; } = new();
 
     #endregion Properties
 }

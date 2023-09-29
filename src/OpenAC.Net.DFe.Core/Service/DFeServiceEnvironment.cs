@@ -39,15 +39,6 @@ namespace OpenAC.Net.DFe.Core.Service;
 
 public class DFeServiceEnvironment<TTIpo> where TTIpo : Enum
 {
-    #region Constructors
-
-    public DFeServiceEnvironment()
-    {
-        Enderecos = new Dictionary<TTIpo, string>();
-    }
-
-    #endregion Constructors
-
     #region Properties
 
     /// <summary>
@@ -70,7 +61,7 @@ public class DFeServiceEnvironment<TTIpo> where TTIpo : Enum
     [DFeDictionary("Enderecos")]
     [DFeDictionaryKey(TipoCampo.Enum, "Tipo", AsAttribute = true)]
     [DFeDictionaryValue(TipoCampo.Str, "Endereco")]
-    public Dictionary<TTIpo, string> Enderecos { get; set; }
+    public Dictionary<TTIpo, string> Enderecos { get; set; } = new();
 
     #endregion Properties
 }

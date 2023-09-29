@@ -82,7 +82,7 @@
       <Version>2.0.3</Version>
     </PackageReference>
     <PackageReference Include="OpenAC.Net.Core">
-      <Version>1.5.0.1</Version>
+      <Version>1.6.0-beta.1</Version>
     </PackageReference>
     <PackageReference Include="System.Collections">
       <Version>4.3.0</Version>
