@@ -76,7 +76,7 @@ public static class CertificadoDigital
             if (cerSerie.IsEmpty())
             {
 #if NETSTANDARD2_0
-                throw new OpenDFeException("Número de série obrigatório.");
+                throw new OpenDFeException("Número de série do certificado digital obrigatório.");
 #else
                     certificadosSelecionados = X509Certificate2UI.SelectFromCollection(certificates, "Certificados Digitais",
                         "Selecione o Certificado Digital para uso no aplicativo", X509SelectionFlag.SingleSelection);
@@ -109,7 +109,7 @@ public static class CertificadoDigital
         Guard.Against<ArgumentNullException>(caminho.IsEmpty(), "Caminho do arquivo não poder ser nulo ou vazio !");
         Guard.Against<ArgumentException>(!File.Exists(caminho), "Arquivo do Certificado digital não encontrado !");
 
-        var cert = new X509Certificate2(caminho, senha);
+        var cert = new X509Certificate2(caminho, senha, X509KeyStorageFlags.MachineKeySet);
         return cert;
     }
 
@@ -125,7 +125,7 @@ public static class CertificadoDigital
         Guard.Against<ArgumentNullException>(certificado == null, "O certificado não poder ser nulo !");
         Guard.Against<ArgumentException>(certificado.Length == 0, "O tamanhado do certificado não pode ser zero !");
 
-        var cert = new X509Certificate2(certificado, senha);
+        var cert = new X509Certificate2(certificado, senha, X509KeyStorageFlags.MachineKeySet);
         return cert;
     }
 
