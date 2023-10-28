@@ -116,7 +116,7 @@ public static class XmlSchemaValidation
         }
         catch (Exception exception)
         {
-            errorList.Add(exception.Message);
+            errorList.Add("Erro ao validar schema:" + exception.Message);
         }
 
         erros = errorList.ToArray();
