@@ -31,7 +31,6 @@
 
 using System;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Text;
@@ -193,7 +192,7 @@ namespace OpenAC.Net.DFe.Core
         /// <returns>System.String.</returns>
         /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
         /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
-        public static void AssinarDocumento(XmlDocument doc, string docElement, string infoElement, string signAtribute,
+        public static void AssinarDocumento(this XmlDocument doc, string docElement, string infoElement, string signAtribute,
             X509Certificate2 certificado, bool comments = false, SignDigest digest = SignDigest.SHA1)
         {
             Guard.Against<ArgumentNullException>(doc == null, "XmlDOcument não pode ser nulo.");
@@ -262,7 +261,7 @@ namespace OpenAC.Net.DFe.Core
         /// </summary>
         /// <param name="doc">o documento xml</param>
         /// <returns></returns>
-        public static bool ValidarAssinatura(XmlDocument doc)
+        public static bool ValidarAssinatura(this XmlDocument doc)
         {
             try
             {
