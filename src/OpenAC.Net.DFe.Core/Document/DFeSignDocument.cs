@@ -1,4 +1,5 @@
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography.Xml;
 using OpenAC.Net.Core.Extensions;
 using OpenAC.Net.DFe.Core.Attributes;
 using OpenAC.Net.DFe.Core.Common;
@@ -23,9 +24,10 @@ public abstract class DFeSignDocument<TDocument> : DFeDocument<TDocument> where 
     /// <param name="comments">if set to <c>true</c> [comments].</param>
     /// <param name="digest">The digest.</param>
     /// <param name="options">The options.</param>
-    protected void AssinarDocumento(X509Certificate2 certificado, DFeSaveOptions options, bool comments, SignDigest digest)
+    /// <param name="canonicalizationMethod">The canonicalizationMethod.</param>
+    protected void AssinarDocumento(X509Certificate2 certificado, DFeSaveOptions options, bool comments, SignDigest digest, string canonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl)
     {
-        Signature = XmlSigning.AssinarDocumento(this, certificado, comments, digest, options, out var xml);
+        Signature = XmlSigning.AssinarDocumento(this, certificado, comments, digest, options, out var xml, canonicalizationMethod);
         Xml = xml;
     }
 
