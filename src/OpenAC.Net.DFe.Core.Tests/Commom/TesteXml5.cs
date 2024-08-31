@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections;
 using System.Text;
 using OpenAC.Net.DFe.Core.Attributes;
 using OpenAC.Net.DFe.Core.Collection;
 using OpenAC.Net.DFe.Core.Serializer;
 
-namespace OpenAC.Net.DFe.Core.Tests
+namespace OpenAC.Net.DFe.Core.Tests.Commom
 {
     [DFeRoot]
     public class TesteXml5

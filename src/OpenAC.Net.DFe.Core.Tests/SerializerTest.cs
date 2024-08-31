@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 using OpenAC.Net.DFe.Core.Collection;
 using OpenAC.Net.DFe.Core.Common;
 using OpenAC.Net.DFe.Core.Service;
-using Xunit;
+using OpenAC.Net.DFe.Core.Tests.Commom;
 
 namespace OpenAC.Net.DFe.Core.Tests
 {

@@ -75,7 +75,7 @@ public static class CertificadoDigital
 
             if (cerSerie.IsEmpty())
             {
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET
                 throw new OpenDFeException("Número de série do certificado digital obrigatório.");
 #else
                     certificadosSelecionados = X509Certificate2UI.SelectFromCollection(certificates, "Certificados Digitais",
