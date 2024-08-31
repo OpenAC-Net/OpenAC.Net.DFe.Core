@@ -137,14 +137,12 @@ internal static class DictionarySerializer
         var valueAtt = prop.GetAttribute<DFeDictionaryValueAttribute>();
 
         var dictionary = (IDictionary)Activator.CreateInstance(prop.PropertyType);
-
-        if (parentItem != null) return dictionary;
         
         var args = prop.PropertyType.GetGenericArguments();
         var keyType = ObjectType.From(args[0]);
         var valueType = ObjectType.From(args[1]);
 
-        var elements = parent.ElementsAnyNs(keyAtt.AsAttribute ? valueAtt.Name : tag.ItemName);
+        var elements = parent?.ElementsAnyNs(keyAtt.AsAttribute ? valueAtt.Name : tag.ItemName) ?? [];
         foreach (var element in elements)
         {
             object key;
