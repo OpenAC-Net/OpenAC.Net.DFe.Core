@@ -24,21 +24,10 @@ public abstract class DFeSignDocument<TDocument> : DFeDocument<TDocument> where 
     /// <param name="comments">if set to <c>true</c> [comments].</param>
     /// <param name="digest">The digest.</param>
     /// <param name="options">The options.</param>
-    /// <param name="canonicalizationMethod">The canonicalizationMethod.</param>
-    protected void AssinarDocumento(X509Certificate2 certificado, DFeSaveOptions options, bool comments, SignDigest digest, string canonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl)
+    protected void AssinarDocumento(X509Certificate2 certificado, DFeSaveOptions options, bool comments, SignDigest digest = SignDigest.SHA1)
     {
-        Signature = XmlSigning.AssinarDocumento(this, certificado, comments, digest, options, out var xml, canonicalizationMethod);
+        Signature = this.AssinarDocumento(certificado, comments, digest, options, out var xml);
         Xml = xml;
-    }
-
-    /// <summary>
-    /// Valida a assinatura do documento.
-    /// </summary>
-    /// <param name="gerarXml"></param>
-    /// <returns></returns>
-    protected bool ValidarAssinaturaDocumento(bool gerarXml)
-    {
-        return XmlSigning.ValidarAssinatura(this, gerarXml);
     }
 
     /// <summary>

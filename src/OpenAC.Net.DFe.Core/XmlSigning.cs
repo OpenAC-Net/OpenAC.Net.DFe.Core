@@ -217,12 +217,10 @@ namespace OpenAC.Net.DFe.Core
         /// <param name="digest">The digest.</param>
         /// <param name="options">The options.</param>
         /// <param name="signedXml"></param>
-        /// <param name="canonicalizationMethod"></param>
         /// <returns>DFeSignature.</returns>
         public static DFeSignature AssinarDocumento<TDocument>(this DFeSignDocument<TDocument> document,
             X509Certificate2 certificado, bool comments, SignDigest digest,
-            DFeSaveOptions options, out string signedXml,
-            string canonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl) where TDocument : class
+            DFeSaveOptions options, out string signedXml) where TDocument : class
         {
             Guard.Against<ArgumentException>(!typeof(TDocument).HasAttribute<DFeSignInfoElement>(), "Atributo [DFeSignInfoElement] não encontrado.");
 
@@ -231,7 +229,7 @@ namespace OpenAC.Net.DFe.Core
             xmlDoc.LoadXml(xml);
 
             var signatureInfo = typeof(TDocument).GetAttribute<DFeSignInfoElement>();
-            var xmlSignature = GerarAssinatura(xmlDoc, signatureInfo.SignElement, signatureInfo.SignAtribute, certificado, comments, digest, canonicalizationMethod);
+            var xmlSignature = GerarAssinatura(xmlDoc, signatureInfo.SignElement, signatureInfo.SignAtribute, certificado, comments, digest);
 
             // Adiciona a assinatura no documento e retorna o xml assinado no parametro signedXml
             var element = xmlDoc.ImportNode(xmlSignature, true);
@@ -289,25 +287,25 @@ namespace OpenAC.Net.DFe.Core
         }
         
         private static XmlElement GerarAssinatura(XmlDocument doc, string infoElement, string signAtribute,
-            X509Certificate2 certificado, bool comments, SignDigest digest, string canonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl)
+            X509Certificate2 certificado, bool comments, SignDigest digest)
         {
             Guard.Against<ArgumentException>(!infoElement.IsEmpty() && doc.GetElementsByTagName(infoElement).Count != 1, "Referencia invalida ou não é unica.");
 
             var uri = infoElement.IsEmpty() || signAtribute.IsEmpty() ? "" :
                 $"#{doc.GetElementsByTagName(infoElement)[0].Attributes?[signAtribute]?.InnerText}";
             
-            //Adiciona Certificado ao Key Info
+            // Adiciona Certificado ao Key Info
             var keyInfo = new KeyInfo();
             keyInfo.AddClause(new KeyInfoX509Data(certificado));
 
-            //Seta chaves
+            // Seta chaves
             var signedDocument = new SignedXml(doc)
             {
                 SigningKey = certificado.GetRSAPrivateKey(),
                 KeyInfo = keyInfo,
                 SignedInfo =
                 {
-                    CanonicalizationMethod = canonicalizationMethod,
+                    CanonicalizationMethod = comments ? SignedXml.XmlDsigC14NWithCommentsTransformUrl : SignedXml.XmlDsigC14NTransformUrl,
                     SignatureMethod = GetSignatureMethod(digest)
                 }
             };
@@ -318,6 +316,7 @@ namespace OpenAC.Net.DFe.Core
                 Uri = uri,
                 DigestMethod = GetDigestMethod(digest)
             };
+            
             // Adiciona referencia ao xml
             signedDocument.AddReference(reference);
 
@@ -346,20 +345,15 @@ namespace OpenAC.Net.DFe.Core
                     throw new ArgumentOutOfRangeException(nameof(digest), digest, null);
             }
         }
-
+        
         private static string GetDigestMethod(SignDigest digest)
         {
-            switch (digest)
+            return digest switch
             {
-                case SignDigest.SHA1:
-                    return SignedXml.XmlDsigSHA1Url;
-
-                case SignDigest.SHA256:
-                    return SignedXml.XmlDsigSHA256Url;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(digest), digest, null);
-            }
+                SignDigest.SHA1 => SignedXml.XmlDsigSHA1Url,
+                SignDigest.SHA256 => SignedXml.XmlDsigSHA256Url,
+                _ => throw new ArgumentOutOfRangeException(nameof(digest), digest, null)
+            };
         }
 
         #endregion Methods
