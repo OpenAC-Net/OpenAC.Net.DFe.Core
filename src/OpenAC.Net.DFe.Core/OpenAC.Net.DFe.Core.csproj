@@ -9,16 +9,17 @@
     <AssemblyOriginatorKeyFile>OpenAC.snk</AssemblyOriginatorKeyFile>
     <Copyright>Copyright © Projeto OpenAC .Net 2014 - 2024</Copyright>
     <Company>OpenAC .Net - Automação Comercial em .Net</Company>
-    <Authors>Projeto OpenAC .Net</Authors>
-    <PackageProjectUrl>https://openac-net.github.io/</PackageProjectUrl>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageIconUrl>https://avatars.githubusercontent.com/u/90476515?s=200&amp;v=4</PackageIconUrl>
+    <Authors>Projeto OpenAC .Net</Authors>    
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>    
     <RepositoryUrl>https://github.com/OpenAC-Net/OpenAC.Net.DFe.Core</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>OpenAC .Net DFe</PackageTags>
     <Description>Biblioteca para serialização e deserialização de xml e comunicação com os webservices</Description>
     <NeutralLanguage>pt-BR</NeutralLanguage>
+    <PackageIcon>nuget.png</PackageIcon>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://openac.net.br/</PackageProjectUrl>
     <AssemblyVersion>1.6.0.2</AssemblyVersion>
     <FileVersion>1.6.0.2</FileVersion>
     <Version>1.6.0.2</Version>
@@ -51,7 +52,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>/</PackagePath>
+    </None>
+    <None Include="..\..\nuget.png">
+      <Pack>True</Pack>
+      <PackagePath/>
+      <Link>nuget.png</Link>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>/</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
