@@ -120,6 +120,14 @@ public abstract class DFeArquivosConfigBase
     public bool Salvar { get; set; }
 
     /// <summary>
+    /// Define se os nomes dos arquivos devem ser padronizados,
+    /// utilizando a chave da NFSe, Id do DPS ou NSU, conforme o tipo de operação.
+    /// Quando <c>false</c>, utiliza o comportamento padrão da biblioteca,
+    /// cujo formato pode variar e não segue um padrão fixo.
+    /// </summary>
+    public bool PadronizarNomes { get; set; }
+
+    /// <summary>
     /// Define/retorna se deve ser adicionado um literal ao caminho de salvamento.
     /// </summary>
     public bool AdicionarLiteral { get; set; }

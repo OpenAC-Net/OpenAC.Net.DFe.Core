@@ -39,7 +39,7 @@ using OpenAC.Net.Core.Extensions;
 
 namespace OpenAC.Net.DFe.Core.Extensions;
 
-internal static class DFeExtensions
+public static class DFeExtensions
 {
     public static DFeBaseAttribute GetElementAtt(this PropertyInfo prop)
     {
@@ -153,5 +153,19 @@ internal static class DFeExtensions
         {
             return false;
         }
+    }
+
+    /// <summary>
+    /// Formata uma string numérica com zeros à esquerda.
+    /// </summary>
+    /// <param name="value">String numérica</param>
+    public static string FillZeros(this string? value, int tamanho = 6, string fallback = "000000")
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return fallback;
+
+        return int.TryParse(value, out var numero)
+            ? numero.ToString(new string('0', tamanho))
+            : fallback;
     }
 }
