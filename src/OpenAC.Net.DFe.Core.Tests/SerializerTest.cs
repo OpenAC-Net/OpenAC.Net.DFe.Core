@@ -19,10 +19,8 @@ namespace OpenAC.Net.DFe.Core.Tests
                 TesteEnum1 = TesteEnum.Value1,
                 TesteEnum2 = null,
                 TestNullInt = 999,
-                TestDateTz = new DateTimeOffset(DateTime.Now, TimeSpan.FromHours(-4))
+                TestDateTz = new DateTimeOffset(DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified), TimeSpan.FromHours(-4))
             };
-
-            var cdata = File.ReadAllText("cdata_teste.xml");
 
             for (var i = 0; i < 3; i++)
             {
@@ -30,7 +28,7 @@ namespace OpenAC.Net.DFe.Core.Tests
                 {
                     Id = i + 1,
                     TestDecimal = xml.TestDecimal + i + 1.000M,
-                    TestString = $"<![CDATA[{cdata}]]>"
+                    TestString = $"<![CDATA[Pedido #1234. Entregar p/ João & Maria. Obs: Se < 18 anos, retirar com responsável.]]>"
                 };
                 xml.XmlItems.Add(item);
             }
