@@ -156,8 +156,9 @@ internal class ObjectSerializer
     {
         try
         {
+            if (element == null) return null; // Se o elemento XML é nulo, o objeto deserializado deve ser nulo
+
             var ret = type.HasCreate() ? type.GetCreate().Invoke() : Activator.CreateInstance(type);
-            if (element == null) return ret;
 
             var properties = type.GetProperties();
             foreach (var prop in properties)
