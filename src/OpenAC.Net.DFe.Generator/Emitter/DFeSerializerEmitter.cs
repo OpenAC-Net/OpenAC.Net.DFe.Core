@@ -93,11 +93,11 @@ public static class DFeSerializerEmitter
         sb.AppendLine();
 
         // ReadFromXml Static Factory
-        sb.AppendLine($"        public static global::{model.TypeFullName}? ReadFromXml(XElement? element, SerializerOptions? options = null)");
+        sb.AppendLine($"        public static {FormatType(model.TypeFullName)}? ReadFromXml(XElement? element, SerializerOptions? options = null)");
         sb.AppendLine("        {");
         sb.AppendLine("            if (element == null) return null;");
         sb.AppendLine("            options ??= new SerializerOptions();");
-        sb.AppendLine($"            var item = new global::{model.TypeFullName}();");
+        sb.AppendLine($"            var item = new {FormatType(model.TypeFullName)}();");
         sb.AppendLine("            item.ReadXml(element, options);");
         sb.AppendLine("            return item;");
         sb.AppendLine("        }");
@@ -111,7 +111,7 @@ public static class DFeSerializerEmitter
         sb.AppendLine("            this.Clear();");
         sb.AppendLine("            foreach (var childNode in element.Elements())");
         sb.AppendLine("            {");
-        sb.AppendLine($"                var child = global::{model.CollectionItemType}.ReadFromXml(childNode, options);");
+        sb.AppendLine($"                var child = {FormatType(model.CollectionItemType)}.ReadFromXml(childNode, options);");
         sb.AppendLine("                if (child != null) this.Add(child);");
         sb.AppendLine("            }");
         sb.AppendLine("        }");
@@ -156,11 +156,11 @@ public static class DFeSerializerEmitter
         sb.AppendLine();
 
         // ReadFromXml Static Factory
-        sb.AppendLine($"        public static global::{model.TypeFullName}? ReadFromXml(XElement? element, SerializerOptions? options = null)");
+        sb.AppendLine($"        public static {FormatType(model.TypeFullName)}? ReadFromXml(XElement? element, SerializerOptions? options = null)");
         sb.AppendLine("        {");
         sb.AppendLine("            if (element == null) return null;");
         sb.AppendLine("            options ??= new SerializerOptions();");
-        sb.AppendLine($"            var item = new global::{model.TypeFullName}();");
+        sb.AppendLine($"            var item = new {FormatType(model.TypeFullName)}();");
         sb.AppendLine("            item.ReadXml(element, options);");
         sb.AppendLine("            return item;");
         sb.AppendLine("        }");
@@ -399,7 +399,7 @@ public static class DFeSerializerEmitter
 
                 if (map.IsCollection && map.CollectionItemType != null)
                 {
-                    sb.AppendLine($"{loopIndent}{elsePrefix}if (colItem is global::{map.TypeFullName} colItem_{i})");
+                    sb.AppendLine($"{loopIndent}{elsePrefix}if (colItem is {FormatType(map.TypeFullName)} colItem_{i})");
                     sb.AppendLine($"{loopIndent}{{");
                     sb.AppendLine($"{loopIndent}    foreach (var subItem in colItem_{i})");
                     sb.AppendLine($"{loopIndent}    {{");
@@ -411,9 +411,19 @@ public static class DFeSerializerEmitter
                     sb.AppendLine($"{loopIndent}    }}");
                     sb.AppendLine($"{loopIndent}}}");
                 }
+                else if (map.TypeKind is DFeTypeKind.Primitive)
+                {
+                    sb.AppendLine($"{loopIndent}{elsePrefix}if (colItem is {FormatType(map.TypeFullName)} item_{i})");
+                    sb.AppendLine($"{loopIndent}{{");
+                    var tagNs = map.TagNamespace != null ? $"(XNamespace)\"{map.TagNamespace}\"" : "aw";
+                    var formatCall = $"DFeSerializerHelper.FormatValue_{map.TipoCampo}(item_{i}, {map.Min}, options)";
+                    sb.AppendLine($"{loopIndent}    var valStr = {formatCall};");
+                    sb.AppendLine($"{loopIndent}    if (valStr != null) {targetContainer}.Add(new XElement({tagNs} + \"{map.TagName}\", valStr));");
+                    sb.AppendLine($"{loopIndent}}}");
+                }
                 else
                 {
-                    sb.AppendLine($"{loopIndent}{elsePrefix}if (colItem is global::{map.TypeFullName} item_{i})");
+                    sb.AppendLine($"{loopIndent}{elsePrefix}if (colItem is {FormatType(map.TypeFullName)} item_{i})");
                     sb.AppendLine($"{loopIndent}{{");
                     sb.AppendLine($"{loopIndent}    var childElem = item_{i}.WriteToXml(\"{map.TagName}\", {itemNs}, options);");
                     sb.AppendLine($"{loopIndent}    {targetContainer}.Add(childElem);");
@@ -514,7 +524,7 @@ public static class DFeSerializerEmitter
 
             if (map.IsCollection && map.CollectionItemType != null)
             {
-                sb.AppendLine($"{inner}{elsePrefix}if ({valExpr} is global::{map.TypeFullName} colItem_{i})");
+                sb.AppendLine($"{inner}{elsePrefix}if ({valExpr} is {FormatType(map.TypeFullName)} colItem_{i})");
                 sb.AppendLine($"{inner}{{");
                 sb.AppendLine($"{inner}    foreach (var subItem in colItem_{i})");
                 sb.AppendLine($"{inner}    {{");
@@ -526,9 +536,19 @@ public static class DFeSerializerEmitter
                 sb.AppendLine($"{inner}    }}");
                 sb.AppendLine($"{inner}}}");
             }
+            else if (map.TypeKind is DFeTypeKind.Primitive)
+            {
+                sb.AppendLine($"{inner}{elsePrefix}if ({valExpr} is {FormatType(map.TypeFullName)} item_{i})");
+                sb.AppendLine($"{inner}{{");
+                var tagNs = map.TagNamespace != null ? $"(XNamespace)\"{map.TagNamespace}\"" : "aw";
+                var formatCall = $"DFeSerializerHelper.FormatValue_{map.TipoCampo}(item_{i}, {map.Min}, options)";
+                sb.AppendLine($"{inner}    var valStr = {formatCall};");
+                sb.AppendLine($"{inner}    if (valStr != null) element.Add(new XElement({tagNs} + \"{map.TagName}\", valStr));");
+                sb.AppendLine($"{inner}}}");
+            }
             else
             {
-                sb.AppendLine($"{inner}{elsePrefix}if ({valExpr} is global::{map.TypeFullName} item_{i})");
+                sb.AppendLine($"{inner}{elsePrefix}if ({valExpr} is {FormatType(map.TypeFullName)} item_{i})");
                 sb.AppendLine($"{inner}{{");
                 sb.AppendLine($"{inner}    var childElem = item_{i}.WriteToXml(\"{map.TagName}\", {itemNs}, options);");
                 sb.AppendLine($"{inner}    element.Add(childElem);");
@@ -550,7 +570,7 @@ public static class DFeSerializerEmitter
                 sb.AppendLine($"{indent}var elem_{prop.Name} = element.Elements().FirstOrDefault(e => e.Name.LocalName == \"{prop.TagName}\");");
                 sb.AppendLine($"{indent}if (elem_{prop.Name} != null)");
                 sb.AppendLine($"{indent}{{");
-                sb.AppendLine($"{indent}    this.{prop.Name} = global::{prop.TypeFullName}.ReadFromXml(elem_{prop.Name}, options);");
+                sb.AppendLine($"{indent}    this.{prop.Name} = {FormatType(prop.TypeFullName)}.ReadFromXml(elem_{prop.Name}, options);");
                 sb.AppendLine($"{indent}}}");
                 if (prop.Ocorrencia != OcorrenciaModel.Obrigatoria)
                 {
@@ -616,11 +636,11 @@ public static class DFeSerializerEmitter
 
         if (isArray || isIEnumerable)
         {
-            sb.AppendLine($"{inner}var {listVarName} = new List<global::{itemType}>();");
+            sb.AppendLine($"{inner}var {listVarName} = new List<{FormatType(itemType)}>();");
         }
         else
         {
-            sb.AppendLine($"{inner}if ({listVarName} == null) {listVarName} = new global::{prop.TypeFullName}();");
+            sb.AppendLine($"{inner}if ({listVarName} == null) {listVarName} = new {FormatType(prop.TypeFullName)}();");
             sb.AppendLine($"{inner}else {listVarName}.Clear();");
         }
 
@@ -635,7 +655,15 @@ public static class DFeSerializerEmitter
             foreach (var map in prop.ItemMappings)
             {
                 sb.AppendLine($"{loopIndent}    case \"{map.TagName}\":");
-                sb.AppendLine($"{loopIndent}        {listVarName}?.Add(global::{map.TypeFullName}.ReadFromXml(childNode, options));");
+                if (map.TypeKind is DFeTypeKind.Primitive)
+                {
+                    var parseCall = GetPrimitiveParseCall(map.TipoCampo, "childNode.Value", FormatType(map.TypeFullName));
+                    sb.AppendLine($"{loopIndent}        {listVarName}?.Add({parseCall});");
+                }
+                else
+                {
+                    sb.AppendLine($"{loopIndent}        {listVarName}?.Add({FormatType(map.TypeFullName)}.ReadFromXml(childNode, options));");
+                }
                 sb.AppendLine($"{loopIndent}        break;");
             }
 
@@ -646,7 +674,7 @@ public static class DFeSerializerEmitter
         {
             sb.AppendLine($"{inner}foreach (var childNode in {searchTarget}.Elements().Where(e => e.Name.LocalName == \"{prop.TagName}\"))");
             sb.AppendLine($"{inner}{{");
-            sb.AppendLine($"{inner}    var deserializedItem = global::{prop.CollectionItemType}.ReadFromXml(childNode, options);");
+            sb.AppendLine($"{inner}    var deserializedItem = {FormatType(prop.CollectionItemType)}.ReadFromXml(childNode, options);");
             sb.AppendLine($"{inner}    if (deserializedItem != null) {listVarName}?.Add(deserializedItem);");
             sb.AppendLine($"{inner}}}");
         }
@@ -702,7 +730,7 @@ public static class DFeSerializerEmitter
         var keyType = prop.DictionaryKeyType ?? "string";
         var valType = prop.DictionaryValueType ?? "string";
 
-        sb.AppendLine($"{inner}if (this.{prop.Name} == null) this.{prop.Name} = new global::{prop.TypeFullName}();");
+        sb.AppendLine($"{inner}if (this.{prop.Name} == null) this.{prop.Name} = new {FormatType(prop.TypeFullName)}();");
         sb.AppendLine($"{inner}else this.{prop.Name}.Clear();");
         sb.AppendLine($"{inner}foreach (var childNode in dictElem_{prop.Name}.Elements())");
         sb.AppendLine($"{inner}{{");
@@ -715,8 +743,8 @@ public static class DFeSerializerEmitter
             sb.AppendLine($"{loopIndent}{{");
             var parseKey = prop.EnumInfo != null
                 ? $"ParseEnum_{GetSafeIdentifier(prop.EnumInfo.EnumFullName)}(keyAttr.Value)"
-                : $"DFeSerializerHelper.ParseEnum_Generic<{keyType}>(keyAttr.Value)";
-            var parseVal = GetPrimitiveParseCall(valTipo, "childNode.Value", valType);
+                : $"DFeSerializerHelper.ParseEnum_Generic<{FormatType(keyType)}>(keyAttr.Value)";
+            var parseVal = GetPrimitiveParseCall(valTipo, "childNode.Value", FormatType(valType));
             sb.AppendLine($"{loopIndent}    var k = {parseKey};");
             sb.AppendLine($"{loopIndent}    var v = {parseVal};");
             sb.AppendLine($"{loopIndent}    this.{prop.Name}[k] = v;");
@@ -728,8 +756,8 @@ public static class DFeSerializerEmitter
             sb.AppendLine($"{loopIndent}var valNode = childNode.Elements().FirstOrDefault(e => e.Name.LocalName == \"{valName}\");");
             sb.AppendLine($"{loopIndent}if (keyNode != null)");
             sb.AppendLine($"{loopIndent}{{");
-            var parseKey = GetPrimitiveParseCall(keyTipo, "keyNode.Value", keyType);
-            var parseVal = GetPrimitiveParseCall(valTipo, "valNode?.Value", valType);
+            var parseKey = GetPrimitiveParseCall(keyTipo, "keyNode.Value", FormatType(keyType));
+            var parseVal = GetPrimitiveParseCall(valTipo, "valNode?.Value", FormatType(valType));
             sb.AppendLine($"{loopIndent}    var k = {parseKey};");
             sb.AppendLine($"{loopIndent}    var v = {parseVal};");
             sb.AppendLine($"{loopIndent}    this.{prop.Name}[k] = v;");
@@ -762,20 +790,28 @@ public static class DFeSerializerEmitter
             if (map.IsCollection && map.CollectionItemType != null)
             {
                 sb.AppendLine($"{inner}    case \"{map.TagName}\":");
-                sb.AppendLine($"{inner}        if (this.{prop.Name} is not global::{map.TypeFullName} col_{i})");
+                sb.AppendLine($"{inner}        if (this.{prop.Name} is not {FormatType(map.TypeFullName)} col_{i})");
                 sb.AppendLine($"{inner}        {{");
-                sb.AppendLine($"{inner}            col_{i} = new global::{map.TypeFullName}();");
+                sb.AppendLine($"{inner}            col_{i} = new {FormatType(map.TypeFullName)}();");
                 sb.AppendLine($"{inner}            this.{prop.Name} = col_{i};");
                 sb.AppendLine($"{inner}        }}");
-                sb.AppendLine($"{inner}        var parsedSub_{i} = global::{map.CollectionItemType}.ReadFromXml(childNode, options);");
+                sb.AppendLine($"{inner}        var parsedSub_{i} = {FormatType(map.CollectionItemType)}.ReadFromXml(childNode, options);");
                 sb.AppendLine($"{inner}        if (parsedSub_{i} != null) col_{i}.Add(parsedSub_{i});");
+                sb.AppendLine($"{inner}        matched_{prop.Name} = true;");
+                sb.AppendLine($"{inner}        break;");
+            }
+            else if (map.TypeKind is DFeTypeKind.Primitive)
+            {
+                sb.AppendLine($"{inner}    case \"{map.TagName}\":");
+                var parseCall = GetPrimitiveParseCall(map.TipoCampo, "childNode.Value", FormatType(map.TypeFullName));
+                sb.AppendLine($"{inner}        this.{prop.Name} = {parseCall};");
                 sb.AppendLine($"{inner}        matched_{prop.Name} = true;");
                 sb.AppendLine($"{inner}        break;");
             }
             else
             {
                 sb.AppendLine($"{inner}    case \"{map.TagName}\":");
-                sb.AppendLine($"{inner}        this.{prop.Name} = global::{map.TypeFullName}.ReadFromXml(childNode, options);");
+                sb.AppendLine($"{inner}        this.{prop.Name} = {FormatType(map.TypeFullName)}.ReadFromXml(childNode, options);");
                 sb.AppendLine($"{inner}        matched_{prop.Name} = true;");
                 sb.AppendLine($"{inner}        break;");
             }
@@ -812,14 +848,14 @@ public static class DFeSerializerEmitter
             var safeName = GetSafeIdentifier(info.EnumFullName);
 
             // Formatter
-            sb.AppendLine($"        private static string? FormatEnum_{safeName}(global::{info.EnumFullName}? value)");
+            sb.AppendLine($"        private static string? FormatEnum_{safeName}({FormatType(info.EnumFullName)}? value)");
             sb.AppendLine("        {");
             sb.AppendLine("            if (value == null) return null;");
             sb.AppendLine("            return value switch");
             sb.AppendLine("            {");
             foreach (var member in info.Members)
             {
-                sb.AppendLine($"                global::{info.EnumFullName}.{member.MemberName} => \"{member.XmlValue}\",");
+                sb.AppendLine($"                {FormatType(info.EnumFullName)}.{member.MemberName} => \"{member.XmlValue}\",");
             }
             sb.AppendLine("                _ => value.ToString()");
             sb.AppendLine("            };");
@@ -827,21 +863,48 @@ public static class DFeSerializerEmitter
             sb.AppendLine();
 
             // Parser
-            sb.AppendLine($"        private static global::{info.EnumFullName} ParseEnum_{safeName}(string? val)");
+            sb.AppendLine($"        private static {FormatType(info.EnumFullName)} ParseEnum_{safeName}(string? val)");
             sb.AppendLine("        {");
             sb.AppendLine("            if (string.IsNullOrEmpty(val)) return default;");
             sb.AppendLine("            return val switch");
             sb.AppendLine("            {");
             foreach (var member in info.Members)
             {
-                sb.AppendLine($"                \"{member.XmlValue}\" => global::{info.EnumFullName}.{member.MemberName},");
+                sb.AppendLine($"                \"{member.XmlValue}\" => {FormatType(info.EnumFullName)}.{member.MemberName},");
             }
-            sb.AppendLine($"                _ => Enum.TryParse<global::{info.EnumFullName}>(val, out var parsed) ? parsed : default");
+            sb.AppendLine($"                _ => Enum.TryParse<{FormatType(info.EnumFullName)}>(val, out var parsed) ? parsed : default");
             sb.AppendLine("            };");
             sb.AppendLine("        }");
             sb.AppendLine();
         }
         sb.AppendLine("        #endregion");
+    }
+
+    private static string FormatType(string? typeName)
+    {
+        if (string.IsNullOrEmpty(typeName)) return "object";
+        var clean = typeName!.TrimEnd('?');
+        if (clean.StartsWith("global::")) return clean;
+        if (!clean.Contains(".") && !clean.Contains("<")) return clean;
+        return clean switch
+        {
+            "string" => "string",
+            "int" => "int",
+            "long" => "long",
+            "short" => "short",
+            "byte" => "byte",
+            "sbyte" => "sbyte",
+            "uint" => "uint",
+            "ulong" => "ulong",
+            "ushort" => "ushort",
+            "decimal" => "decimal",
+            "float" => "float",
+            "double" => "double",
+            "bool" => "bool",
+            "char" => "char",
+            "object" => "object",
+            _ => $"global::{clean}"
+        };
     }
 
     private static string GetFormatCall(DFePropertyModel prop, string valExpr)

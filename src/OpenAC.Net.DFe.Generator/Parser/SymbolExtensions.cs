@@ -92,6 +92,12 @@ public static class SymbolExtensions
         return typeSymbol;
     }
 
+    public static string ToCleanDisplayString(this ITypeSymbol typeSymbol)
+    {
+        var unwrapped = typeSymbol.UnwrapNullable().WithNullableAnnotation(NullableAnnotation.None);
+        return unwrapped.ToDisplayString();
+    }
+
     public static DFeTypeKind GetDFeTypeKind(this ITypeSymbol typeSymbol)
     {
         var unwrapped = typeSymbol.UnwrapNullable();
@@ -103,7 +109,7 @@ public static class SymbolExtensions
         if (IsCollection(unwrapped)) return DFeTypeKind.Collection;
         if (IsValueElement(unwrapped)) return DFeTypeKind.ValueElement;
         if (unwrapped.TypeKind == TypeKind.Interface || unwrapped.IsAbstract) return DFeTypeKind.InterfaceOrAbstract;
-        if (unwrapped.HasAttribute("DFeRoot")) return DFeTypeKind.RootClass;
+        if (unwrapped.HasAttribute("DFeRoot") || InheritsFrom(unwrapped, "OpenAC.Net.DFe.Core.Document.DFeDocument")) return DFeTypeKind.RootClass;
         if (unwrapped.TypeKind == TypeKind.Class) return DFeTypeKind.Class;
 
         return DFeTypeKind.Other;

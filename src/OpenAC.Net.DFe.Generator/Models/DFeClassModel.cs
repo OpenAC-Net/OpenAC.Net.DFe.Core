@@ -21,4 +21,5 @@ public sealed record DFeClassModel(
     bool IsGeneric,
     string GenericTypeSignature,
     string GenericTypeConstraintsClause,
-    EquatableArray<DFePropertyModel> Properties) : IEquatable<DFeClassModel>;
+    EquatableArray<DFePropertyModel> Properties,
+    EquatableArray<DFeDiagnosticInfo> Diagnostics = default);

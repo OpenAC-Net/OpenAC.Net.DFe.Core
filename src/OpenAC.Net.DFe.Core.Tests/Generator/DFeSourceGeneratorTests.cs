@@ -1,6 +1,8 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using OpenAC.Net.DFe.Core.Attributes;
+using OpenAC.Net.DFe.Core.Common;
+using OpenAC.Net.DFe.Core.Document;
 using OpenAC.Net.DFe.Core.Serializer;
 using OpenAC.Net.DFe.Generator;
 
@@ -103,4 +105,186 @@ public class DFeSourceGeneratorTests
         await Assert.That(docFiscalCode).Contains("this.ShouldSerializeId()");
         await Assert.That(docFiscalCode).Contains("colItem.WriteToXml(\"det\", null, options)");
     }
+
+    [Test]
+    public async Task ShouldNotGenerateSerializerForNonDFeClasses()
+    {
+        const string NonDFeSource = """
+                                    using System;
+                                    using OpenAC.Net.DFe.Core.Common;
+
+                                    namespace MyTestNamespace;
+
+                                    public class MinhaConfigGeral : DFeGeralConfigBase { }
+                                    public class MinhaConfigWebservice : DFeWebserviceConfigBase { }
+                                    public class MinhaConfigCertificados : DFeCertificadosConfigBase { }
+                                    public class MinhaConfigArquivos : DFeArquivosConfigBase { }
+
+                                    public class MinhaConfig : DFeConfigBase<MinhaConfigGeral, MinhaConfigWebservice, MinhaConfigCertificados, MinhaConfigArquivos>
+                                    {
+                                    }
+
+                                    public class RegularClass
+                                    {
+                                        public string Nome { get; set; } = string.Empty;
+                                        public MinhaConfigGeral Geral { get; set; } = new();
+                                    }
+                                    """;
+
+        var generator = new DFeSourceGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+
+        var compilation = CSharpCompilation.Create(
+            "TestCompilationNonDFe",
+            [CSharpSyntaxTree.ParseText(NonDFeSource)],
+            [
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DFeConfigBase<,,,>).Assembly.Location),
+                MetadataReference.CreateFromFile(System.Reflection.Assembly.Load("System.Runtime").Location)
+            ],
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+        );
+
+        var runResult = driver.RunGenerators(compilation).GetRunResult();
+
+        await Assert.That(runResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)).IsEmpty();
+
+        var generatedFiles = runResult.GeneratedTrees.Select(t => System.IO.Path.GetFileName(t.FilePath)).ToList();
+        await Assert.That(generatedFiles).IsEmpty();
+    }
+
+    [Test]
+    public async Task ShouldReportErrorWhenDFeSignDocumentMissingDFeSignInfoElement()
+    {
+        const string Source = """
+                              using OpenAC.Net.DFe.Core.Attributes;
+                              using OpenAC.Net.DFe.Core.Document;
+
+                              namespace MyTestNamespace;
+
+                              [DFeRoot("NFe")]
+                              public partial class DocumentoSemSignInfo : DFeSignDocument<DocumentoSemSignInfo>
+                              {
+                                  [DFeElement(OpenAC.Net.DFe.Core.Serializer.TipoCampo.Str, "xNome")]
+                                  public string Nome { get; set; } = string.Empty;
+                              }
+                              """;
+
+        var generator = new DFeSourceGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+
+        var compilation = CSharpCompilation.Create(
+            "TestCompilationMissingSignInfo",
+            [CSharpSyntaxTree.ParseText(Source)],
+            [
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DFeRootAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DFeSignDocument<>).Assembly.Location),
+                MetadataReference.CreateFromFile(System.Reflection.Assembly.Load("System.Runtime").Location)
+            ],
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+        );
+
+        var runResult = driver.RunGenerators(compilation).GetRunResult();
+
+        var errors = runResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+        await Assert.That(errors).IsNotEmpty();
+        await Assert.That(errors.Any(e => e.Id == "DFE0001")).IsTrue();
+
+        var generatedFiles = runResult.GeneratedTrees.Select(t => System.IO.Path.GetFileName(t.FilePath)).ToList();
+        await Assert.That(generatedFiles).IsEmpty();
+    }
+
+    [Test]
+    public async Task ShouldGenerateSerializerWhenDFeSignDocumentHasDFeSignInfoElement()
+    {
+        const string Source = """
+                              using OpenAC.Net.DFe.Core.Attributes;
+                              using OpenAC.Net.DFe.Core.Document;
+                              using OpenAC.Net.DFe.Core.Serializer;
+
+                              namespace MyTestNamespace;
+
+                              [DFeRoot("NFe")]
+                              [DFeSignInfoElement("infNFe")]
+                              public partial class DocumentoComSignInfo : DFeSignDocument<DocumentoComSignInfo>
+                              {
+                                  [DFeElement(TipoCampo.Str, "xNome")]
+                                  public string Nome { get; set; } = string.Empty;
+                              }
+                              """;
+
+        var generator = new DFeSourceGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+
+        var compilation = CSharpCompilation.Create(
+            "TestCompilationWithSignInfo",
+            [CSharpSyntaxTree.ParseText(Source)],
+            [
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DFeRootAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DFeSignDocument<>).Assembly.Location),
+                MetadataReference.CreateFromFile(System.Reflection.Assembly.Load("System.Runtime").Location)
+            ],
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+        );
+
+        var runResult = driver.RunGenerators(compilation).GetRunResult();
+
+        await Assert.That(runResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)).IsEmpty();
+
+        var generatedFiles = runResult.GeneratedTrees.Select(t => System.IO.Path.GetFileName(t.FilePath)).ToList();
+        await Assert.That(generatedFiles).Contains("MyTestNamespace_DocumentoComSignInfo.DFe.g.cs");
+    }
+
+    [Test]
+    public async Task ShouldTransitvelyDiscoverChildClassWithoutDFeElement()
+    {
+        const string Source = """
+                              using OpenAC.Net.DFe.Core.Attributes;
+                              using OpenAC.Net.DFe.Core.Serializer;
+
+                              namespace MyTestNamespace;
+
+                              [DFeRoot("NFe")]
+                              public partial class DocumentoRoot
+                              {
+                                  // Propriedade de tipo classe SEM [DFeElement] explícito
+                                  public Identificacao Ide { get; set; } = new();
+                              }
+
+                              public partial class Identificacao
+                              {
+                                  [DFeElement(TipoCampo.Int, "cNF")]
+                                  public int Codigo { get; set; }
+                              }
+                              """;
+
+        var generator = new DFeSourceGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+
+        var compilation = CSharpCompilation.Create(
+            "TestCompilationTransitive",
+            [CSharpSyntaxTree.ParseText(Source)],
+            [
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DFeRootAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(System.Reflection.Assembly.Load("System.Runtime").Location)
+            ],
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+        );
+
+        var runResult = driver.RunGenerators(compilation).GetRunResult();
+
+        await Assert.That(runResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)).IsEmpty();
+
+        var generatedFiles = runResult.GeneratedTrees.Select(t => System.IO.Path.GetFileName(t.FilePath)).ToList();
+        await Assert.That(generatedFiles).Contains("MyTestNamespace_DocumentoRoot.DFe.g.cs");
+        await Assert.That(generatedFiles).Contains("MyTestNamespace_Identificacao.DFe.g.cs");
+
+        var docRootTree = runResult.GeneratedTrees.First(t => t.FilePath.EndsWith("MyTestNamespace_DocumentoRoot.DFe.g.cs"));
+        var docRootCode = docRootTree.GetText().ToString();
+        await Assert.That(docRootCode).Contains("this.Ide.WriteToXml(\"Ide\", null, options)");
+    }
 }
+

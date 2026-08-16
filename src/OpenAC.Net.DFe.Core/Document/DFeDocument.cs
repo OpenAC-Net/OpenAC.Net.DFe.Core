@@ -136,7 +136,7 @@ public abstract class DFeDocument<TDocument> : GenericClone<TDocument> where TDo
     /// <param name="options">Opções de formatação e salvamento do XML.</param>
     /// <param name="encoding">Codificação de caracteres (padrão UTF-8).</param>
     /// <returns>A string contendo o XML gerado.</returns>
-    public virtual string GetXml(DFeSaveOptions options = DFeSaveOptions.DisableFormatting, Encoding encoding = null)
+    public virtual string GetXml(DFeSaveOptions options = DFeSaveOptions.DisableFormatting, Encoding? encoding = null)
     {
         using var stream = new MemoryStream();
         Save(stream, options, encoding);
@@ -151,7 +151,7 @@ public abstract class DFeDocument<TDocument> : GenericClone<TDocument> where TDo
     /// <param name="path">Caminho completo do arquivo onde o XML será gravado.</param>
     /// <param name="options">Opções de formatação e salvamento do XML.</param>
     /// <param name="encoding">Codificação de caracteres (padrão UTF-8).</param>
-    public virtual void Save(string path, DFeSaveOptions options = DFeSaveOptions.DisableFormatting, Encoding encoding = null)
+    public virtual void Save(string path, DFeSaveOptions options = DFeSaveOptions.DisableFormatting, Encoding? encoding = null)
     {
         var serOptions = ConfigureOptions(options, encoding);
         var element = WriteToXml(null, null, serOptions);
@@ -177,7 +177,7 @@ public abstract class DFeDocument<TDocument> : GenericClone<TDocument> where TDo
     /// <param name="stream">Stream de destino para gravação do XML.</param>
     /// <param name="options">Opções de formatação e salvamento do XML.</param>
     /// <param name="encoding">Codificação de caracteres (padrão UTF-8).</param>
-    public virtual void Save(Stream stream, DFeSaveOptions options = DFeSaveOptions.DisableFormatting, Encoding encoding = null)
+    public virtual void Save(Stream stream, DFeSaveOptions options = DFeSaveOptions.DisableFormatting, Encoding? encoding = null)
     {
         var serOptions = ConfigureOptions(options, encoding);
         var element = WriteToXml(null, null, serOptions);

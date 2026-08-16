@@ -13,6 +13,50 @@ namespace OpenAC.Net.DFe.Generator.Parser;
 public static class DFeModelParser
 {
     /// <summary>
+    /// Verifica se o símbolo de classe é uma classe Raiz (possui [DFeRoot] ou herda de DFeDocument/DFeSignDocument).
+    /// </summary>
+    public static bool IsRootClass(INamedTypeSymbol classSymbol)
+    {
+        if (classSymbol.TypeKind != TypeKind.Class || classSymbol.IsAbstract)
+            return false;
+
+        if (IsIgnoredType(classSymbol))
+            return false;
+
+        if (classSymbol.HasAttribute("DFeRoot"))
+            return true;
+
+        if (SymbolExtensions.InheritsFrom(classSymbol, "OpenAC.Net.DFe.Core.Document.DFeDocument"))
+            return true;
+
+        return false;
+    }
+
+    /// <summary>
+    /// Verifica se a classe deve ser ignorada pelo analisador DFe (System, Attributes, Exceptions, Configs, etc).
+    /// </summary>
+    public static bool IsIgnoredType(INamedTypeSymbol classSymbol)
+    {
+        var nsString = classSymbol.ContainingNamespace.ToDisplayString();
+        if (SymbolExtensions.InheritsFrom(classSymbol, "System.Attribute") ||
+            SymbolExtensions.InheritsFrom(classSymbol, "System.Exception") ||
+            SymbolExtensions.InheritsFrom(classSymbol, "System.EventArgs") ||
+            SymbolExtensions.InheritsFrom(classSymbol, "OpenAC.Net.DFe.Core.Common.DFeConfigBase") ||
+            SymbolExtensions.InheritsFrom(classSymbol, "OpenAC.Net.DFe.Core.Common.DFeGeralConfigBase") ||
+            SymbolExtensions.InheritsFrom(classSymbol, "OpenAC.Net.DFe.Core.Common.DFeWebserviceConfigBase") ||
+            SymbolExtensions.InheritsFrom(classSymbol, "OpenAC.Net.DFe.Core.Common.DFeCertificadosConfigBase") ||
+            SymbolExtensions.InheritsFrom(classSymbol, "OpenAC.Net.DFe.Core.Common.DFeArquivosConfigBase") ||
+            SymbolExtensions.InheritsFrom(classSymbol, "OpenAC.Net.DFe.Core.Common.DFeOptionsBase") ||
+            SymbolExtensions.InheritsFrom(classSymbol, "OpenAC.Net.DFe.Core.Service.DFeServiceClientBase") ||
+            nsString.StartsWith("System") ||
+            nsString.StartsWith("OpenAC.Net.DFe.Core.Collection") ||
+            nsString.StartsWith("OpenAC.Net.DFe.Core.Serializer"))
+            return true;
+
+        return false;
+    }
+
+    /// <summary>
     /// Analisa a sintaxe e modelo semântico a partir do contexto do gerador incremental.
     /// </summary>
     public static DFeClassModel? ParseClass(GeneratorAttributeSyntaxContext context)
@@ -20,7 +64,7 @@ public static class DFeModelParser
         if (context.TargetSymbol is not INamedTypeSymbol classSymbol)
             return null;
 
-        return ParseClass(classSymbol);
+        return ParseClass(classSymbol, out _);
     }
 
     /// <summary>
@@ -28,22 +72,26 @@ public static class DFeModelParser
     /// </summary>
     public static DFeClassModel? ParseClass(INamedTypeSymbol classSymbol)
     {
+        return ParseClass(classSymbol, out _);
+    }
+
+    /// <summary>
+    /// Analisa os atributos e propriedades de um símbolo de classe (<see cref="INamedTypeSymbol"/>) construindo o modelo <see cref="DFeClassModel"/> e retornando os tipos filhos referenciados.
+    /// </summary>
+    public static DFeClassModel? ParseClass(INamedTypeSymbol classSymbol, out List<INamedTypeSymbol> referencedTypes)
+    {
+        referencedTypes = new List<INamedTypeSymbol>();
+
         if (classSymbol.TypeKind != TypeKind.Class || classSymbol.IsAbstract)
             return null;
 
-        // Skip System types, Attributes, Exceptions, and core infrastructure types
-        var nsString = classSymbol.ContainingNamespace.ToDisplayString();
-        if (SymbolExtensions.InheritsFrom(classSymbol, "System.Attribute") ||
-            SymbolExtensions.InheritsFrom(classSymbol, "System.Exception") ||
-            SymbolExtensions.InheritsFrom(classSymbol, "System.EventArgs") ||
-            nsString.StartsWith("System") ||
-            nsString.StartsWith("OpenAC.Net.DFe.Core.Collection") ||
-            nsString.StartsWith("OpenAC.Net.DFe.Core.Serializer"))
+        if (IsIgnoredType(classSymbol))
             return null;
 
+        var nsString = classSymbol.ContainingNamespace.ToDisplayString();
         var ns = classSymbol.ContainingNamespace.IsGlobalNamespace ? string.Empty : nsString;
         var className = classSymbol.Name;
-        var fullTypeName = classSymbol.ToDisplayString();
+        var fullTypeName = classSymbol.ToCleanDisplayString();
 
         var isPartial = false;
         foreach (var syntaxRef in classSymbol.DeclaringSyntaxReferences)
@@ -72,7 +120,7 @@ public static class DFeModelParser
 
                 foreach (var constraintType in tp.ConstraintTypes)
                 {
-                    tpConstraints.Add($"global::{constraintType.ToDisplayString()}");
+                    tpConstraints.Add($"global::{constraintType.ToCleanDisplayString()}");
                 }
 
                 if (tp.HasConstructorConstraint) tpConstraints.Add("new()");
@@ -87,8 +135,29 @@ public static class DFeModelParser
         var genericConstraintsClause = string.Join(" ", constraints);
 
         var isDFeDocument = SymbolExtensions.InheritsFrom(classSymbol, "OpenAC.Net.DFe.Core.Document.DFeDocument");
+        var isDFeSignDocument = SymbolExtensions.InheritsFrom(classSymbol, "OpenAC.Net.DFe.Core.Document.DFeSignDocument");
+        var signInfoAttr = classSymbol.GetAttribute("DFeSignInfoElement");
         var rootAttr = classSymbol.GetAttribute("DFeRoot");
         var isRoot = rootAttr != null || isDFeDocument;
+
+        var diagnostics = new List<DFeDiagnosticInfo>();
+
+        if (isDFeSignDocument && signInfoAttr == null)
+        {
+            var loc = classSymbol.Locations.FirstOrDefault();
+            var lineSpan = loc?.GetLineSpan() ?? default;
+            diagnostics.Add(new DFeDiagnosticInfo(
+                Id: "DFE0001",
+                Title: "Atributo DFeSignInfoElement obrigatório",
+                Message: $"A classe '{className}' herda de DFeSignDocument e precisa obrigatoriamente possuir o atributo [DFeSignInfoElement].",
+                Severity: DiagnosticSeverity.Error,
+                FilePath: lineSpan.Path,
+                StartLine: lineSpan.StartLinePosition.Line,
+                StartCharacter: lineSpan.StartLinePosition.Character,
+                EndLine: lineSpan.EndLinePosition.Line,
+                EndCharacter: lineSpan.EndLinePosition.Character
+            ));
+        }
 
         string? rootTag = null;
         string? rootNs = null;
@@ -108,7 +177,7 @@ public static class DFeModelParser
             if (itemTypeSymbol != null && itemTypeSymbol.TypeKind != TypeKind.TypeParameter)
             {
                 isCollectionClass = true;
-                collectionItemType = itemTypeSymbol.ToDisplayString();
+                collectionItemType = itemTypeSymbol.ToCleanDisplayString();
             }
         }
 
@@ -130,10 +199,11 @@ public static class DFeModelParser
             }
 
             propertyModels.Add(propModel);
+            CollectReferencedTypes(prop, referencedTypes);
         }
 
         // If it has no root tag and no DFe properties and is not a ValueElement and not a collection class, it's not a DFe class
-        if (!isRoot && !isValueElement && !isCollectionClass && propertyModels.Count == 0)
+        if (!isRoot && !isValueElement && !isCollectionClass && propertyModels.Count == 0 && diagnostics.Count == 0)
             return null;
 
         var sortedProperties = propertyModels.OrderBy(p => p.Ordem).ToImmutableArray();
@@ -154,7 +224,8 @@ public static class DFeModelParser
             IsGeneric: isGeneric,
             GenericTypeSignature: genericTypeSig,
             GenericTypeConstraintsClause: genericConstraintsClause,
-            Properties: new EquatableArray<DFePropertyModel>(sortedProperties)
+            Properties: new EquatableArray<DFePropertyModel>(sortedProperties),
+            Diagnostics: new EquatableArray<DFeDiagnosticInfo>(diagnostics.ToImmutableArray())
         );
     }
 
@@ -162,7 +233,7 @@ public static class DFeModelParser
     {
         var propName = prop.Name;
         var propType = prop.Type;
-        var typeFullName = propType.ToDisplayString();
+        var typeFullName = propType.ToCleanDisplayString();
         var isNullable = propType.IsNullable();
         var typeKind = propType.GetDFeTypeKind();
 
@@ -230,7 +301,7 @@ public static class DFeModelParser
             var itemTypeSymbol = propType.GetCollectionItemType();
             if (itemTypeSymbol != null)
             {
-                collectionItemType = itemTypeSymbol.ToDisplayString();
+                collectionItemType = itemTypeSymbol.ToCleanDisplayString();
                 collectionItemTypeKind = itemTypeSymbol.GetDFeTypeKind();
                 collectionItemTypeIsNullable = itemTypeSymbol.IsNullable();
             }
@@ -250,8 +321,8 @@ public static class DFeModelParser
             var dictTypes = propType.GetDictionaryTypes();
             if (dictTypes != null)
             {
-                dictKeyType = dictTypes.Value.KeyType.ToDisplayString();
-                dictValType = dictTypes.Value.ValueType.ToDisplayString();
+                dictKeyType = dictTypes.Value.KeyType.ToCleanDisplayString();
+                dictValType = dictTypes.Value.ValueType.ToCleanDisplayString();
             }
 
             var keyAttr = prop.GetAttribute("DFeDictionaryKey");
@@ -313,7 +384,7 @@ public static class DFeModelParser
                 var itemTypeSymbol = propType.GetCollectionItemType();
                 if (itemTypeSymbol != null)
                 {
-                    collectionItemType = itemTypeSymbol.ToDisplayString();
+                    collectionItemType = itemTypeSymbol.ToCleanDisplayString();
                     collectionItemTypeKind = itemTypeSymbol.GetDFeTypeKind();
                     collectionItemTypeIsNullable = itemTypeSymbol.IsNullable();
                 }
@@ -321,10 +392,27 @@ public static class DFeModelParser
         }
         else if (typeKind is DFeTypeKind.Class or DFeTypeKind.RootClass or DFeTypeKind.ValueElement)
         {
-            // Class property without explicit [DFeElement] (e.g. Signature, Xml5)
+            // Propriedade cujo tipo é uma classe sem [DFeElement] explícito (e.g. Signature, Xml5, Ide, Emit)
             propertyKind = DFePropertyKind.Element;
             tagName = propName;
             ocorrencia = OcorrenciaModel.NaoObrigatoria;
+        }
+        else if (typeKind == DFeTypeKind.Collection)
+        {
+            var itemTypeSymbol = propType.GetCollectionItemType();
+            if (itemTypeSymbol != null && (itemTypeSymbol.TypeKind == TypeKind.Class || itemTypeSymbol.TypeKind == TypeKind.Interface))
+            {
+                propertyKind = DFePropertyKind.Collection;
+                tagName = propName;
+                collectionContainerTag = propName;
+                collectionItemType = itemTypeSymbol.ToCleanDisplayString();
+                collectionItemTypeKind = itemTypeSymbol.GetDFeTypeKind();
+                collectionItemTypeIsNullable = itemTypeSymbol.IsNullable();
+            }
+            else
+            {
+                return null;
+            }
         }
         else
         {
@@ -345,6 +433,7 @@ public static class DFeModelParser
             var mapMin = itemAttr.GetNamedArgument<int>("Min", 0);
             var mapMax = itemAttr.GetNamedArgument<int>("Max", 0);
             var mapOcorrencia = (OcorrenciaModel)itemAttr.GetNamedArgument<int>("Ocorrencia", 0);
+            var mapTipoCampo = ExtractTipoCampo(itemAttr);
 
             var mapIsCollection = false;
             string? mapCollectionItemType = null;
@@ -352,11 +441,13 @@ public static class DFeModelParser
             if (mapItemTypeSymbol != null)
             {
                 mapIsCollection = true;
-                mapCollectionItemType = mapItemTypeSymbol.ToDisplayString();
+                mapCollectionItemType = mapItemTypeSymbol.ToCleanDisplayString();
             }
 
+            var mapTypeKind = itemTypeArg.GetDFeTypeKind();
+
             itemMappings.Add(new DFeItemMappingModel(
-                TypeFullName: itemTypeArg.ToDisplayString(),
+                TypeFullName: itemTypeArg.ToCleanDisplayString(),
                 TagName: mapName,
                 TagNamespace: mapNs,
                 Descricao: mapDesc,
@@ -364,7 +455,9 @@ public static class DFeModelParser
                 Max: mapMax,
                 Ocorrencia: mapOcorrencia,
                 IsCollection: mapIsCollection,
-                CollectionItemType: mapCollectionItemType
+                CollectionItemType: mapCollectionItemType,
+                TypeKind: mapTypeKind,
+                TipoCampo: mapTipoCampo
             ));
         }
 
@@ -400,7 +493,7 @@ public static class DFeModelParser
                     members.Add(new DFeEnumMemberModel(member.Name, xmlVal));
                 }
             }
-            enumInfo = new DFeEnumInfoModel(targetEnumType.ToDisplayString(), new EquatableArray<DFeEnumMemberModel>(members));
+            enumInfo = new DFeEnumInfoModel(targetEnumType.ToCleanDisplayString(), new EquatableArray<DFeEnumMemberModel>(members));
         }
 
         return new DFePropertyModel(
@@ -433,6 +526,50 @@ public static class DFeModelParser
             ItemMappings: new EquatableArray<DFeItemMappingModel>(itemMappings),
             EnumInfo: enumInfo
         );
+    }
+
+    private static void CollectReferencedTypes(IPropertySymbol prop, List<INamedTypeSymbol> referencedTypes)
+    {
+        void AddIfClass(ITypeSymbol? type)
+        {
+            if (type == null) return;
+            var unwrapped = type.UnwrapNullable();
+            if (unwrapped is INamedTypeSymbol named &&
+                named.TypeKind == TypeKind.Class &&
+                !named.IsAbstract &&
+                !IsIgnoredType(named) &&
+                named.SpecialType == SpecialType.None)
+            {
+                referencedTypes.Add(named);
+            }
+        }
+
+        var propType = prop.Type.UnwrapNullable();
+
+        // 1. Direct property type
+        AddIfClass(propType);
+
+        // 2. Collection item type
+        var colItemType = propType.GetCollectionItemType();
+        AddIfClass(colItemType);
+
+        // 3. Dictionary types
+        var dictTypes = propType.GetDictionaryTypes();
+        if (dictTypes != null)
+        {
+            AddIfClass(dictTypes.Value.KeyType);
+            AddIfClass(dictTypes.Value.ValueType);
+        }
+
+        // 4. DFeItem polymorphic types
+        foreach (var itemAttr in prop.GetAttributes("DFeItem"))
+        {
+            if (itemAttr.ConstructorArguments.Length > 0 && itemAttr.ConstructorArguments[0].Value is ITypeSymbol itemType)
+            {
+                AddIfClass(itemType);
+                AddIfClass(itemType.GetCollectionItemType());
+            }
+        }
     }
 
     private static TipoCampoModel ExtractTipoCampo(AttributeData attr)
