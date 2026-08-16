@@ -37,6 +37,9 @@ public static class DFeModelParser
     /// </summary>
     public static bool IsIgnoredType(INamedTypeSymbol classSymbol)
     {
+        if (classSymbol.ContainingType != null)
+            return true;
+
         var nsString = classSymbol.ContainingNamespace.ToDisplayString();
         if (SymbolExtensions.InheritsFrom(classSymbol, "System.Attribute") ||
             SymbolExtensions.InheritsFrom(classSymbol, "System.Exception") ||
@@ -142,6 +145,24 @@ public static class DFeModelParser
 
         var diagnostics = new List<DFeDiagnosticInfo>();
 
+        if (isDFeDocument && rootAttr == null)
+        {
+            var loc = classSymbol.Locations.FirstOrDefault();
+            var lineSpan = loc?.GetLineSpan() ?? default;
+            var baseTypeName = isDFeSignDocument ? "DFeSignDocument" : "DFeDocument";
+            diagnostics.Add(new DFeDiagnosticInfo(
+                Id: "DFE0002",
+                Title: "Atributo DFeRoot obrigatório",
+                Message: $"A classe '{className}' herda de {baseTypeName} e precisa obrigatoriamente possuir o atributo [DFeRoot].",
+                Severity: DiagnosticSeverity.Error,
+                FilePath: lineSpan.Path,
+                StartLine: lineSpan.StartLinePosition.Line,
+                StartCharacter: lineSpan.StartLinePosition.Character,
+                EndLine: lineSpan.EndLinePosition.Line,
+                EndCharacter: lineSpan.EndLinePosition.Character
+            ));
+        }
+
         if (isDFeSignDocument && signInfoAttr == null)
         {
             var loc = classSymbol.Locations.FirstOrDefault();
@@ -157,6 +178,26 @@ public static class DFeModelParser
                 EndLine: lineSpan.EndLinePosition.Line,
                 EndCharacter: lineSpan.EndLinePosition.Character
             ));
+        }
+        else if (isDFeSignDocument && signInfoAttr != null)
+        {
+            var signElement = signInfoAttr.GetConstructorArgument<string>(0) ?? signInfoAttr.GetNamedArgument<string>("SignElement");
+            if (string.IsNullOrWhiteSpace(signElement))
+            {
+                var loc = classSymbol.Locations.FirstOrDefault();
+                var lineSpan = loc?.GetLineSpan() ?? default;
+                diagnostics.Add(new DFeDiagnosticInfo(
+                    Id: "DFE0003",
+                    Title: "Propriedade SignElement obrigatória em DFeSignInfoElement",
+                    Message: $"A classe '{className}' herda de DFeSignDocument e o atributo [DFeSignInfoElement] precisa ter o 'SignElement' informado.",
+                    Severity: DiagnosticSeverity.Error,
+                    FilePath: lineSpan.Path,
+                    StartLine: lineSpan.StartLinePosition.Line,
+                    StartCharacter: lineSpan.StartLinePosition.Character,
+                    EndLine: lineSpan.EndLinePosition.Line,
+                    EndCharacter: lineSpan.EndLinePosition.Character
+                ));
+            }
         }
 
         string? rootTag = null;

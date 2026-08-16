@@ -34,6 +34,8 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+using OpenAC.Net.Core;
+using OpenAC.Net.Core.Extensions;
 using OpenAC.Net.Core.Generics;
 using OpenAC.Net.DFe.Core.Attributes;
 using OpenAC.Net.DFe.Core.Common;
@@ -47,6 +49,17 @@ namespace OpenAC.Net.DFe.Core.Document;
 /// <typeparam name="TDocument">O tipo concreto do documento derivado.</typeparam>
 public abstract class DFeDocument<TDocument> : GenericClone<TDocument> where TDocument : class
 {
+    #region Constructors
+
+    /// <summary>
+    /// Inicializa uma nova instância da classe <see cref="DFeDocument{TDocument}"/>.
+    /// </summary>
+    protected DFeDocument()
+    {
+    }
+
+    #endregion Constructors
+
     #region Properties
 
     /// <summary>
@@ -84,6 +97,8 @@ public abstract class DFeDocument<TDocument> : GenericClone<TDocument> where TDo
     /// <returns>A instância deserializada de <typeparamref name="TDocument"/>.</returns>
     public static TDocument Load(string document, Encoding? encoding = null)
     {
+        Guard.Against<ArgumentException>(document.IsEmpty(), "O documento não foi informado.", nameof(document));
+
         var options = new SerializerOptions();
         if (encoding != null)
         {
@@ -110,6 +125,8 @@ public abstract class DFeDocument<TDocument> : GenericClone<TDocument> where TDo
     /// <returns>A instância deserializada de <typeparamref name="TDocument"/>.</returns>
     public static TDocument Load(Stream document, Encoding? encoding = null)
     {
+        Guard.Against<ArgumentNullException>(document == null, nameof(document));
+
         var options = new SerializerOptions();
         if (encoding != null)
         {
@@ -153,6 +170,8 @@ public abstract class DFeDocument<TDocument> : GenericClone<TDocument> where TDo
     /// <param name="encoding">Codificação de caracteres (padrão UTF-8).</param>
     public virtual void Save(string path, DFeSaveOptions options = DFeSaveOptions.DisableFormatting, Encoding? encoding = null)
     {
+        Guard.Against<ArgumentException>(path.IsEmpty(), "Caminho do arquivo não informado.", nameof(path));
+
         var serOptions = ConfigureOptions(options, encoding);
         var element = WriteToXml(null, null, serOptions);
         var xmlDoc = new XDocument(new XDeclaration("1.0", serOptions.Encoding.WebName, null), element);
@@ -179,6 +198,7 @@ public abstract class DFeDocument<TDocument> : GenericClone<TDocument> where TDo
     /// <param name="encoding">Codificação de caracteres (padrão UTF-8).</param>
     public virtual void Save(Stream stream, DFeSaveOptions options = DFeSaveOptions.DisableFormatting, Encoding? encoding = null)
     {
+        Guard.Against<ArgumentNullException>(stream == null, nameof(stream));
         var serOptions = ConfigureOptions(options, encoding);
         var element = WriteToXml(null, null, serOptions);
         var xmlDoc = new XDocument(new XDeclaration("1.0", serOptions.Encoding.WebName, null), element);

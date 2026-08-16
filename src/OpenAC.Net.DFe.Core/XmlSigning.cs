@@ -216,13 +216,17 @@ namespace OpenAC.Net.DFe.Core
             X509Certificate2 certificado, bool comments, SignDigest digest,
             DFeSaveOptions options, out string signedXml) where TDocument : class
         {
-            Guard.Against<ArgumentException>(!typeof(TDocument).HasAttribute<DFeSignInfoElement>(), "Atributo [DFeSignInfoElement] não encontrado.");
+            Guard.Against<ArgumentNullException>(document == null, nameof(document));
+            Guard.Against<ArgumentNullException>(certificado == null, nameof(certificado));
+            Guard.Against<ArgumentException>(!certificado.HasPrivateKey, "O certificado informado não possui chave privada para assinatura.");
+
+            var signatureInfo = typeof(TDocument).GetAttribute<DFeSignInfoElement>();
+            Guard.Against<ArgumentException>(signatureInfo == null || signatureInfo.SignElement.IsEmpty(), "O elemento a ser assinado (SignElement) não foi informado no atributo [DFeSignInfoElement].");
 
             var xml = document.GetXml(options, Encoding.UTF8);
             var xmlDoc = new XmlDocument { PreserveWhitespace = true };
             xmlDoc.LoadXml(xml);
 
-            var signatureInfo = typeof(TDocument).GetAttribute<DFeSignInfoElement>();
             var xmlSignature = GerarAssinatura(xmlDoc, signatureInfo.SignElement, signatureInfo.SignAtribute, certificado, comments, digest);
 
             // Adiciona a assinatura no documento e retorna o xml assinado no parametro signedXml
@@ -242,6 +246,7 @@ namespace OpenAC.Net.DFe.Core
         /// <returns><c>true</c> se a assinatura for válida; caso contrário, <c>false</c>.</returns>
         public static bool ValidarAssinatura<TDocument>(this DFeSignDocument<TDocument> document, bool gerarXml) where TDocument : class
         {
+            Guard.Against<ArgumentNullException>(document == null, nameof(document));
             var xml = document.Xml.IsEmpty() || gerarXml ? document.GetXml(DFeSaveOptions.DisableFormatting, Encoding.UTF8) : document.Xml;
             var xmlDoc = new XmlDocument { PreserveWhitespace = true };
             xmlDoc.LoadXml(xml);

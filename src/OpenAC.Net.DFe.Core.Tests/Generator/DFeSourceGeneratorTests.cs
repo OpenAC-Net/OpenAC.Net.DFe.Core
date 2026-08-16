@@ -196,6 +196,174 @@ public class DFeSourceGeneratorTests
     }
 
     [Test]
+    public async Task ShouldReportErrorWhenDFeDocumentMissingDFeRoot()
+    {
+        const string Source = """
+                              using OpenAC.Net.DFe.Core.Attributes;
+                              using OpenAC.Net.DFe.Core.Document;
+
+                              namespace MyTestNamespace;
+
+                              public partial class DocumentoSemRoot : DFeDocument<DocumentoSemRoot>
+                              {
+                                  [DFeElement(OpenAC.Net.DFe.Core.Serializer.TipoCampo.Str, "xNome")]
+                                  public string Nome { get; set; } = string.Empty;
+                              }
+                              """;
+
+        var generator = new DFeSourceGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+
+        var compilation = CSharpCompilation.Create(
+            "TestCompilationMissingRoot",
+            [CSharpSyntaxTree.ParseText(Source)],
+            [
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DFeRootAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DFeDocument<>).Assembly.Location),
+                MetadataReference.CreateFromFile(System.Reflection.Assembly.Load("System.Runtime").Location)
+            ],
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+        );
+
+        var runResult = driver.RunGenerators(compilation).GetRunResult();
+
+        var errors = runResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+        await Assert.That(errors).IsNotEmpty();
+        await Assert.That(errors.Any(e => e.Id == "DFE0002")).IsTrue();
+
+        var generatedFiles = runResult.GeneratedTrees.Select(t => System.IO.Path.GetFileName(t.FilePath)).ToList();
+        await Assert.That(generatedFiles).IsEmpty();
+    }
+
+    [Test]
+    public async Task ShouldReportErrorWhenDFeSignDocumentMissingDFeRoot()
+    {
+        const string Source = """
+                              using OpenAC.Net.DFe.Core.Attributes;
+                              using OpenAC.Net.DFe.Core.Document;
+
+                              namespace MyTestNamespace;
+
+                              [DFeSignInfoElement("infNFe")]
+                              public partial class DocumentoSignSemRoot : DFeSignDocument<DocumentoSignSemRoot>
+                              {
+                                  [DFeElement(OpenAC.Net.DFe.Core.Serializer.TipoCampo.Str, "xNome")]
+                                  public string Nome { get; set; } = string.Empty;
+                              }
+                              """;
+
+        var generator = new DFeSourceGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+
+        var compilation = CSharpCompilation.Create(
+            "TestCompilationSignMissingRoot",
+            [CSharpSyntaxTree.ParseText(Source)],
+            [
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DFeRootAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DFeSignDocument<>).Assembly.Location),
+                MetadataReference.CreateFromFile(System.Reflection.Assembly.Load("System.Runtime").Location)
+            ],
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+        );
+
+        var runResult = driver.RunGenerators(compilation).GetRunResult();
+
+        var errors = runResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+        await Assert.That(errors).IsNotEmpty();
+        await Assert.That(errors.Any(e => e.Id == "DFE0002")).IsTrue();
+
+        var generatedFiles = runResult.GeneratedTrees.Select(t => System.IO.Path.GetFileName(t.FilePath)).ToList();
+        await Assert.That(generatedFiles).IsEmpty();
+    }
+
+    [Test]
+    public async Task ShouldReportBothErrorsWhenDFeSignDocumentMissingBothRootAndSignInfo()
+    {
+        const string Source = """
+                              using OpenAC.Net.DFe.Core.Attributes;
+                              using OpenAC.Net.DFe.Core.Document;
+
+                              namespace MyTestNamespace;
+
+                              public partial class DocumentoSemNada : DFeSignDocument<DocumentoSemNada>
+                              {
+                                  [DFeElement(OpenAC.Net.DFe.Core.Serializer.TipoCampo.Str, "xNome")]
+                                  public string Nome { get; set; } = string.Empty;
+                              }
+                              """;
+
+        var generator = new DFeSourceGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+
+        var compilation = CSharpCompilation.Create(
+            "TestCompilationMissingBoth",
+            [CSharpSyntaxTree.ParseText(Source)],
+            [
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DFeRootAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DFeSignDocument<>).Assembly.Location),
+                MetadataReference.CreateFromFile(System.Reflection.Assembly.Load("System.Runtime").Location)
+            ],
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+        );
+
+        var runResult = driver.RunGenerators(compilation).GetRunResult();
+
+        var errors = runResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+        await Assert.That(errors.Count).IsEqualTo(2);
+        await Assert.That(errors.Any(e => e.Id == "DFE0001")).IsTrue();
+        await Assert.That(errors.Any(e => e.Id == "DFE0002")).IsTrue();
+
+        var generatedFiles = runResult.GeneratedTrees.Select(t => System.IO.Path.GetFileName(t.FilePath)).ToList();
+        await Assert.That(generatedFiles).IsEmpty();
+    }
+
+    [Test]
+    public async Task ShouldReportErrorWhenDFeSignDocumentHasEmptySignElement()
+    {
+        const string Source = """
+                              using OpenAC.Net.DFe.Core.Attributes;
+                              using OpenAC.Net.DFe.Core.Document;
+
+                              namespace MyTestNamespace;
+
+                              [DFeRoot("NFe")]
+                              [DFeSignInfoElement("")]
+                              public partial class DocumentoSignElementVazio : DFeSignDocument<DocumentoSignElementVazio>
+                              {
+                                  [DFeElement(OpenAC.Net.DFe.Core.Serializer.TipoCampo.Str, "xNome")]
+                                  public string Nome { get; set; } = string.Empty;
+                              }
+                              """;
+
+        var generator = new DFeSourceGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+
+        var compilation = CSharpCompilation.Create(
+            "TestCompilationSignEmptyElement",
+            [CSharpSyntaxTree.ParseText(Source)],
+            [
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DFeRootAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DFeSignDocument<>).Assembly.Location),
+                MetadataReference.CreateFromFile(System.Reflection.Assembly.Load("System.Runtime").Location)
+            ],
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+        );
+
+        var runResult = driver.RunGenerators(compilation).GetRunResult();
+
+        var errors = runResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+        await Assert.That(errors).IsNotEmpty();
+        await Assert.That(errors.Any(e => e.Id == "DFE0003")).IsTrue();
+
+        var generatedFiles = runResult.GeneratedTrees.Select(t => System.IO.Path.GetFileName(t.FilePath)).ToList();
+        await Assert.That(generatedFiles).IsEmpty();
+    }
+
+    [Test]
     public async Task ShouldGenerateSerializerWhenDFeSignDocumentHasDFeSignInfoElement()
     {
         const string Source = """

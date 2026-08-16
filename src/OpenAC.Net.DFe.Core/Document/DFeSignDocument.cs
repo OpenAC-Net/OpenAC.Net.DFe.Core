@@ -29,7 +29,9 @@
 // <summary></summary>
 // ***********************************************************************
 
+using System;
 using System.Security.Cryptography.X509Certificates;
+using OpenAC.Net.Core;
 using OpenAC.Net.Core.Extensions;
 using OpenAC.Net.DFe.Core.Attributes;
 using OpenAC.Net.DFe.Core.Common;
@@ -42,6 +44,17 @@ namespace OpenAC.Net.DFe.Core.Document;
 /// <typeparam name="TDocument">O tipo concreto do documento assinado.</typeparam>
 public abstract class DFeSignDocument<TDocument> : DFeDocument<TDocument> where TDocument : class
 {
+    #region Constructors
+
+    /// <summary>
+    /// Inicializa uma nova instância da classe <see cref="DFeSignDocument{TDocument}"/>.
+    /// </summary>
+    protected DFeSignDocument()
+    {
+    }
+
+    #endregion Constructors
+
     #region Properties
 
     /// <summary>
@@ -63,6 +76,9 @@ public abstract class DFeSignDocument<TDocument> : DFeDocument<TDocument> where 
     /// <param name="digest">O algoritmo de hash criptográfico utilizado (SHA-1 ou SHA-256).</param>
     protected void AssinarDocumento(X509Certificate2 certificado, DFeSaveOptions options, bool comments, SignDigest digest = SignDigest.SHA1)
     {
+        Guard.Against<ArgumentNullException>(certificado == null, nameof(certificado));
+        Guard.Against<ArgumentException>(!certificado.HasPrivateKey, "O certificado informado não possui chave privada para assinatura.");
+
         Signature = this.AssinarDocumento(certificado, comments, digest, options, out var xml);
         Xml = xml;
     }

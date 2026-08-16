@@ -89,6 +89,7 @@ public class DFeSourceGenerator : IIncrementalGenerator
                 }
 
                 if (hasErrors) continue;
+                if (!classModel.IsPartial) continue;
 
                 var sourceCode = DFeSerializerEmitter.Generate(classModel);
                 var safeNs = string.IsNullOrEmpty(classModel.Namespace) ? "Global" : classModel.Namespace.Replace(".", "_");
@@ -120,6 +121,9 @@ public class DFeSourceGenerator : IIncrementalGenerator
             return false;
 
         if (classDeclaration.Modifiers.Any(SyntaxKind.AbstractKeyword))
+            return false;
+
+        if (classDeclaration.Parent is TypeDeclarationSyntax)
             return false;
 
         // Check for DFeRoot attribute
