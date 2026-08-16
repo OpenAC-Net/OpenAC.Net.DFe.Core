@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="XmlSigning.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -47,26 +47,25 @@ using Reference = System.Security.Cryptography.Xml.Reference;
 namespace OpenAC.Net.DFe.Core
 {
     /// <summary>
-    /// Classe com os metodos para assinatura e validação de assinatura de xml usando Hash Sha1.
+    /// Métodos utilitários e extensões para assinatura digital XML-DSig e validação de assinaturas em documentos DFe (SHA1 e SHA256).
     /// </summary>
     public static class XmlSigning
     {
         #region Methods
 
         /// <summary>
-        /// Assina a XML usando o certificado informado.
+        /// Realiza a assinatura digital do XML informado utilizando o certificado digital.
         /// </summary>
-        /// <param name="xml">O Xml.</param>
-        /// <param name="docElement">O elemento principal do xml a ser assinado.</param>
-        /// <param name="infoElement">O elemento a ser assinado.</param>
-        /// <param name="pCertificado">O certificado.</param>
-        /// <param name="comments">Se for <c>true</c> vai inserir a tag #withcomments no transform.</param>
-        /// <param name="identado">Se for <c>true</c> vai identar o xml de retorno</param>
-        /// <param name="showDeclaration">Se for <c>true</c> vai incluir a declaração do xml</param>
-        /// <param name="digest">Algoritmo usando para gerar o hash por padrão SHA1.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
-        /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
+        /// <param name="xml">String contendo o XML a ser assinado.</param>
+        /// <param name="docElement">Nome do elemento principal onde a assinatura será anexada.</param>
+        /// <param name="infoElement">Nome do elemento identificado com a tag de assinatura.</param>
+        /// <param name="pCertificado">Certificado digital X509 com chave privada.</param>
+        /// <param name="comments">Se <c>true</c>, insere o transform #withcomments.</param>
+        /// <param name="identado">Se <c>true</c>, retorna o XML assinado com indentação.</param>
+        /// <param name="showDeclaration">Se <c>true</c>, inclui a declaração XML inicial.</param>
+        /// <param name="digest">Algoritmo de resumo criptográfico (padrão SHA1).</param>
+        /// <returns>O XML assinado como string.</returns>
+        /// <exception cref="OpenDFeException">Disparada em caso de falha na assinatura digital.</exception>
         public static string AssinarXml(string xml, string docElement, string infoElement, X509Certificate2 pCertificado,
             bool comments = false, bool identado = false, bool showDeclaration = true, SignDigest digest = SignDigest.SHA1)
         {
@@ -74,20 +73,19 @@ namespace OpenAC.Net.DFe.Core
         }
 
         /// <summary>
-        /// Assina a XML usando o certificado informado.
+        /// Realiza a assinatura digital do XML informado especificando o atributo identificador.
         /// </summary>
-        /// <param name="xml">O Xml.</param>
-        /// <param name="docElement">O elemento principal do xml a ser assinado.</param>
-        /// <param name="infoElement">O elemento a ser assinado.</param>
-        /// <param name="signAtribute">O atributo do elemento a ser assinado.</param>
-        /// <param name="pCertificado">O certificado.</param>
-        /// <param name="comments">Se for <c>true</c> vai inserir a tag #withcomments no transform.</param>
-        /// <param name="identado">Se for <c>true</c> vai identar o xml de retorno</param>
-        /// <param name="showDeclaration">Se for <c>true</c> vai incluir a declaração do xml</param>
-        /// <param name="digest">Algoritmo usando para gerar o hash por padrão SHA1.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
-        /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
+        /// <param name="xml">String contendo o XML a ser assinado.</param>
+        /// <param name="docElement">Nome do elemento principal onde a assinatura será anexada.</param>
+        /// <param name="infoElement">Nome do elemento identificado com a tag de assinatura.</param>
+        /// <param name="signAtribute">Nome do atributo identificador (ex: "Id").</param>
+        /// <param name="pCertificado">Certificado digital X509 com chave privada.</param>
+        /// <param name="comments">Se <c>true</c>, insere o transform #withcomments.</param>
+        /// <param name="identado">Se <c>true</c>, retorna o XML assinado com indentação.</param>
+        /// <param name="showDeclaration">Se <c>true</c>, inclui a declaração XML inicial.</param>
+        /// <param name="digest">Algoritmo de resumo criptográfico (padrão SHA1).</param>
+        /// <returns>O XML assinado como string.</returns>
+        /// <exception cref="OpenDFeException">Disparada em caso de falha na assinatura digital.</exception>
         public static string AssinarXml(string xml, string docElement, string infoElement, string signAtribute, X509Certificate2 pCertificado,
             bool comments = false, bool identado = false, bool showDeclaration = true, SignDigest digest = SignDigest.SHA1)
         {
@@ -105,19 +103,18 @@ namespace OpenAC.Net.DFe.Core
         }
 
         /// <summary>
-        /// Assina Multiplos elementos dentro da Xml.
+        /// Assina múltiplos elementos contidos no mesmo documento XML (ex: lote de eventos).
         /// </summary>
-        /// <param name="xml">O Xml.</param>
-        /// <param name="docElement">O elemento principal do xml a ser assinado.</param>
-        /// <param name="infoElement">O elemento a ser assinado.</param>
-        /// <param name="certificado">O certificado.</param>
-        /// <param name="comments">Se for <c>true</c> vai inserir a tag #withcomments no transform.</param>
-        /// <param name="identado">Se for <c>true</c> vai identar o xml de retorno</param>
-        /// <param name="showDeclaration">Se for <c>true</c> vai incluir a declaração do xml</param>
-        /// <param name="digest">Algoritmo usando para gerar o hash por padrão SHA1.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
-        /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
+        /// <param name="xml">String contendo o XML do lote.</param>
+        /// <param name="docElement">Nome do elemento de cada documento a ser assinado.</param>
+        /// <param name="infoElement">Nome do elemento identificado para assinatura.</param>
+        /// <param name="certificado">Certificado digital X509 com chave privada.</param>
+        /// <param name="comments">Se <c>true</c>, insere o transform #withcomments.</param>
+        /// <param name="identado">Se <c>true</c>, retorna o XML assinado com indentação.</param>
+        /// <param name="showDeclaration">Se <c>true</c>, inclui a declaração XML inicial.</param>
+        /// <param name="digest">Algoritmo de resumo criptográfico (padrão SHA1).</param>
+        /// <returns>O XML com todos os elementos assinados.</returns>
+        /// <exception cref="OpenDFeException">Disparada em caso de falha na assinatura digital.</exception>
         public static string AssinarXmlTodos(string xml, string docElement, string infoElement, X509Certificate2 certificado,
             bool comments = false, bool identado = false, bool showDeclaration = true, SignDigest digest = SignDigest.SHA1)
         {
@@ -125,20 +122,19 @@ namespace OpenAC.Net.DFe.Core
         }
 
         /// <summary>
-        /// Assina Multiplos elementos dentro da Xml.
+        /// Assina múltiplos elementos contidos no mesmo documento XML especificando o atributo identificador.
         /// </summary>
-        /// <param name="xml">O Xml.</param>
-        /// <param name="docElement">O elemento principal do xml a ser assinado.</param>
-        /// <param name="infoElement">O elemento a ser assinado.</param>
-        /// <param name="signAtribute">O atributo do elemento a ser assinado.</param>
-        /// <param name="certificado">O certificado.</param>
-        /// <param name="comments">Se for <c>true</c> vai inserir a tag #withcomments no transform.</param>
-        /// <param name="identado">Se for <c>true</c> vai identar o xml de retorno</param>
-        /// <param name="showDeclaration">Se for <c>true</c> vai incluir a declaração do xml</param>
-        /// <param name="digest">Algoritmo usando para gerar o hash por padrão SHA1.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
-        /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
+        /// <param name="xml">String contendo o XML do lote.</param>
+        /// <param name="docElement">Nome do elemento de cada documento a ser assinado.</param>
+        /// <param name="infoElement">Nome do elemento identificado para assinatura.</param>
+        /// <param name="signAtribute">Nome do atributo identificador (ex: "Id").</param>
+        /// <param name="certificado">Certificado digital X509 com chave privada.</param>
+        /// <param name="comments">Se <c>true</c>, insere o transform #withcomments.</param>
+        /// <param name="identado">Se <c>true</c>, retorna o XML assinado com indentação.</param>
+        /// <param name="showDeclaration">Se <c>true</c>, inclui a declaração XML inicial.</param>
+        /// <param name="digest">Algoritmo de resumo criptográfico (padrão SHA1).</param>
+        /// <returns>O XML com todos os elementos assinados.</returns>
+        /// <exception cref="OpenDFeException">Disparada em caso de falha na assinatura digital.</exception>
         public static string AssinarXmlTodos(string xml, string docElement, string infoElement, string signAtribute, X509Certificate2 certificado,
             bool comments = false, bool identado = false, bool showDeclaration = true, SignDigest digest = SignDigest.SHA1)
         {
@@ -180,18 +176,16 @@ namespace OpenAC.Net.DFe.Core
         }
 
         /// <summary>
-        /// Assina o xml.
+        /// Realiza a assinatura digital diretamente no objeto <see cref="XmlDocument"/> fornecido.
         /// </summary>
-        /// <param name="doc">O Xml.</param>
-        /// <param name="docElement">O elemento principal do xml a ser assinado.</param>
-        /// <param name="infoElement">O elemento a ser assinado.</param>
-        /// <param name="signAtribute">O atributo identificador do elemento a ser assinado.</param>
-        /// <param name="certificado">O certificado.</param>
-        /// <param name="comments">Se for <c>true</c> vai inserir a tag #withcomments no transform.</param>
-        /// <param name="digest">Algoritmo usando para gerar o hash por padrão SHA1.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
-        /// <exception cref="OpenDFeException">Erro ao efetuar assinatura digital.</exception>
+        /// <param name="doc">O documento <see cref="XmlDocument"/>.</param>
+        /// <param name="docElement">Nome do elemento onde a tag Signature será anexada.</param>
+        /// <param name="infoElement">Nome do elemento assinado referenciado.</param>
+        /// <param name="signAtribute">Nome do atributo identificador da URI assinada.</param>
+        /// <param name="certificado">Certificado digital X509 com chave privada.</param>
+        /// <param name="comments">Se <c>true</c>, insere o transform #withcomments.</param>
+        /// <param name="digest">Algoritmo de resumo criptográfico (padrão SHA1).</param>
+        /// <exception cref="OpenDFeException">Disparada em caso de falha na assinatura.</exception>
         public static void AssinarDocumento(this XmlDocument doc, string docElement, string infoElement, string signAtribute,
             X509Certificate2 certificado, bool comments = false, SignDigest digest = SignDigest.SHA1)
         {
@@ -208,16 +202,16 @@ namespace OpenAC.Net.DFe.Core
         }
 
         /// <summary>
-        /// Gera a assinatura do xml e retorna uma instancia da classe <see cref="DFeSignature"/>.
+        /// Gera a assinatura digital de uma instância de documento <see cref="DFeSignDocument{TDocument}"/> e retorna a estrutura <see cref="DFeSignature"/>.
         /// </summary>
-        /// <typeparam name="TDocument">The type of the t document.</typeparam>
-        /// <param name="document">The document.</param>
-        /// <param name="certificado">The certificado.</param>
-        /// <param name="comments">if set to <c>true</c> [comments].</param>
-        /// <param name="digest">The digest.</param>
-        /// <param name="options">The options.</param>
-        /// <param name="signedXml"></param>
-        /// <returns>DFeSignature.</returns>
+        /// <typeparam name="TDocument">O tipo concreto do documento assinado.</typeparam>
+        /// <param name="document">A instância do documento DFe.</param>
+        /// <param name="certificado">O certificado digital X509 com chave privada.</param>
+        /// <param name="comments">Se <c>true</c>, insere o transform #withcomments.</param>
+        /// <param name="digest">Algoritmo de resumo criptográfico (SHA1 ou SHA256).</param>
+        /// <param name="options">Opções de salvamento e formatação do XML.</param>
+        /// <param name="signedXml">Parâmetro de saída com a string do XML assinado gerado.</param>
+        /// <returns>A instância deserializada de <see cref="DFeSignature"/> correspondente à assinatura gerada.</returns>
         public static DFeSignature AssinarDocumento<TDocument>(this DFeSignDocument<TDocument> document,
             X509Certificate2 certificado, bool comments, SignDigest digest,
             DFeSaveOptions options, out string signedXml) where TDocument : class
@@ -240,12 +234,12 @@ namespace OpenAC.Net.DFe.Core
         }
 
         /// <summary>
-        ///
+        /// Valida a integridade criptográfica da assinatura digital em um documento <see cref="DFeSignDocument{TDocument}"/>.
         /// </summary>
-        /// <param name="document"></param>
-        /// <param name="gerarXml"></param>
-        /// <typeparam name="TDocument"></typeparam>
-        /// <returns></returns>
+        /// <typeparam name="TDocument">O tipo do documento assinado.</typeparam>
+        /// <param name="document">A instância do documento.</param>
+        /// <param name="gerarXml">Indica se deve serializar um novo XML para validação se o cache estiver vazio.</param>
+        /// <returns><c>true</c> se a assinatura for válida; caso contrário, <c>false</c>.</returns>
         public static bool ValidarAssinatura<TDocument>(this DFeSignDocument<TDocument> document, bool gerarXml) where TDocument : class
         {
             var xml = document.Xml.IsEmpty() || gerarXml ? document.GetXml(DFeSaveOptions.DisableFormatting, Encoding.UTF8) : document.Xml;
@@ -255,10 +249,10 @@ namespace OpenAC.Net.DFe.Core
         }
 
         /// <summary>
-        /// Validar a assinatura do Xml
+        /// Valida a integridade criptográfica da assinatura digital contida em um <see cref="XmlDocument"/>.
         /// </summary>
-        /// <param name="doc">o documento xml</param>
-        /// <returns></returns>
+        /// <param name="doc">O documento <see cref="XmlDocument"/> contendo a tag Signature.</param>
+        /// <returns><c>true</c> se a assinatura for matematicamente válida contra a chave pública contida; caso contrário, <c>false</c>.</returns>
         public static bool ValidarAssinatura(this XmlDocument doc)
         {
             try

@@ -1,4 +1,4 @@
-﻿// ***********************************************************************
+// ***********************************************************************
 // Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
 // Created          : 06-11-2017
@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeParentItem.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014 - 2017 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014 - 2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -34,17 +34,20 @@ using OpenAC.Net.DFe.Core.Attributes;
 
 namespace OpenAC.Net.DFe.Core.Collection;
 
-///  <summary>
-///
-///  </summary>
-///  <typeparam name="TParent"></typeparam>
-/// <typeparam name="TTipo"></typeparam>
+/// <summary>
+/// Classe base abstrata para itens DFe que mantêm uma referência navegável ao seu elemento pai (<typeparamref name="TParent"/>).
+/// </summary>
+/// <typeparam name="TTipo">O tipo concreto da classe derivada.</typeparam>
+/// <typeparam name="TParent">O tipo da classe pai.</typeparam>
 public abstract class DFeParentItem<TTipo, TParent> : GenericClone<DFeParentItem<TTipo, TParent>>
     where TParent : class
     where TTipo : class
 {
     #region Fields
 
+    /// <summary>
+    /// Instância do elemento pai associado.
+    /// </summary>
     protected TParent parent;
 
     #endregion Fields
@@ -52,7 +55,7 @@ public abstract class DFeParentItem<TTipo, TParent> : GenericClone<DFeParentItem
     #region Properties
 
     /// <summary>
-    /// Define/retorna a classe NFe parente deste elemento.
+    /// Obtém ou define a instância do elemento pai deste item na hierarquia DFe.
     /// </summary>
     [DFeIgnore]
     public TParent Parent
@@ -72,11 +75,10 @@ public abstract class DFeParentItem<TTipo, TParent> : GenericClone<DFeParentItem
     #region Methods
 
     /// <summary>
-    /// Metodo chamado quando muda o parent.
+    /// Método invocado quando a referência do elemento pai (<see cref="Parent"/>) é alterada.
     /// </summary>
     protected virtual void OnParentChanged()
     {
-        //
     }
 
     #endregion Methods

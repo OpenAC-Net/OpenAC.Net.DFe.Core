@@ -1,4 +1,4 @@
-﻿// ***********************************************************************
+// ***********************************************************************
 // Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
 // Created          : 04-01-2019
@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeServices.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -38,23 +38,30 @@ using OpenAC.Net.DFe.Core.Document;
 
 namespace OpenAC.Net.DFe.Core.Service;
 
+/// <summary>
+/// Representa o documento raiz de configuração do catálogo de Web Services DFe do OpenAC.Net.
+/// </summary>
+/// <typeparam name="TTIpo">Enum com os tipos de serviços suportados.</typeparam>
 [DFeRoot("DFeServices", Namespace = "https://www.openac.net.br/")]
-public class DFeServices<TTIpo> : DFeDocument<DFeServices<TTIpo>>
+public partial class DFeServices<TTIpo> : DFeDocument<DFeServices<TTIpo>>
     where TTIpo : Enum
 {
     #region Properties
 
     /// <summary>
-    ///
+    /// Indexador que busca e retorna a configuração de serviços correspondente ao tipo de emissão especificado.
     /// </summary>
-    /// <param name="versao"></param>
-    /// <param name="emissao"></param>
+    /// <param name="emissao">Tipo de emissão desejado (Normal, SVC-AN, SVC-RS, etc.).</param>
+    /// <returns>A configuração <see cref="DFeServiceInfo{TTIpo}"/> correspondente.</returns>
     [DFeIgnore]
     public DFeServiceInfo<TTIpo> this[DFeTipoEmissao emissao]
     {
         get { return Webservices?.SingleOrDefault(x => x.TipoEmissao == emissao); }
     }
 
+    /// <summary>
+    /// Obtém ou define a coleção de serviços e webservices disponíveis por forma de emissão.
+    /// </summary>
     [DFeCollection("Services")]
     public DFeCollection<DFeServiceInfo<TTIpo>> Webservices { get; set; } = new();
 

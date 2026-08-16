@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeCollectionAttribute.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -34,32 +34,35 @@ using OpenAC.Net.DFe.Core.Serializer;
 
 namespace OpenAC.Net.DFe.Core.Attributes;
 
+/// <summary>
+/// Atributo para mapeamento de listas e coleções de elementos filhos no XML DFe.
+/// </summary>
 [AttributeUsage(AttributeTargets.Property)]
 public sealed class DFeCollectionAttribute : DFeBaseAttribute
 {
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeCollectionAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeCollectionAttribute"/>.
     /// </summary>
     public DFeCollectionAttribute()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeCollectionAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeCollectionAttribute"/> com o nome da tag informado.
     /// </summary>
-    /// <param name="tag">The Name.</param>
+    /// <param name="tag">Nome da tag XML de cada item da coleção.</param>
     public DFeCollectionAttribute(string tag)
     {
         Name = tag;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeCollectionAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeCollectionAttribute"/> com tipo e nome informados.
     /// </summary>
-    /// <param name="tipo">The tipo.</param>
-    /// <param name="name">The name.</param>
+    /// <param name="tipo">Tipo de dado do campo no XML.</param>
+    /// <param name="name">Nome da tag XML de cada item da coleção.</param>
     public DFeCollectionAttribute(TipoCampo tipo, string name)
     {
         Tipo = tipo;
@@ -71,12 +74,12 @@ public sealed class DFeCollectionAttribute : DFeBaseAttribute
     #region Properties
 
     /// <summary>
-    ///
+    /// Obtém ou define a quantidade mínima de itens na coleção.
     /// </summary>
     public int MinSize { get; set; }
 
     /// <summary>
-    ///
+    /// Obtém ou define a quantidade máxima de itens permitidos na coleção.
     /// </summary>
     public int MaxSize { get; set; }
 

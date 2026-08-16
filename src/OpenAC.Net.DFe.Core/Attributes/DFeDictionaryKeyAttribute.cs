@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeDictionaryKeyAttribute.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -34,13 +34,16 @@ using OpenAC.Net.DFe.Core.Serializer;
 
 namespace OpenAC.Net.DFe.Core.Attributes;
 
+/// <summary>
+/// Atributo para mapeamento da chave de um dicionário XML em documentos DFe.
+/// </summary>
 [AttributeUsage(AttributeTargets.Property)]
 public sealed class DFeDictionaryKeyAttribute : DFeBaseAttribute
 {
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeDictionaryKeyAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeDictionaryKeyAttribute"/>.
     /// </summary>
     public DFeDictionaryKeyAttribute()
     {
@@ -54,19 +57,19 @@ public sealed class DFeDictionaryKeyAttribute : DFeBaseAttribute
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeDictionaryKeyAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeDictionaryKeyAttribute"/> com o nome da tag.
     /// </summary>
-    /// <param name="tag">Nome da tag.</param>
+    /// <param name="tag">Nome da tag ou atributo da chave.</param>
     public DFeDictionaryKeyAttribute(string tag) : this()
     {
         Name = tag;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeDictionaryKeyAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeDictionaryKeyAttribute"/> com tipo e nome informados.
     /// </summary>
-    /// <param name="tipo">The tipo.</param>
-    /// <param name="name">The name.</param>
+    /// <param name="tipo">Tipo de dado do campo no XML.</param>
+    /// <param name="name">Nome da tag ou atributo da chave.</param>
     public DFeDictionaryKeyAttribute(TipoCampo tipo, string name) : this()
     {
         Tipo = tipo;
@@ -74,11 +77,11 @@ public sealed class DFeDictionaryKeyAttribute : DFeBaseAttribute
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeDictionaryKeyAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeDictionaryKeyAttribute"/> indicando se deve ser serializada como atributo XML.
     /// </summary>
-    /// <param name="tipo">The tipo.</param>
-    /// <param name="name">The name.</param>
-    /// <param name="asAttribute"></param>
+    /// <param name="tipo">Tipo de dado do campo no XML.</param>
+    /// <param name="name">Nome da tag ou atributo da chave.</param>
+    /// <param name="asAttribute">Indica se a chave é representada como atributo XML.</param>
     public DFeDictionaryKeyAttribute(TipoCampo tipo, string name, bool asAttribute) : this()
     {
         Tipo = tipo;
@@ -87,8 +90,10 @@ public sealed class DFeDictionaryKeyAttribute : DFeBaseAttribute
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeDictionaryKeyAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeDictionaryKeyAttribute"/> indicando se deve ser serializada como atributo XML.
     /// </summary>
+    /// <param name="tag">Nome da tag ou atributo da chave.</param>
+    /// <param name="asAttribute">Indica se a chave é representada como atributo XML.</param>
     public DFeDictionaryKeyAttribute(string tag, bool asAttribute) : this()
     {
         Name = tag;
@@ -100,16 +105,9 @@ public sealed class DFeDictionaryKeyAttribute : DFeBaseAttribute
     #region Properties
 
     /// <summary>
-    /// Gets or sets the name space.
+    /// Obtém ou define se a chave do dicionário deve ser serializada como atributo XML.
     /// </summary>
-    /// <value>The name space.</value>
-    public string Namespace { get; set; }
-
-    /// <summary>
-    /// Gets or sets the AsAttribute.
-    /// </summary>
-    /// <value>The AsAttribute.</value>
-    public bool AsAttribute { get; set; } = true;
+    public bool AsAttribute { get; set; }
 
     #endregion Properties
 }

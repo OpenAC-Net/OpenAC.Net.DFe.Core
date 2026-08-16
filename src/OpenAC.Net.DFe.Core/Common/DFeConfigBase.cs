@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeConfigBase.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -29,11 +29,15 @@
 // <summary></summary>
 // ***********************************************************************
 
-using System;
-using System.Net;
-
 namespace OpenAC.Net.DFe.Core.Common;
 
+/// <summary>
+/// Classe base abstrata para agregação de configurações de um componente DFe (Geral, WebServices, Certificados e Arquivos).
+/// </summary>
+/// <typeparam name="TGeralConfig">Tipo das configurações gerais.</typeparam>
+/// <typeparam name="TWebserviceConfig">Tipo das configurações de Web Services.</typeparam>
+/// <typeparam name="TCertificadosConfig">Tipo das configurações de certificados digitais.</typeparam>
+/// <typeparam name="TArquivosConfig">Tipo das configurações de arquivos e diretórios.</typeparam>
 public abstract class DFeConfigBase<TGeralConfig, TWebserviceConfig, TCertificadosConfig, TArquivosConfig>
     where TGeralConfig : DFeGeralConfigBase
     where TWebserviceConfig : DFeWebserviceConfigBase
@@ -43,22 +47,22 @@ public abstract class DFeConfigBase<TGeralConfig, TWebserviceConfig, TCertificad
     #region Properties
 
     /// <summary>
-    /// Configurações principais do componente.
+    /// Obtém as configurações gerais do componente DFe.
     /// </summary>
     public TGeralConfig Geral { get; protected set; }
 
     /// <summary>
-    /// Configurações de webservices do componente.
+    /// Obtém as configurações de comunicação com Web Services.
     /// </summary>
     public TWebserviceConfig WebServices { get; protected set; }
 
     /// <summary>
-    /// Configurações de certificado do componente.
+    /// Obtém as configurações do certificado digital.
     /// </summary>
     public TCertificadosConfig Certificados { get; protected set; }
 
     /// <summary>
-    /// Configurações de arquivos do componente.
+    /// Obtém as configurações de diretórios e salvamento de arquivos XML.
     /// </summary>
     public TArquivosConfig Arquivos { get; protected set; }
 

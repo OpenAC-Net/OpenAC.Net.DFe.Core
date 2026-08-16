@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeAttributeAttribute.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -35,35 +35,34 @@ using System;
 namespace OpenAC.Net.DFe.Core.Attributes;
 
 /// <summary>
-/// Class DFeAttributeAttribute.
+/// Atributo utilizado para mapear uma propriedade como atributo XML em documentos DFe.
 /// </summary>
-/// <seealso cref="System.Attribute" />
 [AttributeUsage(AttributeTargets.Property)]
 public class DFeAttributeAttribute : DFeBaseAttribute
 {
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeElementAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeAttributeAttribute"/>.
     /// </summary>
     public DFeAttributeAttribute()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeElementAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeAttributeAttribute"/> com o nome informado.
     /// </summary>
-    /// <param name="name">The Name.</param>
+    /// <param name="name">Nome do atributo XML.</param>
     public DFeAttributeAttribute(string name) : this()
     {
         Name = name;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeElementAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeAttributeAttribute"/> com o tipo de campo e nome informados.
     /// </summary>
-    /// <param name="tipo">The tipo.</param>
-    /// <param name="name">The name.</param>
+    /// <param name="tipo">Tipo de dado do campo no XML.</param>
+    /// <param name="name">Nome do atributo XML.</param>
     public DFeAttributeAttribute(TipoCampo tipo, string name) : this()
     {
         Tipo = tipo;

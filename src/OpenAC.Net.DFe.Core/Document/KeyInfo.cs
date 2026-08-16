@@ -1,4 +1,4 @@
-﻿// ***********************************************************************
+// ***********************************************************************
 // Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
 // Created          : 05-07-2016
@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="KeyInfo.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -33,12 +33,15 @@ using OpenAC.Net.DFe.Core.Attributes;
 
 namespace OpenAC.Net.DFe.Core.Document;
 
-public sealed class KeyInfo
+/// <summary>
+/// Representa as informações da chave pública do signatário (KeyInfo) no padrão XMLDSig.
+/// </summary>
+public sealed partial class KeyInfo
 {
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="KeyInfo"/> class.
+    /// Inicializa uma nova instância da classe <see cref="KeyInfo"/>.
     /// </summary>
     public KeyInfo()
     {
@@ -50,9 +53,8 @@ public sealed class KeyInfo
     #region Propriedades
 
     /// <summary>
-    /// XS20 - Grupo X509
+    /// XS20 - Grupo contendo os dados do certificado digital (X509Data).
     /// </summary>
-    /// <value>The X509 data.</value>
     [DFeElement("X509Data", Id = "XS20")]
     public X509Data X509Data { get; set; }
 

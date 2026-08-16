@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeIgnoreAttribute.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -33,9 +33,8 @@ using System;
 namespace OpenAC.Net.DFe.Core.Attributes;
 
 /// <summary>
-/// Class DFeIgnoreAttribute.
+/// Atributo que indica que a propriedade decorada deve ser ignorada na serialização e deserialização XML.
 /// </summary>
-/// <seealso cref="System.Attribute" />
 [AttributeUsage(AttributeTargets.Property)]
 public class DFeIgnoreAttribute : Attribute
 {

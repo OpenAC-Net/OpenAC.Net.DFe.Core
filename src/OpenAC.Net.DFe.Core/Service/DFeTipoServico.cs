@@ -1,4 +1,4 @@
-﻿// ***********************************************************************
+// ***********************************************************************
 // Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
 // Created          : 04-01-2019
@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeTipoServico.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -33,20 +33,38 @@ using OpenAC.Net.DFe.Core.Attributes;
 
 namespace OpenAC.Net.DFe.Core.Service;
 
+/// <summary>
+/// Identifica os tipos de documentos fiscais eletrônicos suportados pelos serviços e webservices.
+/// </summary>
 public enum DFeTipoServico
 {
+    /// <summary>
+    /// Conhecimento de Transporte Eletrônico (CT-e).
+    /// </summary>
     [DFeEnum("CTe")]
     CTe,
 
+    /// <summary>
+    /// Manifesto Eletrônico de Documentos Fiscais (MDF-e).
+    /// </summary>
     [DFeEnum("MDFe")]
     MDFe,
 
+    /// <summary>
+    /// Nota Fiscal Eletrônica (NF-e - Modelo 55).
+    /// </summary>
     [DFeEnum("NFe")]
     NFe,
 
+    /// <summary>
+    /// Nota Fiscal de Consumidor Eletrônica (NFC-e - Modelo 65).
+    /// </summary>
     [DFeEnum("NFCe")]
     NFCe,
 
+    /// <summary>
+    /// Nota Fiscal de Serviços Eletrônica (NFS-e).
+    /// </summary>
     [DFeEnum("NFSe")]
     NFSe
 }

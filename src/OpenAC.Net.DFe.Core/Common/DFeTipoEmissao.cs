@@ -33,32 +33,62 @@ using OpenAC.Net.DFe.Core.Attributes;
 
 namespace OpenAC.Net.DFe.Core.Common;
 
+/// <summary>
+/// Define os tipos de emissão do documento fiscal eletrônico (normal, contingência, SVC, etc.).
+/// </summary>
 public enum DFeTipoEmissao
 {
+    /// <summary>
+    /// Emissão normal (1).
+    /// </summary>
     [DFeEnum("1")]
     Normal,
 
+    /// <summary>
+    /// Emissão em contingência FS-IA (2).
+    /// </summary>
     [DFeEnum("2")]
     Contingencia,
 
+    /// <summary>
+    /// Emissão SCAN (Sistema de Contingência do Ambiente Nacional) (3).
+    /// </summary>
     [DFeEnum("3")]
     SCAN,
 
+    /// <summary>
+    /// Emissão DPEC (Declaração Prévia de Emissão em Contingência) (4).
+    /// </summary>
     [DFeEnum("4")]
     DPEC,
 
+    /// <summary>
+    /// Emissão FS-DA (Contingência com Formulário de Segurança para Documento Auxiliar) (5).
+    /// </summary>
     [DFeEnum("5")]
     FSDA,
 
+    /// <summary>
+    /// Emissão SVC-AN (SEFAZ Virtual de Contingência Ambiente Nacional) (6).
+    /// </summary>
     [DFeEnum("6")]
     SVCAN,
 
+    /// <summary>
+    /// Emissão SVC-RS (SEFAZ Virtual de Contingência Rio Grande do Sul) (7).
+    /// </summary>
     [DFeEnum("7")]
     SVCRS,
 
+    /// <summary>
+    /// Emissão SVC-SP (SEFAZ Virtual de Contingência São Paulo) (8).
+    /// </summary>
     [DFeEnum("8")]
     SVCSP,
 
+    /// <summary>
+    /// Emissão em contingência Off-line para NFC-e (9).
+    /// </summary>
     [DFeEnum("9")]
     OffLine
 }

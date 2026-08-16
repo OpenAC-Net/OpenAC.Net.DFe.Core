@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeServiceClientBase.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -29,7 +29,6 @@
 // <summary></summary>
 // ***********************************************************************
 
-using OpenAC.Net.Core.Logging;
 using System;
 using System.Collections.Specialized;
 using System.IO;
@@ -42,14 +41,13 @@ using OpenAC.Net.DFe.Core.Common;
 namespace OpenAC.Net.DFe.Core.Service;
 
 /// <summary>
-/// Class DFeServiceClientBase.
+/// Classe base abstrata para clientes de comunicação HTTP / Web Services dos documentos fiscais eletrônicos.
 /// </summary>
-/// <typeparam name="TDFeConfig"></typeparam>
-/// <typeparam name="TGeralConfig"></typeparam>
-/// <typeparam name="TWebserviceConfig"></typeparam>
-/// <typeparam name="TCertificadosConfig"></typeparam>
-/// <typeparam name="TArquivosConfig"></typeparam>
-/// <seealso cref="IOpenLog" />
+/// <typeparam name="TDFeConfig">Tipo das configurações DFe do componente.</typeparam>
+/// <typeparam name="TGeralConfig">Tipo das configurações gerais.</typeparam>
+/// <typeparam name="TWebserviceConfig">Tipo das configurações de Web Services.</typeparam>
+/// <typeparam name="TCertificadosConfig">Tipo das configurações de certificados digitais.</typeparam>
+/// <typeparam name="TArquivosConfig">Tipo das configurações de arquivos.</typeparam>
 public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebserviceConfig, TCertificadosConfig, TArquivosConfig> : IDisposable
     where TDFeConfig : DFeConfigBase<TGeralConfig, TWebserviceConfig, TCertificadosConfig, TArquivosConfig>
     where TGeralConfig : DFeGeralConfigBase
@@ -60,50 +58,91 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
     #region Constructors
 
     /// <summary>
-    /// Inicializa uma nova instancia da classe <see cref="DFeServiceClientBase{T, T, T, T, T}"/>.
+    /// Inicializa uma nova instância da classe <see cref="DFeServiceClientBase{TDFeConfig, TGeralConfig, TWebserviceConfig, TCertificadosConfig, TArquivosConfig}"/>.
     /// </summary>
-    /// <param name="config"></param>
-    /// <param name="url"></param>
+    /// <param name="config">Instância de configuração do componente DFe.</param>
+    /// <param name="url">URL do endpoint de destino do serviço.</param>
     protected DFeServiceClientBase(TDFeConfig config, string url)
     {
         Configuracoes = config;
         Url = url;
+        NomeArquivo = string.Empty;
+        ArquivoEnvio = string.Empty;
+        ArquivoResposta = string.Empty;
+        EnvelopeEnvio = string.Empty;
+        EnvelopeRetorno = string.Empty;
     }
 
     #endregion Constructors
 
     #region Properties
 
+    /// <summary>
+    /// Obtém as configurações do componente DFe.
+    /// </summary>
     protected TDFeConfig Configuracoes { get; }
 
+    /// <summary>
+    /// Obtém ou define o prefixo/nome base para os arquivos de envio e retorno gravados em disco.
+    /// </summary>
     public string NomeArquivo { get; protected set; }
 
+    /// <summary>
+    /// Obtém o nome do arquivo gerado para a mensagem de envio.
+    /// </summary>
     public string ArquivoEnvio { get; protected set; }
 
+    /// <summary>
+    /// Obtém o nome do arquivo gerado para a mensagem de resposta.
+    /// </summary>
     public string ArquivoResposta { get; protected set; }
 
+    /// <summary>
+    /// Obtém ou define o envelope de envio da requisição.
+    /// </summary>
     public string EnvelopeEnvio { get; protected set; }
 
+    /// <summary>
+    /// Obtém ou define o envelope retornado pelo servidor.
+    /// </summary>
     public string EnvelopeRetorno { get; protected set; }
 
+    /// <summary>
+    /// Obtém ou define a URL do serviço.
+    /// </summary>
     protected string Url { get; set; }
 
+    /// <summary>
+    /// Obtém o certificado digital configurado para a requisição mTLS.
+    /// </summary>
     protected X509Certificate2 Certificado => Configuracoes.Certificados.ObterCertificado();
 
+    /// <summary>
+    /// Indica se o cliente já teve seus recursos liberados (disposed).
+    /// </summary>
     protected bool IsDisposed { get; private set; }
 
     #endregion Properties
 
     #region Methods
 
-    protected void Execute(string contentType, string method, NameValueCollection headers = null)
+    /// <summary>
+    /// Executa a requisição HTTP síncrona enviando o <see cref="EnvelopeEnvio"/> e preenchendo o <see cref="EnvelopeRetorno"/>.
+    /// </summary>
+    /// <param name="contentType">Content-Type do cabeçalho HTTP.</param>
+    /// <param name="method">Método HTTP utilizado (ex: POST, GET).</param>
+    /// <param name="headers">Cabeçalhos adicionais da requisição (opcional).</param>
+    /// <exception cref="OpenDFeCommunicationException">Disparada em caso de falha de conexão ou erro HTTP.</exception>
+    protected void Execute(string contentType, string method, NameValueCollection? headers = null)
     {
         var protocolos = ServicePointManager.SecurityProtocol;
         ServicePointManager.SecurityProtocol = Configuracoes.WebServices.Protocolos;
 
         try
         {
+#pragma warning disable SYSLIB0014
             var request = WebRequest.CreateHttp(Url);
+#pragma warning restore SYSLIB0014
             request.Method = method.IsEmpty() ? "POST" : method;
             request.ContentType = contentType;
 
@@ -145,6 +184,12 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
         }
     }
 
+    /// <summary>
+    /// Lê a string de resposta completa a partir do fluxo de retorno <see cref="WebResponse"/>.
+    /// </summary>
+    /// <param name="response">A resposta HTTP retornada pelo servidor.</param>
+    /// <returns>O corpo da resposta como texto.</returns>
+    /// <exception cref="OpenDFeCommunicationException">Disparada se o stream de resposta for nulo.</exception>
     protected static string GetResponse(WebResponse response)
     {
         var stream = response.GetResponseStream();
@@ -159,56 +204,45 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
         }
     }
 
+    /// <summary>
+    /// Valida se o certificado SSL/TLS do servidor deve ser estritamente validado pela cadeia de confiança (padrão true).
+    /// </summary>
+    /// <returns><c>true</c> para validar; <c>false</c> para ignorar erros de validação SSL.</returns>
     protected virtual bool ValidarCertificadoServidor() => true;
 
     /// <summary>
-    /// Salvar o arquivo xml no disco de acordo com as propriedades.
+    /// Grava a mensagem enviada ou recebida em disco conforme as configurações de salvamento.
     /// </summary>
-    /// <param name="conteudoArquivo"></param>
-    /// <param name="nomeArquivo"></param>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <param name="conteudoArquivo">Conteúdo do envelope/arquivo a ser salvo.</param>
+    /// <param name="nomeArquivo">Nome do arquivo.</param>
     protected abstract void GravarSoap(string conteudoArquivo, string nomeArquivo);
 
     /// <inheritdoc />
-    /// <summary>
-    /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-    /// </summary>
     public void Dispose()
     {
-        // Dispose all managed and unmanaged resources.
         Dispose(true);
-
-        // Take this object off the finalization queue and prevent finalization code for this
-        // object from executing a second time.
         GC.SuppressFinalize(this);
     }
 
     /// <summary>
-    /// Disposes the managed resources implementing <see cref="IDisposable"/>.
+    /// Libera recursos gerenciados da instância.
     /// </summary>
     protected virtual void DisposeManaged()
     {
     }
 
     /// <summary>
-    /// Disposes the unmanaged resources implementing <see cref="IDisposable"/>.
+    /// Libera recursos não gerenciados da instância.
     /// </summary>
     protected virtual void DisposeUnmanaged()
     {
     }
 
-    /// <summary>
-    /// Releases unmanaged and - optionally - managed resources.
-    /// </summary>
-    /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources;
-    /// <c>false</c> to release only unmanaged resources, called from the finalizer only.</param>
     private void Dispose(bool disposing)
     {
-        // Check to see if Dispose has already been called.
         if (IsDisposed)
             return;
 
-        // If disposing managed and unmanaged resources.
         if (disposing)
             DisposeManaged();
 

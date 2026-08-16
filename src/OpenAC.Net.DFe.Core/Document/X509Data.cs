@@ -1,4 +1,4 @@
-﻿// ***********************************************************************
+// ***********************************************************************
 // Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
 // Created          : 05-07-2016
@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="X509Data.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -34,12 +34,14 @@ using OpenAC.Net.DFe.Core.Serializer;
 
 namespace OpenAC.Net.DFe.Core.Document;
 
-public sealed class X509Data
+/// <summary>
+/// Representa o elemento contendo os dados do certificado digital X509 (X509Data) no padrão XMLDSig.
+/// </summary>
+public sealed partial class X509Data
 {
     /// <summary>
-    /// XS21 - Certificado Digital X509 em Base64
+    /// XS21 - Certificado Digital X509 codificado em Base64 (X509Certificate).
     /// </summary>
-    /// <value>The X509 certificate.</value>
     [DFeElement(TipoCampo.Str, "X509Certificate", Id = "XS21", Min = 0, Max = 999, Ocorrencia = Ocorrencia.Obrigatoria)]
     public string X509Certificate { get; set; }
 }

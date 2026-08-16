@@ -1,4 +1,4 @@
-﻿// ***********************************************************************
+// ***********************************************************************
 // Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
 // Created          : 05-07-2016
@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="Reference.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -28,58 +28,57 @@
 // </copyright>
 // <summary></summary>
 // ***********************************************************************
+
 using OpenAC.Net.DFe.Core.Attributes;
 using OpenAC.Net.DFe.Core.Collection;
 using OpenAC.Net.DFe.Core.Serializer;
 
-namespace OpenAC.Net.DFe.Core.Document
+namespace OpenAC.Net.DFe.Core.Document;
+
+/// <summary>
+/// Representa a referência ao elemento assinado (Reference) contendo as transformações e o hash do documento no padrão XMLDSig.
+/// </summary>
+public sealed partial class Reference
 {
-    public sealed class Reference
+    #region Constructors
+
+    /// <summary>
+    /// Inicializa uma nova instância da classe <see cref="Reference"/>.
+    /// </summary>
+    public Reference()
     {
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Reference"/> class.
-        /// </summary>
-        public Reference()
-        {
-            Transforms = new DFeCollection<Transform>();
-            DigestMethod = new DigestMethod();
-        }
-
-        #endregion Constructors
-
-        #region Propriedades
-
-        /// <summary>
-        /// XS08 - Atributo URI da tag Reference
-        /// </summary>
-        /// <value>The URI.</value>
-        [DFeAttribute(TipoCampo.Str, "URI", Id = "XS08", Min = 0, Max = 999, Ocorrencia = Ocorrencia.Obrigatoria)]
-        public string URI { get; set; }
-
-        /// <summary>
-        /// XS10 - Grupo do algorithm de Transform
-        /// </summary>
-        /// <value>The transforms.</value>
-        [DFeCollection("Transforms", Id = "XS10")]
-        [DFeItem(typeof(Transform), "Transform")]
-        public DFeCollection<Transform> Transforms { get; set; }
-
-        /// <summary>
-        /// XS15 - Grupo do Método de DigestMethod
-        /// </summary>
-        /// <value>The digest method.</value>
-        [DFeElement("DigestMethod", Id = "XS15")]
-        public DigestMethod DigestMethod { get; set; }
-
-        /// <summary>
-        /// XS17 - Digest Value (Hash SHA-1 – Base64)
-        /// </summary>
-        /// <value>The digest value.</value>
-        [DFeElement(TipoCampo.Str, "DigestValue", Id = "XS17", Min = 0, Max = 999, Ocorrencia = Ocorrencia.Obrigatoria)]
-        public string DigestValue { get; set; }
-
-        #endregion Propriedades
+        Transforms = new DFeCollection<Transform>();
+        DigestMethod = new DigestMethod();
     }
+
+    #endregion Constructors
+
+    #region Propriedades
+
+    /// <summary>
+    /// XS08 - Atributo URI da tag Reference apontando para o identificador do elemento assinado (ex: #NFe35...).
+    /// </summary>
+    [DFeAttribute(TipoCampo.Str, "URI", Id = "XS08", Min = 0, Max = 999, Ocorrencia = Ocorrencia.Obrigatoria)]
+    public string URI { get; set; } = string.Empty;
+
+    /// <summary>
+    /// XS10 - Grupo de transformações (Transforms/Transform) aplicadas no documento.
+    /// </summary>
+    [DFeCollection("Transforms", Id = "XS10")]
+    [DFeItem(typeof(Transform), "Transform")]
+    public DFeCollection<Transform> Transforms { get; set; }
+
+    /// <summary>
+    /// XS15 - Grupo do método de cálculo do resumo criptográfico (DigestMethod).
+    /// </summary>
+    [DFeElement("DigestMethod", Id = "XS15")]
+    public DigestMethod DigestMethod { get; set; }
+
+    /// <summary>
+    /// XS17 - Resumo criptográfico calculado do documento (DigestValue) em Base64.
+    /// </summary>
+    [DFeElement(TipoCampo.Str, "DigestValue", Id = "XS17", Min = 0, Max = 999, Ocorrencia = Ocorrencia.Obrigatoria)]
+    public string DigestValue { get; set; } = string.Empty;
+
+    #endregion Propriedades
 }

@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="CertificadoDigital.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -38,30 +38,24 @@ using OpenAC.Net.Core;
 namespace OpenAC.Net.DFe.Core;
 
 /// <summary>
-/// Classe CertificadoDigital.
+/// Utilitários para seleção, carregamento e exibição de certificados digitais X509 (A1 em arquivo/bytes ou A3 no repositório do Windows).
 /// </summary>
 public static class CertificadoDigital
 {
     #region Methods
 
     /// <summary>
-    /// Busca certificados instalado se informado uma serie
-    /// senão abre caixa de dialogos de certificados.
+    /// Localiza e retorna um certificado digital instalado no repositório do Windows pelo número de série informado, ou abre a caixa de diálogo de seleção do Windows.
     /// </summary>
-    /// <param name="cerSerie">Serie do certificado.</param>
-    /// <returns>X509Certificate2.</returns>
-    /// <exception cref="System.Exception">
-    /// Nenhum certificado digital foi selecionado ou o certificado selecionado está com problemas.
-    /// or
-    /// Certificado digital não encontrado
-    /// or
-    /// </exception>
+    /// <param name="cerSerie">Número de série do certificado (em hexadecimal). Se vazio, abre o diálogo de seleção visual.</param>
+    /// <returns>A instância de <see cref="X509Certificate2"/> correspondente.</returns>
+    /// <exception cref="OpenDFeException">Disparada quando o certificado não for encontrado ou número de série não for informado em ambientes sem interface gráfica.</exception>
     public static X509Certificate2 SelecionarCertificado(string cerSerie = "")
     {
 #if NETSTANDARD2_0
         var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
 #else
-            var store = new X509Store("MY", StoreLocation.CurrentUser);
+        var store = new X509Store("MY", StoreLocation.CurrentUser);
 #endif
 
         try
@@ -78,8 +72,8 @@ public static class CertificadoDigital
 #if NETSTANDARD2_0 || NET
                 throw new OpenDFeException("Número de série do certificado digital obrigatório.");
 #else
-                    certificadosSelecionados = X509Certificate2UI.SelectFromCollection(certificates, "Certificados Digitais",
-                        "Selecione o Certificado Digital para uso no aplicativo", X509SelectionFlag.SingleSelection);
+                certificadosSelecionados = X509Certificate2UI.SelectFromCollection(certificates, "Certificados Digitais",
+                    "Selecione o Certificado Digital para uso no aplicativo", X509SelectionFlag.SingleSelection);
 #endif
             }
             else
@@ -98,12 +92,13 @@ public static class CertificadoDigital
     }
 
     /// <summary>
-    /// Seleciona um certificado informando o caminho e a senha.
+    /// Carrega um certificado digital A1 a partir de um arquivo (.pfx / .p12) e senha informados.
     /// </summary>
-    /// <param name="caminho">O caminho.</param>
-    /// <param name="senha">A senha.</param>
-    /// <returns>X509Certificate2.</returns>
-    /// <exception cref="System.Exception">Arquivo do Certificado digital não encontrado</exception>
+    /// <param name="caminho">Caminho completo do arquivo de certificado.</param>
+    /// <param name="senha">Senha de proteção da chave privada.</param>
+    /// <returns>A instância de <see cref="X509Certificate2"/> carregada.</returns>
+    /// <exception cref="ArgumentNullException">Disparada se o caminho for nulo ou vazio.</exception>
+    /// <exception cref="ArgumentException">Disparada se o arquivo não existir.</exception>
     public static X509Certificate2 SelecionarCertificado(string caminho, string senha)
     {
         Guard.Against<ArgumentNullException>(caminho.IsEmpty(), "Caminho do arquivo não poder ser nulo ou vazio !");
@@ -114,12 +109,13 @@ public static class CertificadoDigital
     }
 
     /// <summary>
-    /// Seleciona um certificado passando um array de bytes.
+    /// Carrega um certificado digital A1 a partir de um array de bytes e senha informados.
     /// </summary>
-    /// <param name="certificado">O certificado.</param>
-    /// <param name="senha">A senha.</param>
-    /// <returns>X509Certificate2.</returns>
-    /// <exception cref="System.Exception">Arquivo do Certificado digital não encontrado</exception>
+    /// <param name="certificado">Array de bytes do arquivo de certificado.</param>
+    /// <param name="senha">Senha de proteção da chave privada.</param>
+    /// <returns>A instância de <see cref="X509Certificate2"/> carregada.</returns>
+    /// <exception cref="ArgumentNullException">Disparada se o array for nulo.</exception>
+    /// <exception cref="ArgumentException">Disparada se o array estiver vazio.</exception>
     public static X509Certificate2 SelecionarCertificado(byte[] certificado, string senha = "")
     {
         Guard.Against<ArgumentNullException>(certificado == null, "O certificado não poder ser nulo !");
@@ -130,18 +126,16 @@ public static class CertificadoDigital
     }
 
 #if NETFULL
+    /// <summary>
+    /// Exibe a janela nativa de detalhes do certificado digital no Windows.
+    /// </summary>
+    /// <param name="certificado">O certificado digital a ser exibido.</param>
+    public static void ExibirCertificado(this X509Certificate2 certificado)
+    {
+        Guard.Against<ArgumentNullException>(certificado == null, nameof(certificado));
 
-        /// <summary>
-        /// Exibi o certificado usando a ui nativa do windows.
-        /// </summary>
-        /// <param name="certificado"></param>
-        public static void ExibirCertificado(this X509Certificate2 certificado)
-        {
-            Guard.Against<ArgumentNullException>(certificado == null, nameof(certificado));
-
-            X509Certificate2UI.DisplayCertificate(certificado);
-        }
-
+        X509Certificate2UI.DisplayCertificate(certificado);
+    }
 #endif
 
     #endregion Methods

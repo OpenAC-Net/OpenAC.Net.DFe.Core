@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeDictionaryAttribute.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -16,7 +16,7 @@
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
 // and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
-//	 The above copyright notice and this permission notice shall be
+//	到位 The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
 //	 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
@@ -33,13 +33,16 @@ using System;
 
 namespace OpenAC.Net.DFe.Core.Attributes;
 
+/// <summary>
+/// Atributo para mapeamento de coleções do tipo dicionário (chave-valor) em XML DFe.
+/// </summary>
 [AttributeUsage(AttributeTargets.Property)]
 public sealed class DFeDictionaryAttribute : DFeBaseAttribute
 {
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeDictionaryAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeDictionaryAttribute"/>.
     /// </summary>
     public DFeDictionaryAttribute()
     {
@@ -53,19 +56,19 @@ public sealed class DFeDictionaryAttribute : DFeBaseAttribute
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeDictionaryAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeDictionaryAttribute"/> com o nome da tag do dicionário.
     /// </summary>
-    /// <param name="tag">The Name.</param>
+    /// <param name="tag">Nome da tag XML do dicionário.</param>
     public DFeDictionaryAttribute(string tag) : this()
     {
         Name = tag;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeDictionaryAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeDictionaryAttribute"/> com os nomes da tag do dicionário e de cada item.
     /// </summary>
-    /// <param name="tag">The Name.</param>
-    /// <param name="itemName">The Name.</param>
+    /// <param name="tag">Nome da tag XML do dicionário.</param>
+    /// <param name="itemName">Nome da tag XML de cada item do dicionário.</param>
     public DFeDictionaryAttribute(string tag, string itemName) : this()
     {
         Name = tag;
@@ -77,24 +80,17 @@ public sealed class DFeDictionaryAttribute : DFeBaseAttribute
     #region Properties
 
     /// <summary>
-    /// Gets or sets the Name.
+    /// Obtém ou define o nome da tag XML de cada item contido no dicionário.
     /// </summary>
-    /// <value>The Name.</value>
     public string ItemName { get; set; }
 
     /// <summary>
-    /// Gets or sets the name space.
-    /// </summary>
-    /// <value>The name space.</value>
-    public string Namespace { get; set; }
-
-    /// <summary>
-    ///
+    /// Obtém ou define a quantidade mínima de entradas no dicionário.
     /// </summary>
     public int MinSize { get; set; }
 
     /// <summary>
-    ///
+    /// Obtém ou define a quantidade máxima de entradas permitidas no dicionário.
     /// </summary>
     public int MaxSize { get; set; }
 

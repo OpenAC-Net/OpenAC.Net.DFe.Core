@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeResposta.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -30,15 +30,26 @@
 // ***********************************************************************
 
 using System.Text;
-using OpenAC.Net.Core.Generics;
 using OpenAC.Net.DFe.Core.Document;
 
 namespace OpenAC.Net.DFe.Core.Service;
 
+/// <summary>
+/// Classe base abstrata para objetos de resposta de Web Services DFe contendo XMLs e Envelopes de envio e retorno.
+/// </summary>
+/// <typeparam name="T">O tipo do resultado retornado pelo serviço.</typeparam>
 public abstract class DFeResposta<T> where T : class
 {
     #region Constructors
 
+    /// <summary>
+    /// Inicializa uma nova instância da classe <see cref="DFeResposta{T}"/>.
+    /// </summary>
+    /// <param name="xmlEnvio">Conteúdo XML enviado.</param>
+    /// <param name="xmlRetorno">Conteúdo XML retornado pela SEFAZ.</param>
+    /// <param name="envelopeEnvio">Envelope SOAP/HTTP de envio.</param>
+    /// <param name="resposta">Envelope SOAP/HTTP de resposta.</param>
+    /// <param name="loadRetorno">Indica se deve deserializar automaticamente o XML de retorno para a propriedade <see cref="Resultado"/>.</param>
     protected DFeResposta(string xmlEnvio, string xmlRetorno, string envelopeEnvio, string resposta, bool loadRetorno = true)
     {
         XmlEnvio = xmlEnvio;
@@ -56,14 +67,29 @@ public abstract class DFeResposta<T> where T : class
 
     #region Properties
 
+    /// <summary>
+    /// Obtém o XML de envio da requisição.
+    /// </summary>
     public string XmlEnvio { get; }
 
+    /// <summary>
+    /// Obtém o XML retornado pelo Web Service.
+    /// </summary>
     public string XmlRetorno { get; }
 
+    /// <summary>
+    /// Obtém a mensagem completa do envelope SOAP/HTTP de envio.
+    /// </summary>
     public string EnvelopeEnvio { get; }
 
+    /// <summary>
+    /// Obtém a mensagem completa do envelope SOAP/HTTP de retorno.
+    /// </summary>
     public string EnvelopeRetorno { get; }
 
+    /// <summary>
+    /// Obtém o objeto tipado deserializado a partir do XML de retorno.
+    /// </summary>
     public T Resultado { get; protected set; }
 
     #endregion Properties

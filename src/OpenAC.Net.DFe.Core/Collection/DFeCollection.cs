@@ -1,5 +1,5 @@
 // ***********************************************************************
-// Assembly         : OpenAC.Net.NFe
+// Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
 // Created          : 07-26-2014
 //
@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeCollection.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -35,33 +35,33 @@ using System.Collections.Generic;
 namespace OpenAC.Net.DFe.Core.Collection;
 
 /// <summary>
-/// Classe DFeCollection.
+/// Representa uma coleção fortemente tipada de itens para documentos DFe, derivada de <see cref="List{TTipo}"/>.
 /// </summary>
-/// <typeparam name="TTipo"></typeparam>
+/// <typeparam name="TTipo">O tipo dos elementos contidos na coleção.</typeparam>
 [Serializable]
 public class DFeCollection<TTipo> : List<TTipo>
 {
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeCollection{T}"/> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeCollection{TTipo}"/>.
     /// </summary>
     public DFeCollection()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeCollection{T}"/> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeCollection{TTipo}"/> com a capacidade inicial especificada.
     /// </summary>
-    /// <param name="capacity">The source.</param>
+    /// <param name="capacity">O número de elementos que a nova lista pode armazenar inicialmente.</param>
     public DFeCollection(int capacity) : base(capacity)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeCollection{T}"/> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeCollection{TTipo}"/> contendo elementos copiados da coleção especificada.
     /// </summary>
-    /// <param name="source">The source.</param>
+    /// <param name="source">A coleção cujos elementos são copiados para a nova lista.</param>
     public DFeCollection(IEnumerable<TTipo> source) : base(source)
     {
     }
@@ -71,9 +71,9 @@ public class DFeCollection<TTipo> : List<TTipo>
     #region Methods
 
     /// <summary>
-    /// Adds an object to the end of the <see cref="DFeCollection{T}"/>.
+    /// Cria uma nova instância de <typeparamref name="TTipo"/>, adiciona-a ao final da coleção e a retorna.
     /// </summary>
-    /// <returns>T.</returns>
+    /// <returns>A nova instância do item criado e adicionado à coleção.</returns>
     public virtual TTipo AddNew()
     {
         var item = (TTipo)Activator.CreateInstance(typeof(TTipo), true);
@@ -81,30 +81,30 @@ public class DFeCollection<TTipo> : List<TTipo>
         return item;
     }
 
-    /// <summary>Adds an object to the end of the <see cref="DFeCollection{T}"/>.</summary>
-    /// <param name="item">The object to be added to the end of the <see cref="DFeCollection{T}"/>. The value can be null for reference types.</param>
+    /// <summary>
+    /// Adiciona um objeto ao final da coleção <see cref="DFeCollection{TTipo}"/>.
+    /// </summary>
+    /// <param name="item">O objeto a ser adicionado ao final da coleção.</param>
     public new virtual void Add(TTipo item)
     {
         base.Add(item);
     }
 
-    /// <summary>Inserts an element into the <see cref="DFeCollection{T}"/> at the specified index.</summary>
-    /// <param name="index">The zero-based index at which <paramref name="item" /> should be inserted.</param>
-    /// <param name="item">The object to insert. The value can be null for reference types.</param>
-    /// <exception cref="T:System.ArgumentOutOfRangeException">
-    /// <paramref name="index" /> is less than 0.-or-<paramref name="index" /> is greater than <see cref="DFeCollection{T}.Count"/>.</exception>
+    /// <summary>
+    /// Insere um elemento na coleção <see cref="DFeCollection{TTipo}"/> no índice especificado.
+    /// </summary>
+    /// <param name="index">O índice de base zero no qual o item deve ser inserido.</param>
+    /// <param name="item">O objeto a ser inserido.</param>
     public new virtual void Insert(int index, TTipo item)
     {
         base.Insert(index, item);
     }
 
-    /// <summary>Inserts the elements of a collection into the <see cref="DFeCollection{T}"/> at the specified index.</summary>
-    /// <param name="index">The zero-based index at which the new elements should be inserted.</param>
-    /// <param name="collection">The collection whose elements should be inserted into the <see cref="DFeCollection{T}"/>. The collection itself cannot be null, but it can contain elements that are null, if type <paramref name="T" /> is a reference type.</param>
-    /// <exception cref="T:System.ArgumentNullException">
-    /// <paramref name="collection" /> is null.</exception>
-    /// <exception cref="T:System.ArgumentOutOfRangeException">
-    /// <paramref name="index" /> is less than 0.-or-<paramref name="index" /> is greater than <see cref="DFeCollection{T}.Count"/>.</exception>
+    /// <summary>
+    /// Insere os elementos de uma coleção no índice especificado da <see cref="DFeCollection{TTipo}"/>.
+    /// </summary>
+    /// <param name="index">O índice de base zero no qual os novos elementos devem ser inseridos.</param>
+    /// <param name="collection">A coleção cujos elementos devem ser inseridos.</param>
     public new virtual void InsertRange(int index, IEnumerable<TTipo> collection)
     {
         base.InsertRange(index, collection);
@@ -115,10 +115,10 @@ public class DFeCollection<TTipo> : List<TTipo>
     #region Operators
 
     /// <summary>
-    /// Performs an implicit conversion from <see cref="T:TTipo[]"/> to <see cref="DFeCollection{TTipo}"/>.
+    /// Converte implicitamente um array de <typeparamref name="TTipo"/> para <see cref="DFeCollection{TTipo}"/>.
     /// </summary>
-    /// <param name="source">The source.</param>
-    /// <returns>The result of the conversion.</returns>
+    /// <param name="source">Array de origem.</param>
+    /// <returns>Uma nova instância de <see cref="DFeCollection{TTipo}"/> contendo os elementos do array.</returns>
     public static implicit operator DFeCollection<TTipo>(TTipo[] source) => new DFeCollection<TTipo>(source);
 
     #endregion Operators

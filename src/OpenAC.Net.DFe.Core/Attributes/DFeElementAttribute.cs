@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeElementAttribute.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -35,36 +35,34 @@ using System;
 namespace OpenAC.Net.DFe.Core.Attributes;
 
 /// <summary>
-/// Classe DFeElementAttribute.
+/// Atributo para mapeamento de propriedades como elementos/tags XML em documentos DFe.
 /// </summary>
-/// <seealso cref="System.Attribute" />
-/// <seealso cref="DFeBaseAttribute" />
 [AttributeUsage(AttributeTargets.Property)]
 public class DFeElementAttribute : DFeBaseAttribute
 {
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeElementAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeElementAttribute"/>.
     /// </summary>
     public DFeElementAttribute()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeElementAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeElementAttribute"/> com o nome da tag.
     /// </summary>
-    /// <param name="tag">The Name.</param>
+    /// <param name="tag">Nome da tag XML gerada.</param>
     public DFeElementAttribute(string tag)
     {
         Name = tag;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeElementAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeElementAttribute"/> com o tipo de campo e nome da tag informados.
     /// </summary>
-    /// <param name="tipo">The tipo.</param>
-    /// <param name="name">The name.</param>
+    /// <param name="tipo">Tipo de dado do campo no XML.</param>
+    /// <param name="name">Nome da tag XML gerada.</param>
     public DFeElementAttribute(TipoCampo tipo, string name)
     {
         Tipo = tipo;
@@ -75,6 +73,9 @@ public class DFeElementAttribute : DFeBaseAttribute
 
     #region Properties
 
+    /// <summary>
+    /// Obtém ou define se o conteúdo deste elemento deve ser encapsulado em uma seção CDATA.
+    /// </summary>
     public bool UseCData { get; set; }
 
     #endregion Properties

@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeSaveOptions.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -33,12 +33,34 @@ using System;
 
 namespace OpenAC.Net.DFe.Core.Common;
 
+/// <summary>
+/// Flags com opções de transformação e sanitização aplicadas ao salvar documentos DFe em formato XML.
+/// </summary>
 [Flags]
 public enum DFeSaveOptions
 {
+    /// <summary>
+    /// Nenhuma transformação adicional é aplicada.
+    /// </summary>
     None = 1 << 0,
+
+    /// <summary>
+    /// Remove acentos dos textos do XML substituindo-os por seus equivalentes sem acentuação.
+    /// </summary>
     RemoveAccents = 1 << 1,
+
+    /// <summary>
+    /// Remove espaços em branco redundantes e desnecessários do XML.
+    /// </summary>
     RemoveSpaces = 1 << 2,
+
+    /// <summary>
+    /// Desabilita a indentação/formatação do XML, gerando-o em linha compacta.
+    /// </summary>
     DisableFormatting = 1 << 3,
+
+    /// <summary>
+    /// Omite a declaração XML inicial (<c>&lt;?xml version="1.0" ... ?&gt;</c>).
+    /// </summary>
     OmitDeclaration = 1 << 4
 }

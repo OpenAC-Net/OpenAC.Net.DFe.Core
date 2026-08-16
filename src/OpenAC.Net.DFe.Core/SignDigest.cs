@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="SignDigest.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -31,8 +31,18 @@
 
 namespace OpenAC.Net.DFe.Core;
 
+/// <summary>
+/// Especifica o algoritmo de resumo criptográfico (Digest) utilizado na assinatura digital XML-DSig.
+/// </summary>
 public enum SignDigest
 {
+    /// <summary>
+    /// Algoritmo SHA-1 (<c>http://www.w3.org/2000/09/xmldsig#sha1</c>).
+    /// </summary>
     SHA1,
+
+    /// <summary>
+    /// Algoritmo SHA-256 (<c>http://www.w3.org/2001/04/xmlenc#sha256</c>).
+    /// </summary>
     SHA256
 }

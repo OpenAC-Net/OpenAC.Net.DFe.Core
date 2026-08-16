@@ -1,4 +1,4 @@
-﻿// ***********************************************************************
+// ***********************************************************************
 // Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
 // Created          : 05-07-2016
@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="SignedInfo.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -33,12 +33,15 @@ using OpenAC.Net.DFe.Core.Attributes;
 
 namespace OpenAC.Net.DFe.Core.Document;
 
-public sealed class SignedInfo
+/// <summary>
+/// Representa as informações assinadas (SignedInfo) contendo métodos de canonicalização, assinatura e referências no padrão XMLDSig.
+/// </summary>
+public sealed partial class SignedInfo
 {
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeSignature" /> class.
+    /// Inicializa uma nova instância da classe <see cref="SignedInfo"/>.
     /// </summary>
     public SignedInfo()
     {
@@ -52,23 +55,20 @@ public sealed class SignedInfo
     #region Propriedades
 
     /// <summary>
-    /// XS03 - Grupo do Método de Canonicalização
+    /// XS03 - Grupo do Método de Canonicalização (CanonicalizationMethod).
     /// </summary>
-    /// <value>The canonicalization method.</value>
     [DFeElement("CanonicalizationMethod", Id = "XS03")]
     public CanonicalizationMethod CanonicalizationMethod { get; set; }
 
     /// <summary>
-    /// XS05 - Grupo do Método de Assinatura
+    /// XS05 - Grupo do Método de Assinatura (SignatureMethod).
     /// </summary>
-    /// <value>The signature method.</value>
     [DFeElement("SignatureMethod", Id = "XS05")]
     public SignatureMethod SignatureMethod { get; set; }
 
     /// <summary>
-    /// XS07 - Grupo Reference
+    /// XS07 - Grupo de referências do documento assinado (Reference).
     /// </summary>
-    /// <value>The reference.</value>
     [DFeElement("Reference", Id = "XS07")]
     public Reference Reference { get; set; }
 

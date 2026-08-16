@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeDocument.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -29,8 +29,11 @@
 // <summary></summary>
 // ***********************************************************************
 
+using System;
 using System.IO;
 using System.Text;
+using System.Xml;
+using System.Xml.Linq;
 using OpenAC.Net.Core.Generics;
 using OpenAC.Net.DFe.Core.Attributes;
 using OpenAC.Net.DFe.Core.Common;
@@ -39,147 +42,184 @@ using OpenAC.Net.DFe.Core.Serializer;
 namespace OpenAC.Net.DFe.Core.Document;
 
 /// <summary>
-/// Class DFeDocument.
+/// Classe base abstrata para todos os documentos fiscais eletrônicos DFe com suporte a serialização, deserialização, carregamento e gravação de XML.
 /// </summary>
-/// <typeparam name="TDocument">The type of the t document.</typeparam>
-/// <seealso cref="OpenAC.Net.Core.Generics.GenericClone{TDocument}" />
+/// <typeparam name="TDocument">O tipo concreto do documento derivado.</typeparam>
 public abstract class DFeDocument<TDocument> : GenericClone<TDocument> where TDocument : class
 {
     #region Properties
 
+    /// <summary>
+    /// Obtém o conteúdo XML bruto gerado ou carregado para esta instância de documento.
+    /// </summary>
     [DFeIgnore]
-    public string Xml { get; protected set; }
+    public string Xml { get; protected set; } = string.Empty;
 
     #endregion Properties
 
     #region Methods
 
     /// <summary>
-    /// Carrega o documento.
+    /// Serializa o documento para um objeto <see cref="XElement"/>.
     /// </summary>
-    /// <param name="document">The document.</param>
-    /// <param name="encoding">The encoding.</param>
-    /// <returns>TDocument.</returns>
-    public static TDocument Load(string document, Encoding encoding = null)
+    /// <param name="rootName">Nome customizado para a tag raiz (opcional).</param>
+    /// <param name="rootNamespace">Namespace customizado para a tag raiz (opcional).</param>
+    /// <param name="options">Opções de serialização (opcional).</param>
+    /// <returns>O elemento XML (<see cref="XElement"/>) resultante da serialização.</returns>
+    public abstract XElement WriteToXml(string? rootName = null, string? rootNamespace = null,
+        SerializerOptions? options = null);
+
+    /// <summary>
+    /// Deserializa as propriedades do documento a partir de um objeto <see cref="XElement"/>.
+    /// </summary>
+    /// <param name="element">Elemento XML de origem contendo os dados do documento.</param>
+    /// <param name="options">Opções de serialização (opcional).</param>
+    public abstract void ReadXml(XElement element, SerializerOptions? options = null);
+
+    /// <summary>
+    /// Carrega e deserializa um documento DFe a partir de uma string XML ou caminho de arquivo em disco.
+    /// </summary>
+    /// <param name="document">String com o conteúdo XML ou caminho do arquivo .xml.</param>
+    /// <param name="encoding">Codificação de caracteres do XML (padrão UTF-8).</param>
+    /// <returns>A instância deserializada de <typeparamref name="TDocument"/>.</returns>
+    public static TDocument Load(string document, Encoding? encoding = null)
     {
-        var serializer = new DFeSerializer<TDocument>();
+        var options = new SerializerOptions();
         if (encoding != null)
         {
-            serializer.Options.Encoding = encoding;
+            options.Encoding = encoding;
         }
 
-        var content = File.Exists(document) ? File.ReadAllText(document, serializer.Options.Encoding) : document;
-        var ret = serializer.Deserialize(document);
-        (ret as DFeDocument<TDocument>).Xml = content;
-        return ret;
+        var content = File.Exists(document) ? File.ReadAllText(document, options.Encoding) : document;
+        var xmlDoc = XDocument.Parse(content);
+
+        var item = (TDocument)Activator.CreateInstance(typeof(TDocument))!;
+        if (item is DFeDocument<TDocument> doc && xmlDoc.Root != null)
+        {
+            doc.ReadXml(xmlDoc.Root, options);
+            doc.Xml = content;
+        }
+        return item;
     }
 
     /// <summary>
-    /// Carrega o documento.
+    /// Carrega e deserializa um documento DFe a partir de um <see cref="Stream"/>.
     /// </summary>
-    /// <param name="document">The document.</param>
-    /// <param name="encoding"></param>
-    /// <returns>TDocument.</returns>
-    public static TDocument Load(Stream document, Encoding encoding = null)
+    /// <param name="document">Stream contendo os dados do documento XML.</param>
+    /// <param name="encoding">Codificação de caracteres do XML (padrão UTF-8).</param>
+    /// <returns>A instância deserializada de <typeparamref name="TDocument"/>.</returns>
+    public static TDocument Load(Stream document, Encoding? encoding = null)
     {
-        var serializer = new DFeSerializer<TDocument>();
+        var options = new SerializerOptions();
         if (encoding != null)
         {
-            serializer.Options.Encoding = encoding;
+            options.Encoding = encoding;
         }
 
-        using (var reader = new StreamReader(document, serializer.Options.Encoding))
+        using var reader = new StreamReader(document, options.Encoding, true, 1024, true);
+        document.Position = 0;
+        var content = reader.ReadToEnd();
+        var xmlDoc = XDocument.Parse(content);
+
+        var item = (TDocument)Activator.CreateInstance(typeof(TDocument))!;
+        if (item is DFeDocument<TDocument> doc && xmlDoc.Root != null)
         {
-            document.Position = 0;
-
-            var content = reader.ReadToEnd();
-            var ret = serializer.Deserialize(content);
-            (ret as DFeDocument<TDocument>).Xml = content;
-            return ret;
+            doc.ReadXml(xmlDoc.Root, options);
+            doc.Xml = content;
         }
+        return item;
     }
 
     /// <summary>
-    /// Retorna o Xml do documento.
+    /// Serializa o documento e retorna sua representação em formato string XML.
     /// </summary>
-    /// <param name="options">The options.</param>
-    /// <param name="encoding">The encoding.</param>
-    /// <returns>System.String.</returns>
+    /// <param name="options">Opções de formatação e salvamento do XML.</param>
+    /// <param name="encoding">Codificação de caracteres (padrão UTF-8).</param>
+    /// <returns>A string contendo o XML gerado.</returns>
     public virtual string GetXml(DFeSaveOptions options = DFeSaveOptions.DisableFormatting, Encoding encoding = null)
     {
-        using (var stream = new MemoryStream())
-        {
-            Save(stream, options, encoding);
-            using (var streamReader = new StreamReader(stream))
-            {
-                return streamReader.ReadToEnd();
-            }
-        }
+        using var stream = new MemoryStream();
+        Save(stream, options, encoding);
+        stream.Position = 0;
+        using var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8);
+        return streamReader.ReadToEnd();
     }
 
     /// <summary>
-    /// Salva o documento.
+    /// Serializa e grava o documento XML em um arquivo no caminho informado.
     /// </summary>
-    /// <param name="path">The path.</param>
-    /// <param name="options">The options.</param>
-    /// <param name="encoding">The encoding.</param>
-    /// <returns>TDocument.</returns>
+    /// <param name="path">Caminho completo do arquivo onde o XML será gravado.</param>
+    /// <param name="options">Opções de formatação e salvamento do XML.</param>
+    /// <param name="encoding">Codificação de caracteres (padrão UTF-8).</param>
     public virtual void Save(string path, DFeSaveOptions options = DFeSaveOptions.DisableFormatting, Encoding encoding = null)
     {
-        var serializer = new DFeSerializer<TDocument>();
+        var serOptions = ConfigureOptions(options, encoding);
+        var element = WriteToXml(null, null, serOptions);
+        var xmlDoc = new XDocument(new XDeclaration("1.0", serOptions.Encoding.WebName, null), element);
 
-        if (!options.HasFlag(DFeSaveOptions.None))
+        var settings = new XmlWriterSettings
         {
-            serializer.Options.RemoverAcentos = options.HasFlag(DFeSaveOptions.RemoveAccents);
-            serializer.Options.RemoverEspacos = options.HasFlag(DFeSaveOptions.RemoveSpaces);
-            serializer.Options.FormatarXml = !options.HasFlag(DFeSaveOptions.DisableFormatting);
-            serializer.Options.OmitirDeclaracao = options.HasFlag(DFeSaveOptions.OmitDeclaration);
-        }
+            Encoding = serOptions.Encoding,
+            Indent = serOptions.FormatarXml,
+            OmitXmlDeclaration = serOptions.OmitirDeclaracao
+        };
 
-        if (encoding != null)
+        using (var writer = XmlWriter.Create(path, settings))
         {
-            serializer.Options.Encoding = encoding;
+            xmlDoc.Save(writer);
         }
-
-        serializer.Serialize(this, path);
-        Xml = File.ReadAllText(path, serializer.Options.Encoding);
+        Xml = File.ReadAllText(path, serOptions.Encoding);
     }
 
     /// <summary>
-    /// Salva o documento.
+    /// Serializa e grava o documento XML no <see cref="Stream"/> informado.
     /// </summary>
-    /// <param name="stream">The stream.</param>
-    /// <param name="options">The options.</param>
-    /// <param name="encoding">The encoding.</param>
-    /// <returns>TDocument.</returns>
+    /// <param name="stream">Stream de destino para gravação do XML.</param>
+    /// <param name="options">Opções de formatação e salvamento do XML.</param>
+    /// <param name="encoding">Codificação de caracteres (padrão UTF-8).</param>
     public virtual void Save(Stream stream, DFeSaveOptions options = DFeSaveOptions.DisableFormatting, Encoding encoding = null)
     {
-        var serializer = new DFeSerializer<TDocument>();
+        var serOptions = ConfigureOptions(options, encoding);
+        var element = WriteToXml(null, null, serOptions);
+        var xmlDoc = new XDocument(new XDeclaration("1.0", serOptions.Encoding.WebName, null), element);
 
+        var settings = new XmlWriterSettings
+        {
+            Encoding = serOptions.Encoding,
+            Indent = serOptions.FormatarXml,
+            OmitXmlDeclaration = serOptions.OmitirDeclaracao
+        };
+
+        using (var writer = XmlWriter.Create(stream, settings))
+        {
+            xmlDoc.Save(writer);
+        }
+
+        using var ms = new MemoryStream();
+        stream.Position = 0;
+        stream.CopyTo(ms);
+        ms.Position = 0;
+        using var reader = new StreamReader(ms, serOptions.Encoding);
+        Xml = reader.ReadToEnd();
+    }
+
+    private static SerializerOptions ConfigureOptions(DFeSaveOptions options, Encoding? encoding)
+    {
+        var serOptions = new SerializerOptions();
         if (!options.HasFlag(DFeSaveOptions.None))
         {
-            serializer.Options.RemoverAcentos = options.HasFlag(DFeSaveOptions.RemoveAccents);
-            serializer.Options.RemoverEspacos = options.HasFlag(DFeSaveOptions.RemoveSpaces);
-            serializer.Options.FormatarXml = !options.HasFlag(DFeSaveOptions.DisableFormatting);
-            serializer.Options.OmitirDeclaracao = options.HasFlag(DFeSaveOptions.OmitDeclaration);
+            serOptions.RemoverAcentos = options.HasFlag(DFeSaveOptions.RemoveAccents);
+            serOptions.RemoverEspacos = options.HasFlag(DFeSaveOptions.RemoveSpaces);
+            serOptions.FormatarXml = !options.HasFlag(DFeSaveOptions.DisableFormatting);
+            serOptions.OmitirDeclaracao = options.HasFlag(DFeSaveOptions.OmitDeclaration);
         }
 
         if (encoding != null)
         {
-            serializer.Options.Encoding = encoding;
+            serOptions.Encoding = encoding;
         }
 
-        serializer.Serialize(this, stream);
-
-        using (var ms = new MemoryStream())
-        {
-            stream.CopyTo(ms);
-            stream.Position = 0;
-            using (var reader = new StreamReader(ms, serializer.Options.Encoding))
-            {
-                Xml = reader.ReadToEnd();
-            }
-        }
+        return serOptions;
     }
 
     #endregion Methods

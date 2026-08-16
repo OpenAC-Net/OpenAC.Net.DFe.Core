@@ -1,4 +1,4 @@
-﻿// ***********************************************************************
+// ***********************************************************************
 // Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
 // Created          : 04-01-2019
@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeServiceEnvironment.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -37,14 +37,19 @@ using OpenAC.Net.DFe.Core.Serializer;
 
 namespace OpenAC.Net.DFe.Core.Service;
 
-public class DFeServiceEnvironment<TTIpo> where TTIpo : Enum
+/// <summary>
+/// Representa as configurações de ambiente (Produção ou Homologação) e UF contendo os endpoints dos Web Services DFe.
+/// </summary>
+/// <typeparam name="TTIpo">Enum com os tipos de serviço suportados (ex: Autorizacao, RetAutorizacao, etc.).</typeparam>
+public partial class DFeServiceEnvironment<TTIpo> where TTIpo : Enum
 {
     #region Properties
 
     /// <summary>
-    ///
+    /// Indexador que obtém ou define a URL do endpoint para o tipo de serviço especificado.
     /// </summary>
-    /// <param name="tipo"></param>
+    /// <param name="tipo">O tipo de serviço desejado.</param>
+    /// <returns>A URL configurada para o serviço.</returns>
     [DFeIgnore]
     public string this[TTIpo tipo]
     {
@@ -52,12 +57,21 @@ public class DFeServiceEnvironment<TTIpo> where TTIpo : Enum
         set => Enderecos[tipo] = value;
     }
 
+    /// <summary>
+    /// Obtém ou define o ambiente do serviço (Produção ou Homologação).
+    /// </summary>
     [DFeAttribute(TipoCampo.Enum, "Tipo")]
     public DFeTipoAmbiente Ambiente { get; set; }
 
+    /// <summary>
+    /// Obtém ou define a sigla da UF associada ao ambiente de serviço.
+    /// </summary>
     [DFeAttribute(TipoCampo.Enum, "UF")]
     public DFeSiglaUF UF { get; set; }
 
+    /// <summary>
+    /// Obtém ou define o dicionário de endereços/URLs mapeados por tipo de serviço.
+    /// </summary>
     [DFeDictionary("Enderecos")]
     [DFeDictionaryKey(TipoCampo.Enum, "Tipo", AsAttribute = true)]
     [DFeDictionaryValue(TipoCampo.Str, "Endereco")]

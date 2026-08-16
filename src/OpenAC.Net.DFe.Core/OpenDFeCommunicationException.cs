@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="OpenDFeCommunicationException.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -35,53 +35,68 @@ using OpenAC.Net.Core;
 
 namespace OpenAC.Net.DFe.Core;
 
+/// <summary>
+/// Exceção disparada quando ocorre uma falha na comunicação HTTP/SOAP ou transporte de dados com os Web Services da SEFAZ.
+/// </summary>
 [Serializable]
 public class OpenDFeCommunicationException : OpenException
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="T:OpenAC.Net.DFe.Core.OpenDFeCommunicationException" /> class with a specified error message.
+    /// Inicializa uma nova instância da classe <see cref="OpenDFeCommunicationException"/> com a mensagem descritiva do erro.
     /// </summary>
-    /// <param name="message">The message that describes the error.</param>
+    /// <param name="message">A mensagem descritiva do erro.</param>
     public OpenDFeCommunicationException(string message)
         : base(message)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="T:OpenAC.Net.DFe.Core.OpenDFeCommunicationException" /> class.
+    /// Inicializa uma nova instância da classe <see cref="OpenDFeCommunicationException"/>.
     /// </summary>
     public OpenDFeCommunicationException()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="T:OpenAC.Net.DFe.Core.OpenDFeCommunicationException" /> class with a specified error message and a reference to the inner exception that is the cause of this exception.
+    /// Inicializa uma nova instância da classe <see cref="OpenDFeCommunicationException"/> com mensagem descritiva e exceção interna.
     /// </summary>
-    /// <param name="message">The error message that explains the reason for the exception.</param>
-    /// <param name="innerException">The exception that is the cause of the current exception, or a null reference (Nothing in Visual Basic) if no inner exception is specified.</param>
+    /// <param name="message">A mensagem descritiva do erro.</param>
+    /// <param name="innerException">A exceção interna causadora do erro.</param>
     public OpenDFeCommunicationException(string message, Exception innerException)
         : base(message, innerException)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="T:OpenAC.Net.DFe.Core.OpenDFeCommunicationException" /> class.
+    /// Inicializa uma nova instância da classe <see cref="OpenDFeCommunicationException"/> com mensagem formatada.
     /// </summary>
-    /// <param name="innerException">The inner exception.</param>
-    /// <param name="message">The message.</param>
-    /// <param name="args">The arguments.</param>
-    public OpenDFeCommunicationException(Exception innerException, string message, params object[] args)
-        : base(string.Format(message, args), innerException)
+    /// <param name="format">Texto com formato da mensagem.</param>
+    /// <param name="args">Argumentos de substituição no formato.</param>
+    public OpenDFeCommunicationException(string format, params object[] args)
+        : base(string.Format(format, args))
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="T:OpenAC.Net.DFe.Core.OpenDFeValidationException" /> class with serialized data.
+    /// Inicializa uma nova instância da classe <see cref="OpenDFeCommunicationException"/> com mensagem formatada e exceção interna.
     /// </summary>
-    /// <param name="info">The <see cref="T:System.Runtime.Serialization.SerializationInfo" /> that holds the serialized object data about the exception being thrown.</param>
-    /// <param name="context">The <see cref="T:System.Runtime.Serialization.StreamingContext" /> that contains contextual information about the source or destination.</param>
+    /// <param name="innerException">A exceção interna causadora do erro.</param>
+    /// <param name="format">Texto com formato da mensagem.</param>
+    /// <param name="args">Argumentos de substituição no formato.</param>
+    public OpenDFeCommunicationException(Exception innerException, string format, params object[] args)
+        : base(string.Format(format, args), innerException)
+    {
+    }
+
+#if NET462
+    /// <summary>
+    /// Inicializa uma nova instância da classe <see cref="OpenDFeCommunicationException"/> com dados serializados.
+    /// </summary>
+    /// <param name="info">O objeto <see cref="SerializationInfo"/> contendo os dados serializados.</param>
+    /// <param name="context">O contexto contextual sobre a origem ou destino.</param>
     protected OpenDFeCommunicationException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     {
     }
+#endif
 }

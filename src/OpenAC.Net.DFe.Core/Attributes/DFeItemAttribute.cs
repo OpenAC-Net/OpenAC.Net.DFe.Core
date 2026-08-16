@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeItemAttribute.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -34,19 +34,18 @@ using System;
 namespace OpenAC.Net.DFe.Core.Attributes;
 
 /// <summary>
-/// Class DFeItemAttribute.
+/// Atributo utilizado para mapeamento polimórfico de itens em coleções ou propriedades que suportam múltiplos tipos no XML.
 /// </summary>
-/// <seealso cref="System.Attribute" />
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public sealed class DFeItemAttribute : Attribute
 {
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeItemAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeItemAttribute"/> com o tipo concreto e nome da tag correspondente.
     /// </summary>
-    /// <param name="tipo">The tipo.</param>
-    /// <param name="name">The name.</param>
+    /// <param name="tipo">Tipo da classe concreta mapeada.</param>
+    /// <param name="name">Nome da tag XML correspondente ao tipo.</param>
     public DFeItemAttribute(Type tipo, string name)
     {
         Tipo = tipo;
@@ -57,10 +56,19 @@ public sealed class DFeItemAttribute : Attribute
 
     #region Propriedades
 
+    /// <summary>
+    /// Obtém ou define o tipo de classe concreta mapeada.
+    /// </summary>
     public Type Tipo { get; set; }
 
+    /// <summary>
+    /// Obtém ou define o nome da tag XML correspondente a este tipo.
+    /// </summary>
     public string Name { get; set; }
 
+    /// <summary>
+    /// Obtém ou define o namespace XML deste elemento.
+    /// </summary>
     public string Namespace { get; set; }
 
     #endregion Propriedades

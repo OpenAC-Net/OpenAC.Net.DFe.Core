@@ -1,4 +1,4 @@
-﻿// ***********************************************************************
+// ***********************************************************************
 // Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
 // Created          : 05-04-2016
@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeBaseAttribute.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -36,12 +36,15 @@ using OpenAC.Net.DFe.Core.Serializer;
 namespace OpenAC.Net.DFe.Core;
 
 /// <summary>
-/// Interface IDFeElement
+/// Classe base abstrata para atributos de mapeamento XML DFe.
 /// </summary>
 public abstract class DFeBaseAttribute : Attribute
 {
     #region Constructors
 
+    /// <summary>
+    /// Inicializa uma nova instância da classe <see cref="DFeBaseAttribute"/>.
+    /// </summary>
     protected DFeBaseAttribute()
     {
         Tipo = TipoCampo.Str;
@@ -58,26 +61,49 @@ public abstract class DFeBaseAttribute : Attribute
 
     #region Properties
 
+    /// <summary>
+    /// Obtém ou define o tipo de dado do campo no XML.
+    /// </summary>
     public TipoCampo Tipo { get; set; }
 
+    /// <summary>
+    /// Obtém ou define o identificador do campo conforme o manual do DFe (ex: B01, H02).
+    /// </summary>
     public string Id { get; set; }
 
+    /// <summary>
+    /// Obtém ou define o nome da tag XML gerada para o campo.
+    /// </summary>
     public string Name { get; set; }
 
     /// <summary>
-    /// Gets or sets the name space.
+    /// Obtém ou define o namespace XML do elemento ou atributo.
     /// </summary>
-    /// <value>The name space.</value>
     public string Namespace { get; set; }
 
+    /// <summary>
+    /// Obtém ou define a descrição legível do campo para mensagens de erro e validação.
+    /// </summary>
     public string Descricao { get; set; }
 
+    /// <summary>
+    /// Obtém ou define a ordem de serialização do elemento no XML.
+    /// </summary>
     public int Ordem { get; set; }
 
+    /// <summary>
+    /// Obtém ou define o tamanho máximo de caracteres ou casas decimais permitidos.
+    /// </summary>
     public int Max { get; set; }
 
+    /// <summary>
+    /// Obtém ou define o tamanho mínimo de caracteres ou casas decimais obrigatórios.
+    /// </summary>
     public int Min { get; set; }
 
+    /// <summary>
+    /// Obtém ou define a regra de ocorrência do campo no XML.
+    /// </summary>
     public Ocorrencia Ocorrencia { get; set; }
 
     #endregion Properties

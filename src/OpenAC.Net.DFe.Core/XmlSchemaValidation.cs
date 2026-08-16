@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="XmlSchemaValidation.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -38,18 +38,18 @@ using System.Xml.Schema;
 namespace OpenAC.Net.DFe.Core;
 
 /// <summary>
-/// Classe estatica para validação de xml usando schema.
+/// Utilitários para validação estrutural de documentos XML contra schemas XSD (W3C XML Schema).
 /// </summary>
 public static class XmlSchemaValidation
 {
     /// <summary>
-    /// Valida o arquivo XML com o schema informado.
+    /// Valida o conteúdo XML fornecido contra o arquivo de schema XSD especificado.
     /// </summary>
-    /// <param name="arquivoXml">The arquivo XML.</param>
-    /// <param name="schema">The schema nf.</param>
-    /// <param name="erros">The erro.</param>
-    /// <param name="avisos">The avisos.</param>
-    /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+    /// <param name="arquivoXml">A string contendo o documento XML a ser validado.</param>
+    /// <param name="schema">O caminho completo do arquivo de schema XSD (.xsd).</param>
+    /// <param name="erros">Array contendo as mensagens de erro estruturais encontradas.</param>
+    /// <param name="avisos">Array contendo mensagens de aviso (warnings) emitidas na validação.</param>
+    /// <returns><c>true</c> se o XML for válido e aderente ao schema; caso contrário, <c>false</c>.</returns>
     public static bool ValidarXml(string arquivoXml, string schema, out string[] erros, out string[] avisos)
     {
         var errorList = new List<string>();

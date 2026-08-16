@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeExtensions.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -29,112 +29,33 @@
 // <summary></summary>
 // ***********************************************************************
 
-using OpenAC.Net.DFe.Core.Attributes;
 using System;
-using System.Collections;
-using System.Reflection;
 using System.Xml.Linq;
-using OpenAC.Net.Core;
 using OpenAC.Net.Core.Extensions;
 
 namespace OpenAC.Net.DFe.Core.Extensions;
 
-internal static class DFeExtensions
+/// <summary>
+/// Métodos de extensão auxiliares para manipulação de strings e validação de documentos XML.
+/// </summary>
+public static class DFeExtensions
 {
-    public static DFeBaseAttribute GetElementAtt(this PropertyInfo prop)
-    {
-        return prop.HasAttribute<DFeElementAttribute>()
-            ? (DFeBaseAttribute)prop.GetAttribute<DFeElementAttribute>()
-            : prop.GetAttribute<DFeAttributeAttribute>();
-    }
-
-    public static TDelegate ToDelegate<TDelegate>(this MethodInfo method) where TDelegate : Delegate
-    {
-        return Delegate.CreateDelegate(typeof(TDelegate), method) as TDelegate;
-    }
-
-    public static TDelegate ToDelegate<TDelegate>(this MethodInfo method, object item) where TDelegate : Delegate
-    {
-        return Delegate.CreateDelegate(typeof(TDelegate), item, method) as TDelegate;
-    }
-
-    public static Func<string> GetSerializer(this PropertyInfo prop, object item)
-    {
-        Guard.Against<ArgumentException>(prop.DeclaringType != item.GetType(), "O item informado não declara esta propriedade");
-
-        var method = item.GetType().GetMethod($"Serialize{prop.Name}", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-        return method.ToDelegate<Func<string>>(item);
-    }
-
-    public static string GetRootName(this Type prop, object item)
-    {
-        var method = item.GetType().GetMethod("GetRootName", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-        if (method == null || method.ReturnType != typeof(string)) return string.Empty;
-
-        var func = method.ToDelegate<Func<string>>(item);
-        return func();
-    }
-
-    public static string[] GetRootNames(this Type prop)
-    {
-        var method = prop.GetMethod("GetRootNames", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
-        if (method == null || method.ReturnType != typeof(string[])) return new string[0];
-
-        var func = method.ToDelegate<Func<string[]>>();
-        return func();
-    }
-
-    public static Func<string, object> GetDeserializer(this PropertyInfo prop, object item)
-    {
-        Guard.Against<ArgumentException>(prop.DeclaringType != item.GetType(), "O item informado não declara esta propriedade");
-        var method = item.GetType().GetMethod($"Deserialize{prop.Name}", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-        return method.ToDelegate<Func<string, object>>(item);
-    }
-
-    public static object GetValueOrIndex(this PropertyInfo prop, object parent, int index = -1)
-    {
-        var value = prop.GetValue(parent, null);
-        if (index > -1)
-        {
-            value = ((IList)value)[index];
-        }
-
-        return value;
-    }
-
-    public static Func<object> GetCreate(this Type tipo)
-    {
-        var method = tipo.GetMethod("Create", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
-        return method.ToDelegate<Func<object>>();
-    }
-
-    public static bool HasCreate(this Type tipo)
-    {
-        var method = tipo.GetMethod("Create", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
-        return method != null;
-    }
-
-    public static bool ShouldIgnoreProperty(this PropertyInfo property)
-    {
-        return property.HasAttribute<DFeIgnoreAttribute>() ||
-               !property.CanRead || !property.CanWrite;
-    }
-
-    public static bool ShouldSerializeProperty(this PropertyInfo property, object item)
-    {
-        var shouldSerialize = item.GetType().GetMethod($"ShouldSerialize{property.Name}", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-        if (shouldSerialize?.ReturnType == typeof(bool))
-            return (bool)shouldSerialize.Invoke(item, null);
-
-        return true;
-    }
-
+    /// <summary>
+    /// Remove os marcadores de seção <c>&lt;![CDATA[</c> e <c>]]&gt;</c> de uma string, se presentes.
+    /// </summary>
+    /// <param name="value">A string contendo ou não uma seção CDATA.</param>
+    /// <returns>O conteúdo de texto desprovido das tags CDATA.</returns>
     public static string RemoveCData(this string value)
     {
         if (value.IsEmpty()) return value;
         return value.IsCData() ? value.GetStrBetween(9, value.Length - 4) : value;
     }
 
+    /// <summary>
+    /// Verifica se a string inicia com <c>&lt;![CDATA[</c> e finaliza com <c>]]&gt;</c>.
+    /// </summary>
+    /// <param name="value">A string a ser verificada.</param>
+    /// <returns><c>true</c> se a string for uma seção CDATA válida; caso contrário, <c>false</c>.</returns>
     public static bool IsCData(this string value)
     {
         if (value.IsEmpty()) return false;
@@ -142,6 +63,11 @@ internal static class DFeExtensions
         return value.StartsWith("<![CDATA[") && value.EndsWith("]]>");
     }
 
+    /// <summary>
+    /// Verifica se o texto informado representa um XML válido e bem formado.
+    /// </summary>
+    /// <param name="xmlstring">A string XML a ser verificada.</param>
+    /// <returns><c>true</c> se a string puder ser analisada como XML; caso contrário, <c>false</c>.</returns>
     public static bool IsValidXml(this string xmlstring)
     {
         try

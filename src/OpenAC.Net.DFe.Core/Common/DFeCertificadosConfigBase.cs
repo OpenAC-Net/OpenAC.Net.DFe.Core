@@ -6,9 +6,9 @@
 // Last Modified By : RFTD
 // Last Modified On : 06-07-2016
 // ***********************************************************************
-// <copyright file="DFeCertificados.cs" company="OpenAC .Net">
+// <copyright file="DFeCertificadosConfigBase.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -37,7 +37,7 @@ using System.Security.Cryptography.X509Certificates;
 namespace OpenAC.Net.DFe.Core.Common;
 
 /// <summary>
-/// Class NFECFGCertificados. This class cannot be inherited.
+/// Classe base abstrata para configurações de certificados digitais X509 utilizados para autenticação e assinatura de documentos fiscais.
 /// </summary>
 public abstract class DFeCertificadosConfigBase
 {
@@ -52,7 +52,7 @@ public abstract class DFeCertificadosConfigBase
     #region Constructor
 
     /// <summary>
-    /// Inicializa uma nova instancia da classe  <see cref="DFeCertificadosConfigBase"/>.
+    /// Inicializa uma nova instância da classe <see cref="DFeCertificadosConfigBase"/>.
     /// </summary>
     protected DFeCertificadosConfigBase()
     {
@@ -67,32 +67,28 @@ public abstract class DFeCertificadosConfigBase
     #region Properties
 
     /// <summary>
-    /// Define/retorna o certificado ou Numero de Serie.
+    /// Obtém ou define o caminho do arquivo de certificado (.pfx/.p12) ou o número de série do certificado instalado no Windows Store.
     /// </summary>
-    /// <value>O Certificado/Numero de Serie.</value>
     public string Certificado { get; set; }
 
     /// <summary>
-    /// Define/retorna o certificado em bytes.
+    /// Obtém ou define os bytes do arquivo de certificado digital em memória.
     /// </summary>
-    /// <value>O Certificado.</value>
     public byte[] CertificadoBytes { get; set; }
 
     /// <summary>
-    /// Define/retorna a senha do certificado.
+    /// Obtém ou define a senha do certificado digital ou PIN do cartão/token A3.
     /// </summary>
-    /// <value>A senha.</value>
     public string Senha { get; set; }
 
     /// <summary>
-    /// Retorna a data de vencimento do certificado.
+    /// Obtém a data de expiração/vencimento do certificado digital configurado.
     /// </summary>
-    /// <value>A data de vencimento.</value>
     public DateTime DataVenc
     {
         get
         {
-            if (dataVenc == DateTime.MinValue && !Certificado.IsEmpty() && !CertificadoBytes.IsNullOrEmpty())
+            if (dataVenc == DateTime.MinValue && (!Certificado.IsEmpty() || !CertificadoBytes.IsNullOrEmpty()))
                 GetCertificado();
 
             return dataVenc;
@@ -100,14 +96,13 @@ public abstract class DFeCertificadosConfigBase
     }
 
     /// <summary>
-    /// Define/retorna o nome do responsável pelo certificado.
+    /// Obtém o nome/razão social do titular (Subject Name) do certificado digital configurado.
     /// </summary>
-    /// <value>The name of the subject.</value>
     public string Nome
     {
         get
         {
-            if (subjectName.IsEmpty() && !Certificado.IsEmpty() && !CertificadoBytes.IsNullOrEmpty())
+            if (subjectName.IsEmpty() && (!Certificado.IsEmpty() || !CertificadoBytes.IsNullOrEmpty()))
                 GetCertificado();
 
             return subjectName;
@@ -115,14 +110,13 @@ public abstract class DFeCertificadosConfigBase
     }
 
     /// <summary>
-    /// Gets or sets the CNPJ.
+    /// Obtém o CNPJ ou CPF extraído do certificado digital configurado.
     /// </summary>
-    /// <value>The CNPJ.</value>
     public string CNPJ
     {
         get
         {
-            if (cnpj.IsEmpty() && !Certificado.IsEmpty() && !CertificadoBytes.IsNullOrEmpty())
+            if (cnpj.IsEmpty() && (!Certificado.IsEmpty() || !CertificadoBytes.IsNullOrEmpty()))
                 GetCertificado();
 
             return cnpj;
@@ -134,9 +128,9 @@ public abstract class DFeCertificadosConfigBase
     #region Methods
 
     /// <summary>
-    /// Seleciona um certificado digital instalado na maquina retornando o numero de serie do mesmo.
+    /// Abre a caixa de diálogo do Windows para seleção de um certificado instalado e retorna seu número de série.
     /// </summary>
-    /// <returns>Numero de Serie.</returns>
+    /// <returns>O número de série do certificado selecionado, ou string vazia se cancelado.</returns>
     public string SelecionarCertificado()
     {
         var cert = CertificadoDigital.SelecionarCertificado(string.Empty);
@@ -144,9 +138,9 @@ public abstract class DFeCertificadosConfigBase
     }
 
     /// <summary>
-    /// retorna o certificado digital de acordo com os dados informados.
+    /// Carrega e retorna a instância de <see cref="X509Certificate2"/> de acordo com as configurações informadas (bytes, arquivo ou repositório do Windows).
     /// </summary>
-    /// <returns>X509Certificate2.</returns>
+    /// <returns>A instância de <see cref="X509Certificate2"/> carregada.</returns>
     public X509Certificate2 ObterCertificado()
     {
         if (CertificadoBytes?.Length > 0)
@@ -172,7 +166,7 @@ public abstract class DFeCertificadosConfigBase
     }
 
     /// <summary>
-    /// Gets the certificado.
+    /// Carrega as informações e metadados do certificado digital (data de vencimento, titular e CNPJ).
     /// </summary>
     protected void GetCertificado()
     {
@@ -187,7 +181,7 @@ public abstract class DFeCertificadosConfigBase
         finally
         {
 #if NET || NETSTANDARD
-                cert?.Reset();
+            cert?.Reset();
 #else
             try
             {
@@ -196,7 +190,7 @@ public abstract class DFeCertificadosConfigBase
 #if NETFRAMEWORK
                     cert.ForceUnload();
 #else
-                        cert.Dispose();
+                    cert.Dispose();
 #endif
                 }
                 else

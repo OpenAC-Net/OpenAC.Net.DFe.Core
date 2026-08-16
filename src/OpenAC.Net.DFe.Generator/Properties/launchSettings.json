@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "DebugRoslynSourceGenerator": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "../OpenAC.Net.DFe.Generator.Sample/OpenAC.Net.DFe.Generator.Sample.csproj"
+    }
+  }
+}

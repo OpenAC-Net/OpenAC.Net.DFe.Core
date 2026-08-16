@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeArquivosConfigBase.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -38,34 +38,39 @@ using OpenAC.Net.Core.Extensions;
 
 namespace OpenAC.Net.DFe.Core.Common;
 
+/// <summary>
+/// Classe base abstrata para configurações de arquivos e schemas com tipo genérico de enumeração de schemas.
+/// </summary>
+/// <typeparam name="TSchemas">O tipo enum com os schemas disponíveis para o documento fiscal.</typeparam>
 public abstract class DFeArquivosConfigBase<TSchemas> : DFeArquivosConfigBase where TSchemas : Enum
 {
     #region Methods
 
     /// <summary>
-    /// Metodo que retorna o caminho para o tipo de schema solicitado.
+    /// Retorna o caminho completo do arquivo de schema (.xsd) correspondente ao tipo solicitado.
     /// </summary>
-    /// <param name="schema"></param>
-    /// <returns></returns>
+    /// <param name="schema">O schema do documento fiscal desejado.</param>
+    /// <returns>O caminho completo para o arquivo XSD do schema.</returns>
     public abstract string GetSchema(TSchemas schema);
 
     #endregion Methods
 }
 
+/// <summary>
+/// Classe base abstrata para configurações de salvamento de arquivos XML de documentos fiscais eletrônicos.
+/// </summary>
 public abstract class DFeArquivosConfigBase
 {
     #region Fields
 
-    private string pathSalvar;
     private string arquivoServicos;
-    private string pathSchemas;
 
     #endregion Fields
 
     #region Constructors
 
     /// <summary>
-    /// Inicializa uma nova instancia da classe <see cref="DFeArquivosConfigBase{TSchemas}"/>.
+    /// Inicializa uma nova instância da classe <see cref="DFeArquivosConfigBase"/>.
     /// </summary>
     protected DFeArquivosConfigBase()
     {
@@ -90,17 +95,17 @@ public abstract class DFeArquivosConfigBase
     #region Properties
 
     /// <summary>
-    /// Define/retorna o caminho onde deve ser salvo os arquivos.
+    /// Obtém ou define o caminho do diretório padrão onde devem ser salvos os arquivos XML.
     /// </summary>
     public string PathSalvar { get; set; }
 
     /// <summary>
-    /// Define/retorna o caminho onde estão so schemas.
+    /// Obtém ou define o caminho do diretório onde estão localizados os arquivos de schemas XSD.
     /// </summary>
     public string PathSchemas { get; set; }
 
     /// <summary>
-    /// Define/retorna o arquivo com os dados dos serviços.
+    /// Obtém ou define o caminho do arquivo XML/INI com a tabela de URLs dos Web Services.
     /// </summary>
     public string ArquivoServicos
     {
@@ -109,49 +114,48 @@ public abstract class DFeArquivosConfigBase
         {
             if (value == arquivoServicos) return;
 
-            arquivoServicos = value ?? string.Empty;
+            arquivoServicos = value;
             ArquivoServicoChange();
         }
     }
 
     /// <summary>
-    /// Define/retorna se deve salvar os arquivos xml, trata-se de arquivos com validade jurídica.
+    /// Obtém ou define se deve salvar automaticamente os arquivos XML gerados (documentos com validade jurídica).
     /// </summary>
     public bool Salvar { get; set; }
 
     /// <summary>
-    /// Define/retorna se deve ser adicionado um literal ao caminho de salvamento.
+    /// Obtém ou define se deve adicionar o texto literal da pasta ao caminho de salvamento.
     /// </summary>
     public bool AdicionarLiteral { get; set; }
 
     /// <summary>
-    /// Define/retorna se deve ser adicionado o CNPJ ao caminho de salvamento.
+    /// Obtém ou define se deve criar subpastas separadas pelo CNPJ do emitente.
     /// </summary>
     public bool SepararPorCNPJ { get; set; }
 
     /// <summary>
-    /// Define/retorna se deve ser adicionado o numero do
-    /// modelo do arquivo DFe ao caminho de salvamento.
+    /// Obtém ou define se deve criar subpastas separadas pelo modelo do documento fiscal.
     /// </summary>
     public bool SepararPorModelo { get; set; }
 
     /// <summary>
-    /// Define/retorna se deve ser adicionado o ano ao caminho de salvamento.
+    /// Obtém ou define se deve criar subpastas separadas pelo ano de emissão (ex: 2026).
     /// </summary>
     public bool SepararPorAno { get; set; }
 
     /// <summary>
-    /// Define/retorna se deve ser adicionado o mês ao caminho de salvamento.
+    /// Obtém ou define se deve criar subpastas separadas pelo mês de emissão (ex: 08).
     /// </summary>
     public bool SepararPorMes { get; set; }
 
     /// <summary>
-    /// Define/retorna se deve ser adicionado o dia ao caminho de salvamento.
+    /// Obtém ou define se deve criar subpastas separadas pelo dia de emissão (ex: 16).
     /// </summary>
     public bool SepararPorDia { get; set; }
 
     /// <summary>
-    /// Retorna a ordem de criação dos caminhos para salvamento dos arquivos.
+    /// Obtém a lista com a ordem de criação dos subdiretórios para organização dos arquivos salvos.
     /// </summary>
     public List<TagOrdenacaoPath> OrdenacaoPath { get; }
 
@@ -160,20 +164,20 @@ public abstract class DFeArquivosConfigBase
     #region Methods
 
     /// <summary>
-    /// Metodo chamado quando muda o caminho do arquivo de serviços.
+    /// Método invocado quando o caminho do arquivo de serviços (<see cref="ArquivoServicos"/>) é alterado.
     /// </summary>
     protected abstract void ArquivoServicoChange();
 
     /// <summary>
-    /// Gera um path de salvamento.
+    /// Constrói e retorna o caminho completo da pasta para salvamento do arquivo, criando os diretórios se necessário.
     /// </summary>
-    /// <param name="aPath"></param>
-    /// <param name="aLiteral"></param>
-    /// <param name="cnpj"></param>
-    /// <param name="data"></param>
-    /// <param name="modeloDescr"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <param name="aPath">Diretório base de salvamento (se vazio, usa <see cref="PathSalvar"/>).</param>
+    /// <param name="aLiteral">Nome do subdiretório literal (ex: "NFe", "Cancelamento").</param>
+    /// <param name="cnpj">CNPJ do emitente.</param>
+    /// <param name="data">Data de referência para divisão por ano/mês/dia.</param>
+    /// <param name="modeloDescr">Descrição do modelo do documento fiscal.</param>
+    /// <returns>O caminho completo do diretório pronto para receber o arquivo.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Disparado se uma regra de ordenação desconhecida for informada.</exception>
     protected virtual string GetPath(string aPath, string aLiteral, string cnpj = "", DateTime? data = null, string modeloDescr = "")
     {
         var dir = aPath.IsEmpty() ? PathSalvar : aPath;
@@ -204,7 +208,7 @@ public abstract class DFeArquivosConfigBase
                         break;
 
                     case TagOrdenacaoPath.Data:
-                        if (!data.HasValue) data = DateTime.Now;
+                        data ??= DateTime.Now;
 
                         if (SepararPorAno)
                             dir = Path.Combine(dir, data.Value.ToString("yyyy"));

@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeEnumAttribute.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -33,24 +33,22 @@ using System;
 namespace OpenAC.Net.DFe.Core.Attributes;
 
 /// <summary>
-/// Class DFeEnumAttribute. This class cannot be inherited.
+/// Atributo para definir o valor textual/numérico literal no XML de um membro de enumeração.
 /// </summary>
-/// <seealso cref="System.Attribute" />
 [AttributeUsage(AttributeTargets.Field)]
 public sealed class DFeEnumAttribute : Attribute
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeEnumAttribute"/> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeEnumAttribute"/> com o valor literal do XML.
     /// </summary>
-    /// <param name="value">The value.</param>
+    /// <param name="value">Valor da tag XML correspondente ao membro do enum.</param>
     public DFeEnumAttribute(string value)
     {
         Value = value;
     }
 
     /// <summary>
-    /// Gets or sets the value.
+    /// Obtém ou define o valor textual/numérico serializado no XML.
     /// </summary>
-    /// <value>The value.</value>
     public string Value { get; set; }
 }

@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="TipoCampo.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -32,97 +32,97 @@
 namespace OpenAC.Net.DFe.Core.Serializer;
 
 /// <summary>
-/// Enum TipoCampo
+/// Especifica o formato e as regras de conversão de tipos de dados nos campos de documentos DFe.
 /// </summary>
 public enum TipoCampo
 {
     /// <summary>
-    /// The string
+    /// Campo do tipo texto simples (string).
     /// </summary>
     Str = 0,
 
     /// <summary>
-    /// The int
+    /// Campo numérico inteiro de 32 bits (int).
     /// </summary>
     Int = 1,
 
     /// <summary>
-    /// The int
+    /// Campo numérico inteiro de 64 bits (long).
     /// </summary>
     Long = 17,
 
     /// <summary>
-    /// The dat
+    /// Campo de data no formato AAAA-MM-DD (DateTime).
     /// </summary>
     Dat = 2,
 
     /// <summary>
-    /// The dat hor
+    /// Campo de data e hora no formato AAAA-MM-DDTHH:MM:SS (DateTime).
     /// </summary>
     DatHor = 3,
 
     /// <summary>
-    /// The dat hor tz
+    /// Campo de data e hora com fuso horário / timezone no formato AAAA-MM-DDTHH:MM:SSzzz (DateTimeOffset/DateTime).
     /// </summary>
     DatHorTz = 4,
 
     /// <summary>
-    /// The esp
+    /// Campo numérico textual com dígitos decimais sem separador de pontuação.
     /// </summary>
     StrNumber = 5,
 
     /// <summary>
-    /// The string number fill
+    /// Campo numérico textual preenchido com zeros à esquerda até o tamanho especificado.
     /// </summary>
     StrNumberFill = 6,
 
     /// <summary>
-    /// The de2
+    /// Campo numérico decimal formatado com exatamente 2 casas decimais (0.00).
     /// </summary>
     De2 = 7,
 
     /// <summary>
-    /// The de3
+    /// Campo numérico decimal formatado com até 3 casas decimais (0.000).
     /// </summary>
     De3 = 8,
 
     /// <summary>
-    /// The de4
+    /// Campo numérico decimal formatado com até 4 casas decimais (0.0000).
     /// </summary>
     De4 = 9,
 
     /// <summary>
-    /// The de10
+    /// Campo numérico decimal formatado com até 10 casas decimais (0.0000000000).
     /// </summary>
     De10 = 10,
 
     /// <summary>
-    /// The hor
+    /// Campo de hora no formato HH:MM:SS.
     /// </summary>
     Hor = 11,
 
     /// <summary>
-    /// The de6
+    /// Campo numérico decimal formatado com até 6 casas decimais (0.000000).
     /// </summary>
     De6 = 12,
 
     /// <summary>
-    /// The dat c fe
+    /// Campo de data no formato do CF-e-SAT (AAAAMMDD).
     /// </summary>
     DatCFe = 13,
 
     /// <summary>
-    /// The hor c fe
+    /// Campo de hora no formato do CF-e-SAT (HHMMSS).
     /// </summary>
     HorCFe = 14,
 
     /// <summary>
-    /// The enum
+    /// Campo do tipo enumeração mapeado via <see cref="Attributes.DFeEnumAttribute"/>.
     /// </summary>
     Enum = 15,
 
     /// <summary>
-    /// The custom
+    /// Campo com tipo customizado com serialização própria.
     /// </summary>
     Custom = 16
 }

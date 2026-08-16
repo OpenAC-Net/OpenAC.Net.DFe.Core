@@ -1,14 +1,14 @@
 // ***********************************************************************
 // Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
-// Created          : 06-11-2017
+// Created          : 05-04-2016
 //
 // Last Modified By : RFTD
-// Last Modified On : 06-11-2017
+// Last Modified On : 05-04-2016
 // ***********************************************************************
 // <copyright file="DFeParentCollection.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014 - 2017 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -35,23 +35,67 @@ using OpenAC.Net.DFe.Core.Attributes;
 
 namespace OpenAC.Net.DFe.Core.Collection;
 
-/// <inheritdoc />
+/// <summary>
+/// Coleção de itens DFe que mantém automaticamente a referência do elemento pai (<typeparamref name="TParent"/>) em cada item filho.
+/// </summary>
+/// <typeparam name="TTipo">O tipo dos itens contidos na coleção, derivado de <see cref="DFeParentItem{TTipo, TParent}"/>.</typeparam>
+/// <typeparam name="TParent">O tipo do elemento pai.</typeparam>
 public class DFeParentCollection<TTipo, TParent> : DFeCollection<TTipo>
     where TParent : class
     where TTipo : DFeParentItem<TTipo, TParent>
 {
     #region Fields
 
+    /// <summary>
+    /// Instância do elemento pai vinculado a esta coleção.
+    /// </summary>
     protected TParent parent;
 
     #endregion Fields
 
+    #region Constructors
+
+    /// <summary>
+    /// Inicializa uma nova instância da classe <see cref="DFeParentCollection{TTipo, TParent}"/>.
+    /// </summary>
+    public DFeParentCollection()
+    {
+    }
+
+    /// <summary>
+    /// Inicializa uma nova instância da classe <see cref="DFeParentCollection{TTipo, TParent}"/> com o elemento pai especificado.
+    /// </summary>
+    /// <param name="parent">O elemento pai associado.</param>
+    public DFeParentCollection(TParent parent)
+    {
+        Parent = parent;
+    }
+
+    /// <summary>
+    /// Inicializa uma nova instância da classe <see cref="DFeParentCollection{TTipo, TParent}"/> contendo elementos copiados da coleção especificada.
+    /// </summary>
+    /// <param name="source">A coleção cujos elementos são copiados para a nova lista.</param>
+    public DFeParentCollection(IEnumerable<TTipo> source) : base(source)
+    {
+    }
+
+    /// <summary>
+    /// Inicializa uma nova instância da classe <see cref="DFeParentCollection{TTipo, TParent}"/> com elemento pai e itens iniciais.
+    /// </summary>
+    /// <param name="parent">O elemento pai associado.</param>
+    /// <param name="source">A coleção cujos elementos são copiados para a nova lista.</param>
+    public DFeParentCollection(TParent parent, IEnumerable<TTipo> source) : base(source)
+    {
+        Parent = parent;
+    }
+
+    #endregion Constructors
+
     #region Propriedades
 
     /// <summary>
-    /// Gets the parent.
+    /// Obtém ou define o elemento pai associado a esta coleção e propaga a referência para todos os itens filhos.
     /// </summary>
-    /// <value>The parent.</value>
     [DFeIgnore]
     public TParent Parent
     {
@@ -73,9 +117,9 @@ public class DFeParentCollection<TTipo, TParent> : DFeCollection<TTipo>
     #region Methods
 
     /// <summary>
-    /// Adds an object to the end of the <see cref="DFeParentCollection{T, T}"/>.
+    /// Cria uma instância de <typeparamref name="TTipo"/>, define o elemento pai, adiciona à coleção e a retorna.
     /// </summary>
-    /// <returns>T.</returns>
+    /// <returns>A nova instância do item criado e associado ao pai.</returns>
     public override TTipo AddNew()
     {
         var item = (TTipo)Activator.CreateInstance(typeof(TTipo), true);
@@ -84,39 +128,52 @@ public class DFeParentCollection<TTipo, TParent> : DFeCollection<TTipo>
         return item;
     }
 
-    /// <summary>Adds an object to the end of the <see cref="DFeParentCollection{T, T}"/>.</summary>
-    /// <param name="item">The object to be added to the end of the <see cref="DFeParentCollection{T, T}"/>. The value can be null for reference types.</param>
+    /// <summary>
+    /// Adiciona um item à coleção e define seu elemento pai.
+    /// </summary>
+    /// <param name="item">O objeto a ser adicionado.</param>
     public override void Add(TTipo item)
     {
         item.Parent = Parent;
         base.Add(item);
     }
 
-    /// <summary>Inserts an element into the <see cref="DFeParentCollection{T, T}"/> at the specified index.</summary>
-    /// <param name="index">The zero-based index at which <paramref name="item" /> should be inserted.</param>
-    /// <param name="item">The object to insert. The value can be null for reference types.</param>
-    /// <exception cref="T:System.ArgumentOutOfRangeException">
-    /// <paramref name="index" /> is less than 0.-or-<paramref name="index" /> is greater than <see cref="DFeParentCollection{T, T}.Count"/>.</exception>
+    /// <summary>
+    /// Insere um item na coleção na posição especificada e define seu elemento pai.
+    /// </summary>
+    /// <param name="index">O índice de base zero no qual o item deve ser inserido.</param>
+    /// <param name="item">O objeto a ser inserido.</param>
     public override void Insert(int index, TTipo item)
     {
         item.Parent = Parent;
         base.Insert(index, item);
     }
 
-    /// <summary>Inserts the elements of a collection into the <see cref="DFeParentCollection{T, T}"/> at the specified index.</summary>
-    /// <param name="index">The zero-based index at which the new elements should be inserted.</param>
-    /// <param name="collection">The collection whose elements should be inserted into the <see cref="DFeParentCollection{T, T}"/>. The collection itself cannot be null, but it can contain elements that are null, if type <paramref name="T" /> is a reference type.</param>
-    /// <exception cref="T:System.ArgumentNullException">
-    /// <paramref name="collection" /> is null.</exception>
-    /// <exception cref="T:System.ArgumentOutOfRangeException">
-    /// <paramref name="index" /> is less than 0.-or-<paramref name="index" /> is greater than <see cref="DFeParentCollection{T, T}.Count"/>.</exception>
+    /// <summary>
+    /// Insere uma sequência de elementos na coleção na posição especificada e define o elemento pai em cada um deles.
+    /// </summary>
+    /// <param name="index">O índice de base zero no qual os novos elementos devem ser inseridos.</param>
+    /// <param name="collection">A coleção de elementos a ser inserida.</param>
     public override void InsertRange(int index, IEnumerable<TTipo> collection)
     {
         foreach (var item in collection)
+        {
             item.Parent = Parent;
+        }
 
         base.InsertRange(index, collection);
     }
 
     #endregion Methods
+
+    #region Operators
+
+    /// <summary>
+    /// Converte implicitamente um array de <typeparamref name="TTipo"/> para <see cref="DFeParentCollection{TTipo, TParent}"/>.
+    /// </summary>
+    /// <param name="source">Array de origem.</param>
+    /// <returns>Uma nova instância de <see cref="DFeParentCollection{TTipo, TParent}"/> contendo os elementos do array.</returns>
+    public static implicit operator DFeParentCollection<TTipo, TParent>(TTipo[] source) => new(source);
+
+    #endregion Operators
 }

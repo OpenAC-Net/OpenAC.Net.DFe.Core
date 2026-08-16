@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="ChaveDFe.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -39,7 +39,7 @@ using OpenAC.Net.DFe.Core.Extensions;
 namespace OpenAC.Net.DFe.Core.Common;
 
 /// <summary>
-///
+/// Representa a Chave de Acesso de 44 dígitos de um Documento Fiscal Eletrônico (DF-e), com métodos para geração, cálculo de dígito verificador, validação e formatação.
 /// </summary>
 public sealed class ChaveDFe
 {
@@ -79,8 +79,14 @@ public sealed class ChaveDFe
 
     #region Properties
 
+    /// <summary>
+    /// Obtém a chave de acesso completa de 44 dígitos com o dígito verificador.
+    /// </summary>
     public string Chave { get; }
 
+    /// <summary>
+    /// Obtém o dígito verificador (DV) calculado da chave de acesso.
+    /// </summary>
     public int Digito { get; }
 
     #endregion Properties
@@ -88,17 +94,17 @@ public sealed class ChaveDFe
     #region Methods
 
     /// <summary>
-    /// Gera a chave do documento fiscal
+    /// Gera a chave de acesso de 44 dígitos do documento fiscal eletrônico com base nos parâmetros informados.
     /// </summary>
-    /// <param name="ufEmitente">UF do emitente do DF-e</param>
-    /// <param name="dataEmissao">Data de emissão do DF-e</param>
-    /// <param name="cnpjEmitente">CNPJ do emitente do DF-e</param>
-    /// <param name="modelo">Modelo do DF-e</param>
-    /// <param name="serie">Série do DF-e</param>
-    /// <param name="numero">Numero do DF-e</param>
-    /// <param name="tipoEmissao">Tipo de emissão do DF-e. Informar inteiro conforme consta no manual de orientação do contribuinte para o DF-e</param>
-    /// <param name="cNumerico">Código numérico que compõe a Chave de Acesso. Número gerado pelo emitente para cada DF-e</param>
-    /// <returns>Retorna a chave DFe</returns>
+    /// <param name="ufEmitente">Código IBGE da UF do emitente do DF-e.</param>
+    /// <param name="dataEmissao">Data de emissão do DF-e (ano e mês são utilizados).</param>
+    /// <param name="cnpjEmitente">CNPJ ou CPF do emitente (somente números).</param>
+    /// <param name="modelo">Modelo do DF-e (ex: 55 para NF-e, 65 para NFC-e, 57 para CT-e).</param>
+    /// <param name="serie">Série do DF-e.</param>
+    /// <param name="numero">Número do DF-e.</param>
+    /// <param name="tipoEmissao">Tipo de emissão do DF-e (Normal, Contingência, etc.).</param>
+    /// <param name="cNumerico">Código numérico aleatório de 8 dígitos gerado pelo emitente.</param>
+    /// <returns>Uma nova instância de <see cref="ChaveDFe"/> contendo a chave gerada e seu dígito verificador.</returns>
     public static ChaveDFe Gerar(DFeCodUF ufEmitente, DateTime dataEmissao, string cnpjEmitente, int modelo, int serie,
         long numero, DFeTipoEmissao tipoEmissao, int cNumerico)
     {
@@ -106,10 +112,10 @@ public sealed class ChaveDFe
     }
 
     /// <summary>
-    /// Informa se a chave de um DF-e é válida
+    /// Valida se uma chave de acesso de DF-e é válida, verificando seu tamanho (44 dígitos) e o dígito verificador (Módulo 11).
     /// </summary>
-    /// <param name="chave"></param>
-    /// <returns></returns>
+    /// <param name="chave">A chave de acesso com 44 dígitos numéricos.</param>
+    /// <returns><c>true</c> se a chave for válida; caso contrário, <c>false</c>.</returns>
     public static bool Validar(string chave)
     {
         if (chave.IsEmpty()) return false;
@@ -131,10 +137,10 @@ public sealed class ChaveDFe
     }
 
     /// <summary>
-    /// Formata a chave do documento fiscal.
+    /// Formata a chave de acesso inserindo um espaço a cada 4 dígitos (ex: "3516 0400 ...").
     /// </summary>
-    /// <param name="chave"></param>
-    /// <returns></returns>
+    /// <param name="chave">A chave de 44 dígitos a ser formatada.</param>
+    /// <returns>A chave de acesso formatada em blocos de 4 dígitos.</returns>
     public static string Formatar(string chave)
     {
         return Regex.Replace(chave, ".{4}", "$0 ");

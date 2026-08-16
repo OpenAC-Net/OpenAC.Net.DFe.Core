@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeDictionaryValueAttribute.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -34,13 +34,16 @@ using OpenAC.Net.DFe.Core.Serializer;
 
 namespace OpenAC.Net.DFe.Core.Attributes;
 
+/// <summary>
+/// Atributo para mapeamento do valor em um dicionário XML em documentos DFe.
+/// </summary>
 [AttributeUsage(AttributeTargets.Property)]
 public sealed class DFeDictionaryValueAttribute : DFeBaseAttribute
 {
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeDictionaryValueAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeDictionaryValueAttribute"/>.
     /// </summary>
     public DFeDictionaryValueAttribute()
     {
@@ -54,19 +57,19 @@ public sealed class DFeDictionaryValueAttribute : DFeBaseAttribute
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeDictionaryValueAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeDictionaryValueAttribute"/> com o nome da tag.
     /// </summary>
-    /// <param name="tag">Nome da tag.</param>
+    /// <param name="tag">Nome da tag do valor.</param>
     public DFeDictionaryValueAttribute(string tag) : this()
     {
         Name = tag;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeDictionaryValueAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeDictionaryValueAttribute"/> com tipo e nome informados.
     /// </summary>
-    /// <param name="tipo">The tipo.</param>
-    /// <param name="name">The name.</param>
+    /// <param name="tipo">Tipo de dado do campo no XML.</param>
+    /// <param name="name">Nome da tag do valor.</param>
     public DFeDictionaryValueAttribute(TipoCampo tipo, string name) : this()
     {
         Tipo = tipo;
@@ -74,14 +77,4 @@ public sealed class DFeDictionaryValueAttribute : DFeBaseAttribute
     }
 
     #endregion Constructors
-
-    #region Properties
-
-    /// <summary>
-    /// Gets or sets the name space.
-    /// </summary>
-    /// <value>The name space.</value>
-    public string Namespace { get; set; }
-
-    #endregion Properties
 }

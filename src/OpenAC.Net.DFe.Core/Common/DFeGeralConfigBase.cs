@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeGeralConfigBase.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -31,26 +31,26 @@
 
 using System;
 using System.ComponentModel;
-using OpenAC.Net.Core;
 
 namespace OpenAC.Net.DFe.Core.Common;
 
 /// <summary>
-///
+/// Classe base genérica para configurações gerais com tipo de versão de documento fiscal.
 /// </summary>
+/// <typeparam name="TVersaoDFe">Enum com as versões de layout suportadas pelo documento fiscal.</typeparam>
 public abstract class DFeGeralConfigBase<TVersaoDFe> : DFeGeralConfigBase
     where TVersaoDFe : Enum
 {
     #region Properties
 
     /// <summary>
-    /// Define/retorna a versão do documento DFe.
+    /// Obtém ou define a versão de layout do documento DFe.
     /// </summary>
     [Browsable(true)]
     public TVersaoDFe VersaoDFe { get; set; }
 
     /// <summary>
-    /// Define/retorna o tipo de emissão.
+    /// Obtém ou define a forma de emissão padrão do documento fiscal eletrônico (Normal, Contingência, etc.).
     /// </summary>
     [Browsable(true)]
     [DefaultValue(DFeTipoEmissao.Normal)]
@@ -59,12 +59,15 @@ public abstract class DFeGeralConfigBase<TVersaoDFe> : DFeGeralConfigBase
     #endregion Properties
 }
 
+/// <summary>
+/// Classe base abstrata para configurações gerais de serialização, validação e sanitização do DFe.
+/// </summary>
 public abstract class DFeGeralConfigBase
 {
     #region Constructor
 
     /// <summary>
-    /// Inicializa uma nova instancia da classe <see cref="DFeGeralConfigBase"/>.
+    /// Inicializa uma nova instância da classe <see cref="DFeGeralConfigBase"/>.
     /// </summary>
     protected DFeGeralConfigBase()
     {
@@ -82,40 +85,37 @@ public abstract class DFeGeralConfigBase
     #region Properties
 
     /// <summary>
-    /// Define/retorna se deve ser salvo os arquivos gerais, ou seja, arquivos de envio e
-    /// de retorno sem validade jurídica.
+    /// Obtém ou define se devem ser salvos os arquivos gerais de envio e retorno sem validade jurídica.
     /// </summary>
-    /// <value><c>true</c> para salvar; caso contrário, <c>false</c>.</value>
     public bool Salvar { get; set; }
 
     /// <summary>
-    /// Define/retorna se deve exibir os erros de validação do Schema na Execption.
+    /// Obtém ou define se deve exibir mensagens detalhadas de erro de validação do Schema XSD nas exceções.
     /// </summary>
     public bool ExibirErroSchema { get; set; }
 
     /// <summary>
-    /// Define/retorna o formato do alerta do serializer.
-    /// Valor Padrão = TAG:%TAG% ID:%ID%/%TAG%(%DESCRICAO%) - %MSG%.
+    /// Obtém ou define o formato do alerta emitido durante a validação ou serialização.
     /// </summary>
     public string FormatoAlerta { get; set; }
 
     /// <summary>
-    /// Define/retorna se deve retirar acentos do xml antes de enviar.
+    /// Obtém ou define se caracteres acentuados devem ser automaticamente convertidos para seus equivalentes sem acento.
     /// </summary>
     public bool RetirarAcentos { get; set; }
 
     /// <summary>
-    /// Define/retorna se deve ser retirado os espaços na hora de gerar o xml.
+    /// Obtém ou define se espaços em excesso ou desnecessários devem ser removidos do XML.
     /// </summary>
     public bool RetirarEspacos { get; set; }
 
     /// <summary>
-    /// Define/retorna se deve identar o xml na hora de gerar.
+    /// Obtém ou define se o XML gerado deve ser formatado/indentado.
     /// </summary>
     public bool IdentarXml { get; set; }
 
     /// <summary>
-    /// Define/retorna se deve ser validado o digest.
+    /// Obtém ou define se deve validar o DigestValue do documento fiscal no retorno da SEFAZ.
     /// </summary>
     public bool ValidarDigest { get; set; }
 

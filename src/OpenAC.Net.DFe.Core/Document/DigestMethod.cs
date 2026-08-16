@@ -1,4 +1,4 @@
-﻿// ***********************************************************************
+// ***********************************************************************
 // Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
 // Created          : 05-07-2016
@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DigestMethod.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -28,17 +28,20 @@
 // </copyright>
 // <summary></summary>
 // ***********************************************************************
+
 using OpenAC.Net.DFe.Core.Attributes;
 using OpenAC.Net.DFe.Core.Serializer;
 
 namespace OpenAC.Net.DFe.Core.Document;
 
-public sealed class DigestMethod
+/// <summary>
+/// Representa o elemento de algoritmo de resumo criptográfico (DigestMethod) do padrão XMLDSig.
+/// </summary>
+public sealed partial class DigestMethod
 {
     /// <summary>
-    /// XS16 - Atributo Algorithm de DigestMethod: http://www.w3.org/2000/09/xmldsig#sha1
+    /// XS16 - Atributo Algorithm de DigestMethod (ex: http://www.w3.org/2000/09/xmldsig#sha1 ou sha256).
     /// </summary>
-    /// <value>The algorithm.</value>
     [DFeAttribute(TipoCampo.Str, "Algorithm", Id = "XS16", Min = 0, Max = 999, Ocorrencia = Ocorrencia.Obrigatoria)]
-    public string Algorithm { get; set; }
+    public string Algorithm { get; set; } = string.Empty;
 }

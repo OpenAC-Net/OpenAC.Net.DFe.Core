@@ -1,4 +1,4 @@
-﻿// ***********************************************************************
+// ***********************************************************************
 // Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
 // Created          : 05-07-2016
@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="CanonicalizationMethod.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -34,12 +34,14 @@ using OpenAC.Net.DFe.Core.Serializer;
 
 namespace OpenAC.Net.DFe.Core.Document;
 
-public sealed class CanonicalizationMethod
+/// <summary>
+/// Representa o elemento de método de canonicalização (CanonicalizationMethod) do padrão XMLDSig.
+/// </summary>
+public sealed partial class CanonicalizationMethod
 {
     /// <summary>
-    /// XS04 - Atributo Algorithm de CanonicalizationMethod: http://www.w3.org/TR/2001/REC-xml-c14n-20010315
+    /// XS04 - Atributo Algorithm de CanonicalizationMethod (ex: http://www.w3.org/TR/2001/REC-xml-c14n-20010315).
     /// </summary>
-    /// <value>The algorithm.</value>
     [DFeAttribute(TipoCampo.Str, "Algorithm", Id = "XS04", Min = 0, Max = 999, Ocorrencia = Ocorrencia.Obrigatoria)]
     public string Algorithm { get; set; }
 }

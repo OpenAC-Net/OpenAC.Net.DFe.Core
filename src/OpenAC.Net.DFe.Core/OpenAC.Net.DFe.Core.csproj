@@ -1,13 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net6.0;net7.0;net462;net47;net48</TargetFrameworks>
     <LangVersion>latest</LangVersion>
+    <Nullable>annotations</Nullable>
     <AssemblyName>OpenAC.Net.DFe.Core</AssemblyName>
     <RootNamespace>OpenAC.Net.DFe.Core</RootNamespace>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>OpenAC.snk</AssemblyOriginatorKeyFile>
-    <Copyright>Copyright © Projeto OpenAC .Net 2014 - 2024</Copyright>
+    <Copyright>Copyright © Projeto OpenAC .Net 2014 - 2026</Copyright>
     <Company>OpenAC .Net - Automação Comercial em .Net</Company>
     <Authors>Projeto OpenAC .Net</Authors>    
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>    
@@ -20,9 +21,9 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageProjectUrl>https://openac.net.br/</PackageProjectUrl>
-    <AssemblyVersion>1.6.0.2</AssemblyVersion>
-    <FileVersion>1.6.0.2</FileVersion>
-    <Version>1.6.0.2</Version>
+    <AssemblyVersion>1.7.0.0</AssemblyVersion>
+    <FileVersion>1.7.0.0</FileVersion>
+    <Version>1.7.0.0</Version>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <DebugType>embedded</DebugType>
@@ -30,26 +31,34 @@
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.400">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="OpenAC.Net.Core" Version="1.6.0" />
-    <PackageReference Include="System.Text.RegularExpressions" version="4.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenAC.Net.DFe.Generator\OpenAC.Net.DFe.Generator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\OpenAC.Net.DFe.Generator\bin\$(Configuration)\netstandard2.0\OpenAC.Net.DFe.Generator.dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'net47' or '$(TargetFramework)' == 'net48' ">
     <Reference Include="System.Drawing" />
     <Reference Include="System.Security" />
   </ItemGroup>  
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'net7.0' or '$(TargetFramework)' == 'net8.0'">
-    <PackageReference Include="System.Drawing.Common" Version="8.0.8" />
-    <PackageReference Include="System.Security.Cryptography.Xml" Version="8.0.1" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\..\LICENSE">
@@ -65,6 +74,11 @@
       <Pack>True</Pack>
       <PackagePath>/</PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'net7.0' or '$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Drawing.Common" Version="10.0.11" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.11" />
   </ItemGroup>
 
 </Project>

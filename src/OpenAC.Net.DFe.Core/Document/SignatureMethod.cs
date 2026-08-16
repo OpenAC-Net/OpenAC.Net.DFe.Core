@@ -1,4 +1,4 @@
-﻿// ***********************************************************************
+// ***********************************************************************
 // Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
 // Created          : 05-07-2016
@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="SignatureMethod.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -25,7 +25,6 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// DEALINGS IN THE SOFTWARE.
 // </copyright>
 // <summary></summary>
 // ***********************************************************************
@@ -35,12 +34,14 @@ using OpenAC.Net.DFe.Core.Serializer;
 
 namespace OpenAC.Net.DFe.Core.Document;
 
-public sealed class SignatureMethod
+/// <summary>
+/// Representa o método de assinatura digital criptográfica (SignatureMethod) do padrão XMLDSig.
+/// </summary>
+public sealed partial class SignatureMethod
 {
     /// <summary>
-    /// XS06 - Atributo Algorithm de SignatureMethod: http://www.w3.org/2000/09/xmldsig#rsa-sha1
+    /// XS06 - Atributo Algorithm de SignatureMethod (ex: http://www.w3.org/2000/09/xmldsig#rsa-sha1 ou rsa-sha256).
     /// </summary>
-    /// <value>The algorithm.</value>
     [DFeAttribute(TipoCampo.Str, "Algorithm", Id = "XS06", Min = 0, Max = 999, Ocorrencia = Ocorrencia.Obrigatoria)]
-    public string Algorithm { get; set; }
+    public string Algorithm { get; set; } = string.Empty;
 }

@@ -6,9 +6,9 @@
 // Last Modified By : RFTD
 // Last Modified On : 10-15-2016
 // ***********************************************************************
-// <copyright file="DFeElementAttribute.cs" company="OpenAC .Net">
+// <copyright file="Ocorrencia.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -31,9 +31,23 @@
 
 namespace OpenAC.Net.DFe.Core.Attributes;
 
+/// <summary>
+/// Define a regra de ocorrência e obrigatoriedade de um campo ou elemento na serialização XML DFe.
+/// </summary>
 public enum Ocorrencia
 {
+    /// <summary>
+    /// Campo opcional. Não é gerado no XML caso seu valor seja nulo, vazio ou valor padrão.
+    /// </summary>
     NaoObrigatoria,
+
+    /// <summary>
+    /// Campo de preenchimento obrigatório conforme manual do DFe. Sempre gerado no XML.
+    /// </summary>
     Obrigatoria,
+
+    /// <summary>
+    /// Campo numérico gerado no XML apenas quando seu valor for estritamente maior que zero.
+    /// </summary>
     MaiorQueZero
 }

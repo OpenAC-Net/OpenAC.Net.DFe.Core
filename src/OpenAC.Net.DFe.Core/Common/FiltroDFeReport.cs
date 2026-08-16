@@ -1,4 +1,4 @@
-﻿// ***********************************************************************
+// ***********************************************************************
 // Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
 // Created          : 08-10-2018
@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="FiltroDFeReport.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -31,9 +31,23 @@
 
 namespace OpenAC.Net.DFe.Core.Common;
 
+/// <summary>
+/// Define o formato de exportação/filtro para geração de relatórios e DANFE/DACTE.
+/// </summary>
 public enum FiltroDFeReport
 {
+    /// <summary>
+    /// Sem filtro de exportação (impressão direta).
+    /// </summary>
     Nenhum,
+
+    /// <summary>
+    /// Exportação para arquivo no formato Adobe PDF.
+    /// </summary>
     PDF,
+
+    /// <summary>
+    /// Exportação para arquivo no formato HTML.
+    /// </summary>
     HTML
 }

@@ -1,4 +1,4 @@
-﻿// ***********************************************************************
+// ***********************************************************************
 // Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
 // Created          : 05-07-2016
@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="Transform.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -34,13 +34,14 @@ using OpenAC.Net.DFe.Core.Serializer;
 
 namespace OpenAC.Net.DFe.Core.Document;
 
-public sealed class Transform
+/// <summary>
+/// Representa uma transformação aplicada sobre o documento antes do cálculo do resumo criptográfico (Transform) no padrão XMLDSig.
+/// </summary>
+public sealed partial class Transform
 {
     /// <summary>
-    /// XS13 - Atributos válidos Algorithm do Transform:
-    /// <para>http://www.w3.org/TR/2001/REC-xml-c14n-20010315</para><para>http://www.w3.org/2000/09/xmldsig#enveloped-signature</para>
+    /// XS12 - Atributo Algorithm do Transform (ex: enveloped-signature, xml-c14n).
     /// </summary>
-    /// <value>The algorithm.</value>
     [DFeAttribute(TipoCampo.Str, "Algorithm", Id = "XS12", Min = 0, Max = 999, Ocorrencia = Ocorrencia.Obrigatoria)]
     public string Algorithm { get; set; }
 }

@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="SerializerOptions.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -35,21 +35,23 @@ using System.Text;
 namespace OpenAC.Net.DFe.Core.Serializer;
 
 /// <summary>
-/// Class SerializerOptions. This class cannot be inherited.
+/// Opções e parâmetros de configuração utilizados pelo serializador XML DFe durante a geração e leitura de documentos.
 /// </summary>
 public class SerializerOptions
 {
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeSerializer" /> class.
+    /// Inicializa uma nova instância da classe <see cref="SerializerOptions"/> com configurações padrão.
     /// </summary>
-    internal SerializerOptions()
+    public SerializerOptions()
     {
         ErrosAlertas = new List<string>();
         FormatoAlerta = "TAG:%TAG% ID:%ID%/%TAG%(%DESCRICAO%) - %MSG%.";
         RemoverAcentos = false;
+        RemoverEspacos = false;
         FormatarXml = true;
+        OmitirDeclaracao = false;
         Encoding = Encoding.UTF8;
     }
 
@@ -57,32 +59,54 @@ public class SerializerOptions
 
     #region Propriedades
 
+    /// <summary>
+    /// Obtém ou define se deve remover caracteres acentuados durante a serialização XML.
+    /// </summary>
     public bool RemoverAcentos { get; set; }
 
+    /// <summary>
+    /// Obtém ou define se deve remover espaços redundantes do conteúdo textual dos elementos XML.
+    /// </summary>
     public bool RemoverEspacos { get; set; }
 
+    /// <summary>
+    /// Obtém ou define se o XML gerado deve ser indentado e formatado.
+    /// </summary>
     public bool FormatarXml { get; set; }
 
+    /// <summary>
+    /// Obtém ou define se a declaração XML inicial (<c>&lt;?xml version="1.0" ... ?&gt;</c>) deve ser omitida.
+    /// </summary>
     public bool OmitirDeclaracao { get; set; }
 
+    /// <summary>
+    /// Obtém ou define a codificação de caracteres utilizada na leitura e escrita do XML (padrão UTF-8).
+    /// </summary>
     public Encoding Encoding { get; set; }
 
+    /// <summary>
+    /// Obtém a lista de mensagens de erros e alertas de validação e serialização coletados.
+    /// </summary>
     public List<string> ErrosAlertas { get; }
 
+    /// <summary>
+    /// Obtém ou define o padrão de formatação das mensagens de alerta (utiliza marcadores como %TAG%, %ID%, %DESCRICAO%, %MSG%).
+    /// </summary>
     public string FormatoAlerta { get; set; }
 
     #endregion Propriedades
 
     #region Methods
 
-    internal void AddAlerta(string id, string tag, string descricao, string alerta)
+    /// <summary>
+    /// Formata e adiciona uma mensagem de alerta na lista <see cref="ErrosAlertas"/> com base no <see cref="FormatoAlerta"/>.
+    /// </summary>
+    /// <param name="id">Identificador do campo no manual (ex: B01).</param>
+    /// <param name="tag">Nome da tag XML associada.</param>
+    /// <param name="descricao">Descrição legível do campo.</param>
+    /// <param name="alerta">Texto descritivo do alerta ou inconsistência encontrada.</param>
+    public void AddAlerta(string id, string tag, string descricao, string alerta)
     {
-        // O Formato da mensagem de erro pode ser alterado pelo usuario alterando-se a property FormatoAlerta: onde;
-        // %TAG%       : Representa a TAG; ex: <nLacre>
-        // %ID%        : Representa a ID da TAG; ex X34
-        // %MSG%       : Representa a mensagem de alerta
-        // %DESCRICAO% : Representa a Descrição da TAG
-
         var s = FormatoAlerta.Clone() as string;
         if (s == null)
             return;

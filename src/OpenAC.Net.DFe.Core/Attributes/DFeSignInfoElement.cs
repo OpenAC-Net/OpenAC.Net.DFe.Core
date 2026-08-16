@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeSignInfoElement.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -33,13 +33,16 @@ using System;
 
 namespace OpenAC.Net.DFe.Core.Attributes;
 
+/// <summary>
+/// Atributo que define as configurações de assinatura digital (tag alvo e atributo identificador) para uma classe de documento DFe.
+/// </summary>
 [AttributeUsage(AttributeTargets.Class)]
 public sealed class DFeSignInfoElement : Attribute
 {
     #region Constructors
 
     /// <summary>
-    /// Inicializa uma nova intância da classe <see cref="DFeSignInfoElement"/>.
+    /// Inicializa uma nova instância da classe <see cref="DFeSignInfoElement"/>.
     /// </summary>
     public DFeSignInfoElement()
     {
@@ -48,9 +51,9 @@ public sealed class DFeSignInfoElement : Attribute
     }
 
     /// <summary>
-    /// Inicializa uma nova intância da classe <see cref="DFeSignInfoElement"/>.
+    /// Inicializa uma nova instância da classe <see cref="DFeSignInfoElement"/> informando o elemento a ser assinado.
     /// </summary>
-    /// <param name="signElement">O elemento a ser assinado.</param>
+    /// <param name="signElement">Nome do elemento XML que receberá a assinatura.</param>
     public DFeSignInfoElement(string signElement)
     {
         SignElement = signElement;
@@ -62,15 +65,13 @@ public sealed class DFeSignInfoElement : Attribute
     #region Properties
 
     /// <summary>
-    /// Define/retorna o elemento a ser assinado.
+    /// Obtém ou define o nome da tag do elemento XML a ser assinado.
     /// </summary>
-    /// <value>The sign element.</value>
     public string SignElement { get; set; }
 
     /// <summary>
-    /// Define/retorna o atributo identificador do elemento a ser assinado.
+    /// Obtém ou define o nome do atributo identificador (URI) do elemento a ser assinado (padrão "Id").
     /// </summary>
-    /// <value>The sign atribute.</value>
     public string SignAtribute { get; set; }
 
     #endregion Properties

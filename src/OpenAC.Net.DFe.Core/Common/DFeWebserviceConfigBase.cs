@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeWebserviceConfigBase.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -36,12 +36,15 @@ using OpenAC.Net.DFe.Core.Extensions;
 
 namespace OpenAC.Net.DFe.Core.Common;
 
+/// <summary>
+/// Classe base abstrata para configurações de comunicação HTTP / SOAP com Web Services da SEFAZ.
+/// </summary>
 public abstract class DFeWebserviceConfigBase
 {
     #region Constructor
 
     /// <summary>
-    /// Inicializa uma nova instancia da classe <see cref="DFeWebserviceConfigBase"/>.
+    /// Inicializa uma nova instância da classe <see cref="DFeWebserviceConfigBase"/>.
     /// </summary>
     protected DFeWebserviceConfigBase()
     {
@@ -54,9 +57,10 @@ public abstract class DFeWebserviceConfigBase
 #if NETCORE
         Protocolos = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 #else
-            Protocolos = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls |
-                         SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-
+#pragma warning disable CS0618
+        Protocolos = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls |
+                     SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+#pragma warning restore CS0618
 #endif
     }
 
@@ -65,52 +69,47 @@ public abstract class DFeWebserviceConfigBase
     #region Properties
 
     /// <summary>
-    /// Define/retorna se deve ou não salvar os arquivos soap.
+    /// Obtém ou define se deve salvar em disco as mensagens SOAP/HTTP de envio e retorno.
     /// </summary>
     public bool Salvar { get; set; }
 
     /// <summary>
-    /// Gets or sets the ambiente.
+    /// Obtém ou define o ambiente de destino dos Web Services (Produção ou Homologação).
     /// </summary>
-    /// <value>The ambiente.</value>
     public DFeTipoAmbiente Ambiente { get; set; }
 
     /// <summary>
-    /// Retorna o código do ambiente.
+    /// Obtém o código numérico do ambiente (1 para Produção, 2 para Homologação).
     /// </summary>
-    /// <value>The ambiente codigo.</value>
     public int AmbienteCodigo => Ambiente.GetDFeValue().ToInt32();
 
     /// <summary>
-    /// Gets or sets the tentativas.
+    /// Obtém ou define o número máximo de tentativas de comunicação com o Web Service em caso de falha.
     /// </summary>
-    /// <value>The tentativas.</value>
     public int Tentativas { get; set; }
 
     /// <summary>
-    ///
+    /// Obtém ou define o tempo de espera (em milissegundos) entre cada tentativa de comunicação.
     /// </summary>
     public int IntervaloTentativas { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether [ajusta aguarda consulta ret].
+    /// Obtém ou define se o tempo de timeout da requisição deve ser ajustado automaticamente com base no tempo de espera do recibo.
     /// </summary>
-    /// <value><c>true</c> if [ajusta aguarda consulta ret]; otherwise, <c>false</c>.</value>
     public bool AjustaAguardaConsultaRet { get; set; }
 
     /// <summary>
-    /// Gets or sets the aguardar consulta ret.
+    /// Obtém ou define o tempo de espera (em segundos) antes de consultar o processamento do lote na SEFAZ.
     /// </summary>
-    /// <value>The aguardar consulta ret.</value>
     public uint AguardarConsultaRet { get; set; }
 
     /// <summary>
-    ///
+    /// Obtém ou define os protocolos de segurança SSL/TLS aceitos nas conexões seguras com os servidores da SEFAZ.
     /// </summary>
     public SecurityProtocolType Protocolos { get; set; }
 
     /// <summary>
-    ///
+    /// Obtém o timeout customizado calculado para a requisição SOAP.
     /// </summary>
     public TimeSpan? TimeOut
     {

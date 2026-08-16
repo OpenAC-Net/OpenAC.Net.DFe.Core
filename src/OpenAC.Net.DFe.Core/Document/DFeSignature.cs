@@ -1,4 +1,4 @@
-﻿// ***********************************************************************
+// ***********************************************************************
 // Assembly         : OpenAC.Net.DFe.Core
 // Author           : RFTD
 // Created          : 05-07-2016
@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeSignature.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -34,13 +34,16 @@ using OpenAC.Net.DFe.Core.Serializer;
 
 namespace OpenAC.Net.DFe.Core.Document;
 
+/// <summary>
+/// Representa a estrutura de Assinatura Digital padrão XML-DSig (<c>&lt;Signature&gt;</c>) anexada aos documentos fiscais eletrônicos.
+/// </summary>
 [DFeRoot("Signature", Namespace = "http://www.w3.org/2000/09/xmldsig#")]
-public sealed class DFeSignature : DFeDocument<DFeSignature>
+public sealed partial class DFeSignature : DFeDocument<DFeSignature>
 {
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeSignature"/> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeSignature"/>.
     /// </summary>
     public DFeSignature()
     {
@@ -53,23 +56,20 @@ public sealed class DFeSignature : DFeDocument<DFeSignature>
     #region Propriedades
 
     /// <summary>
-    /// XS02 - Grupo da Informação da assinatura
+    /// XS02 - Grupo de informações da assinatura (SignedInfo).
     /// </summary>
-    /// <value>The signed information.</value>
     [DFeElement("SignedInfo", Id = "XS02")]
     public SignedInfo SignedInfo { get; set; }
 
     /// <summary>
-    /// XS18 - Grupo do Signature Value
+    /// XS18 - Valor criptográfico da assinatura digital gerada em Base64 (SignatureValue).
     /// </summary>
-    /// <value>The signature value.</value>
     [DFeElement(TipoCampo.Str, "SignatureValue", Id = "XS18", Min = 0, Max = 999, Ocorrencia = Ocorrencia.Obrigatoria)]
-    public string SignatureValue { get; set; }
+    public string SignatureValue { get; set; } = string.Empty;
 
     /// <summary>
-    /// XS19 - Grupo do KeyInfo
+    /// XS19 - Grupo de informações do certificado/chave pública do signatário (KeyInfo).
     /// </summary>
-    /// <value>The key information.</value>
     [DFeElement("KeyInfo", Id = "XS19")]
     public KeyInfo KeyInfo { get; set; }
 

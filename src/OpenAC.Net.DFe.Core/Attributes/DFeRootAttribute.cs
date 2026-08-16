@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="DFeRootAttribute.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -34,16 +34,15 @@ using System;
 namespace OpenAC.Net.DFe.Core.Attributes;
 
 /// <summary>
-/// Class DFeRootAttribute.
+/// Atributo que define a classe como elemento raiz (root) de um documento DFe serializado em XML.
 /// </summary>
-/// <seealso cref="System.Attribute" />
 [AttributeUsage(AttributeTargets.Class)]
 public sealed class DFeRootAttribute : Attribute
 {
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeRootAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeRootAttribute"/>.
     /// </summary>
     public DFeRootAttribute()
     {
@@ -51,9 +50,9 @@ public sealed class DFeRootAttribute : Attribute
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DFeRootAttribute" /> class.
+    /// Inicializa uma nova instância da classe <see cref="DFeRootAttribute"/> com o nome da tag raiz.
     /// </summary>
-    /// <param name="root">The Namespace.</param>
+    /// <param name="root">Nome da tag raiz no XML.</param>
     public DFeRootAttribute(string root)
     {
         Name = root;
@@ -63,8 +62,14 @@ public sealed class DFeRootAttribute : Attribute
 
     #region Properties
 
+    /// <summary>
+    /// Obtém ou define o nome da tag raiz do documento no XML.
+    /// </summary>
     public string Name { get; set; }
 
+    /// <summary>
+    /// Obtém ou define o namespace XML padrão do elemento raiz.
+    /// </summary>
     public string Namespace { get; set; }
 
     #endregion Properties

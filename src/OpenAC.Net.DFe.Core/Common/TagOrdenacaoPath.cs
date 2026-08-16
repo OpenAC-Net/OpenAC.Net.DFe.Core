@@ -8,7 +8,7 @@
 // ***********************************************************************
 // <copyright file="TagOrdenacaoPath.cs" company="OpenAC .Net">
 //		        		   The MIT License (MIT)
-//	     		    Copyright (c) 2014-2022 Grupo OpenAC.Net
+//	     		    Copyright (c) 2014-2026 Grupo OpenAC.Net
 //
 //	 Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -33,20 +33,38 @@ using System.ComponentModel;
 
 namespace OpenAC.Net.DFe.Core.Common;
 
+/// <summary>
+/// Define os critérios e elementos utilizados na composição da árvore de diretórios para salvamento dos arquivos XML.
+/// </summary>
 public enum TagOrdenacaoPath
 {
+    /// <summary>
+    /// Sem subdiretório.
+    /// </summary>
     [Description("(nenhum)")]
     Nenhum,
 
+    /// <summary>
+    /// Cria subpasta com o CNPJ do emitente.
+    /// </summary>
     [Description("CNPJ")]
     CNPJ,
 
+    /// <summary>
+    /// Cria subpasta com a descrição do modelo do documento fiscal.
+    /// </summary>
     [Description("Modelo")]
     Modelo,
 
+    /// <summary>
+    /// Cria subpastas com a data de emissão (Ano, Mês e/ou Dia).
+    /// </summary>
     [Description("Data")]
     Data,
 
+    /// <summary>
+    /// Cria subpasta com o nome literal da categoria de documento.
+    /// </summary>
     [Description("Literal")]
     Literal
 }
