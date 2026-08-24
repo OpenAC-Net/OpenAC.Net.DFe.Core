@@ -79,12 +79,12 @@ public abstract class DFeBaseAttribute : Attribute
     /// <summary>
     /// Obtém ou define o namespace XML do elemento ou atributo.
     /// </summary>
-    public string Namespace { get; set; }
+    public string? Namespace { get; set; }
 
     /// <summary>
     /// Obtém ou define a descrição legível do campo para mensagens de erro e validação.
     /// </summary>
-    public string Descricao { get; set; }
+    public string? Descricao { get; set; }
 
     /// <summary>
     /// Obtém ou define a ordem de serialização do elemento no XML.

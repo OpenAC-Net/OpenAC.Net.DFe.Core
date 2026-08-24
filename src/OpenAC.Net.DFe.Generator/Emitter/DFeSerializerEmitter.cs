@@ -84,7 +84,7 @@ public static class DFeSerializerEmitter
         sb.AppendLine("            {");
         sb.AppendLine("                if (colItem != null)");
         sb.AppendLine("                {");
-        sb.AppendLine($"                    var childElem = colItem.WriteToXml(null, null, options);");
+        sb.AppendLine("                    var childElem = colItem.WriteToXml(null, string.IsNullOrEmpty(ns) ? null : ns, options);");
         sb.AppendLine("                    element.Add(childElem);");
         sb.AppendLine("                }");
         sb.AppendLine("            }");
@@ -296,7 +296,7 @@ public static class DFeSerializerEmitter
             sb.AppendLine($"{indent}if ({valExpr} != null)");
             sb.AppendLine($"{indent}{{");
             var inner = indent + "    ";
-            var tagNs = prop.TagNamespace != null ? $"\"{prop.TagNamespace}\"" : "null";
+            var tagNs = prop.TagNamespace != null ? $"\"{prop.TagNamespace}\"" : "string.IsNullOrEmpty(ns) ? null : ns";
             sb.AppendLine($"{inner}var childElem = {valExpr}.WriteToXml(\"{prop.TagName}\", {tagNs}, options);");
             sb.AppendLine($"{inner}element.Add(childElem);");
             sb.AppendLine($"{indent}}}");
@@ -395,7 +395,7 @@ public static class DFeSerializerEmitter
             {
                 var map = prop.ItemMappings[i];
                 var elsePrefix = i > 0 ? "else " : "";
-                var itemNs = map.TagNamespace != null ? $"\"{map.TagNamespace}\"" : "null";
+                var itemNs = map.TagNamespace != null ? $"\"{map.TagNamespace}\"" : "string.IsNullOrEmpty(ns) ? null : ns";
 
                 if (map.IsCollection && map.CollectionItemType != null)
                 {
@@ -435,7 +435,7 @@ public static class DFeSerializerEmitter
         {
             sb.AppendLine($"{loopIndent}if (colItem != null)");
             sb.AppendLine($"{loopIndent}{{");
-            var itemNs = prop.TagNamespace != null ? $"\"{prop.TagNamespace}\"" : "null";
+            var itemNs = prop.TagNamespace != null ? $"\"{prop.TagNamespace}\"" : "string.IsNullOrEmpty(ns) ? null : ns";
             sb.AppendLine($"{loopIndent}    var childElem = colItem.WriteToXml(\"{prop.TagName}\", {itemNs}, options);");
             sb.AppendLine($"{loopIndent}    {targetContainer}.Add(childElem);");
             sb.AppendLine($"{loopIndent}}}");
@@ -492,15 +492,15 @@ public static class DFeSerializerEmitter
 
         if (keyAsAttr)
         {
-            sb.AppendLine($"{loopIndent}var entryElem = new XElement(\"{valName}\", valStr);");
+            sb.AppendLine($"{loopIndent}var entryElem = new XElement({tagNs} + \"{valName}\", valStr);");
             sb.AppendLine($"{loopIndent}if (keyStr != null) entryElem.Add(new XAttribute(\"{keyName}\", keyStr));");
             sb.AppendLine($"{loopIndent}dictElem_{prop.Name}.Add(entryElem);");
         }
         else
         {
-            sb.AppendLine($"{loopIndent}var entryElem = new XElement(\"Item\");");
-            sb.AppendLine($"{loopIndent}if (keyStr != null) entryElem.Add(new XElement(\"{keyName}\", keyStr));");
-            sb.AppendLine($"{loopIndent}if (valStr != null) entryElem.Add(new XElement(\"{valName}\", valStr));");
+            sb.AppendLine($"{loopIndent}var entryElem = new XElement({tagNs} + \"Item\");");
+            sb.AppendLine($"{loopIndent}if (keyStr != null) entryElem.Add(new XElement({tagNs} + \"{keyName}\", keyStr));");
+            sb.AppendLine($"{loopIndent}if (valStr != null) entryElem.Add(new XElement({tagNs} + \"{valName}\", valStr));");
             sb.AppendLine($"{loopIndent}dictElem_{prop.Name}.Add(entryElem);");
         }
 
@@ -520,7 +520,7 @@ public static class DFeSerializerEmitter
         {
             var map = prop.ItemMappings[i];
             var elsePrefix = i > 0 ? "else " : "";
-            var itemNs = map.TagNamespace != null ? $"\"{map.TagNamespace}\"" : "null";
+            var itemNs = map.TagNamespace != null ? $"\"{map.TagNamespace}\"" : "string.IsNullOrEmpty(ns) ? null : ns";
 
             if (map.IsCollection && map.CollectionItemType != null)
             {

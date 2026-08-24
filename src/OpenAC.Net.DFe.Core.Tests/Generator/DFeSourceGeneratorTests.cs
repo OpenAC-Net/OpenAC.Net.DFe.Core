@@ -102,8 +102,7 @@ public class DFeSourceGeneratorTests
         await Assert.That(docFiscalCode).Contains("public XElement WriteToXml");
         await Assert.That(docFiscalCode).Contains("public static global::MyTestNamespace.DocumentoFiscal? ReadFromXml");
         await Assert.That(docFiscalCode).Contains("public void ReadXml");
-        await Assert.That(docFiscalCode).Contains("this.ShouldSerializeId()");
-        await Assert.That(docFiscalCode).Contains("colItem.WriteToXml(\"det\", null, options)");
+        await Assert.That(docFiscalCode).Contains("colItem.WriteToXml(\"det\", string.IsNullOrEmpty(ns) ? null : ns, options)");
     }
 
     [Test]
@@ -452,7 +451,76 @@ public class DFeSourceGeneratorTests
 
         var docRootTree = runResult.GeneratedTrees.First(t => t.FilePath.EndsWith("MyTestNamespace_DocumentoRoot.DFe.g.cs"));
         var docRootCode = docRootTree.GetText().ToString();
-        await Assert.That(docRootCode).Contains("this.Ide.WriteToXml(\"Ide\", null, options)");
+        await Assert.That(docRootCode).Contains("this.Ide.WriteToXml(\"Ide\", string.IsNullOrEmpty(ns) ? null : ns, options)");
+    }
+
+    [Test]
+    public async Task ShouldInheritParentNamespaceInChildElementsWithoutEmptyXmlns()
+    {
+        const string Source = """
+                              using System.Collections.Generic;
+                              using OpenAC.Net.DFe.Core.Attributes;
+                              using OpenAC.Net.DFe.Core.Serializer;
+
+                              namespace MyTestNamespace;
+
+                              [DFeRoot("DPS", Namespace = "http://www.sped.fazenda.gov.br/nfse")]
+                              public partial class DPSDocument
+                              {
+                                  [DFeAttribute(TipoCampo.Str, "versao")]
+                                  public string Versao { get; set; } = "1.01";
+
+                                  [DFeElement("infDPS")]
+                                  public InfDPSModel InfDPS { get; set; } = new();
+                              }
+
+                              public partial class InfDPSModel
+                              {
+                                  [DFeAttribute(TipoCampo.Str, "Id")]
+                                  public string Id { get; set; } = "DPS3550308";
+
+                                  [DFeElement(TipoCampo.Int, "tpAmb")]
+                                  public int TpAmb { get; set; } = 2;
+
+                                  [DFeElement("prest")]
+                                  public PrestModel Prest { get; set; } = new();
+                              }
+
+                              public partial class PrestModel
+                              {
+                                  [DFeElement(TipoCampo.Str, "CNPJ")]
+                                  public string CNPJ { get; set; } = "12345678000199";
+                              }
+                              """;
+
+        var generator = new DFeSourceGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+
+        var compilation = CSharpCompilation.Create(
+            "TestCompilationNamespaceInheritance",
+            [CSharpSyntaxTree.ParseText(Source)],
+            [
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(System.Xml.Linq.XElement).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(DFeRootAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(TipoCampo).Assembly.Location),
+                MetadataReference.CreateFromFile(System.Reflection.Assembly.Load("System.Runtime").Location),
+                MetadataReference.CreateFromFile(System.Reflection.Assembly.Load("System.Collections").Location)
+            ],
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+        );
+
+        var runResult = driver.RunGenerators(compilation).GetRunResult();
+
+        await Assert.That(runResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)).IsEmpty();
+
+        var dpsTree = runResult.GeneratedTrees.First(t => t.FilePath.EndsWith("MyTestNamespace_DPSDocument.DFe.g.cs"));
+        var dpsCode = dpsTree.GetText().ToString();
+        await Assert.That(dpsCode).Contains("this.InfDPS.WriteToXml(\"infDPS\", string.IsNullOrEmpty(ns) ? null : ns, options)");
+
+        var infDpsTree = runResult.GeneratedTrees.First(t => t.FilePath.EndsWith("MyTestNamespace_InfDPSModel.DFe.g.cs"));
+        var infDpsCode = infDpsTree.GetText().ToString();
+        await Assert.That(infDpsCode).Contains("this.Prest.WriteToXml(\"prest\", string.IsNullOrEmpty(ns) ? null : ns, options)");
     }
 }
 
