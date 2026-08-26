@@ -227,6 +227,20 @@ namespace OpenAC.Net.DFe.Core
             var xmlDoc = new XmlDocument { PreserveWhitespace = true };
             xmlDoc.LoadXml(xml);
 
+            // Remove qualquer <Signature> já existente (documento assinado anteriormente, ou
+            // serializado com um objeto Signature vazio) antes de gerar a nova assinatura.
+            // Sem isso, assinar um documento já assinado (ex: reenvio) duplica o elemento
+            // <Signature>, quebrando a validação do schema XSD.
+            var existingSignatures = xmlDoc.DocumentElement?
+                .ChildNodes.Cast<XmlNode>()
+                .Where(n => n.LocalName == "Signature" && n.NamespaceURI == SignedXml.XmlDsigNamespaceUrl)
+                .ToList();
+            if (existingSignatures != null)
+            {
+                foreach (var existingSignature in existingSignatures)
+                    xmlDoc.DocumentElement!.RemoveChild(existingSignature);
+            }
+
             var xmlSignature = GerarAssinatura(xmlDoc, signatureInfo.SignElement, signatureInfo.SignAtribute, certificado, comments, digest);
 
             // Adiciona a assinatura no documento e retorna o xml assinado no parametro signedXml
