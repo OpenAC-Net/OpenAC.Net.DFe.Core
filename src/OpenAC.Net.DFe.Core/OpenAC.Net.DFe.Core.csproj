@@ -21,9 +21,9 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageProjectUrl>https://openac.net.br/</PackageProjectUrl>
-    <AssemblyVersion>1.7.0.2</AssemblyVersion>
-    <FileVersion>1.7.0.2</FileVersion>
-    <Version>1.7.0.2</Version>
+    <AssemblyVersion>1.7.0.3</AssemblyVersion>
+    <FileVersion>1.7.0.3</FileVersion>
+    <Version>1.7.0.3</Version>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <DebugType>embedded</DebugType>
