@@ -93,7 +93,8 @@ namespace OpenAC.Net.DFe.Core
             {
                 var xmlDoc = new XmlDocument { PreserveWhitespace = true };
                 xmlDoc.LoadXml(xml);
-                AssinarDocumento(xmlDoc, docElement, infoElement, signAtribute, pCertificado, comments, digest);
+                xmlDoc.RemoveSignNodeIfExists();
+                xmlDoc.AssinarDocumento(docElement, infoElement, signAtribute, pCertificado, comments, digest);
                 return xmlDoc.AsString(identado, showDeclaration);
             }
             catch (Exception ex)
@@ -160,7 +161,8 @@ namespace OpenAC.Net.DFe.Core
                 {
                     var xmlDoc = new XmlDocument { PreserveWhitespace = true };
                     xmlDoc.LoadXml(element.OuterXml);
-                    AssinarDocumento(xmlDoc, docElement, infoElement, signAtribute, certificado, comments, digest);
+                    xmlDoc.RemoveSignNodeIfExists();
+                    xmlDoc.AssinarDocumento(docElement, infoElement, signAtribute, certificado, comments, digest);
 
                     // ReSharper disable once AssignNullToNotNullAttribute
                     var signedElement = doc.ImportNode(xmlDoc.DocumentElement, true);
@@ -175,130 +177,135 @@ namespace OpenAC.Net.DFe.Core
             }
         }
 
-        /// <summary>
-        /// Realiza a assinatura digital diretamente no objeto <see cref="XmlDocument"/> fornecido.
-        /// </summary>
         /// <param name="doc">O documento <see cref="XmlDocument"/>.</param>
-        /// <param name="docElement">Nome do elemento onde a tag Signature será anexada.</param>
-        /// <param name="infoElement">Nome do elemento assinado referenciado.</param>
-        /// <param name="signAtribute">Nome do atributo identificador da URI assinada.</param>
-        /// <param name="certificado">Certificado digital X509 com chave privada.</param>
-        /// <param name="comments">Se <c>true</c>, insere o transform #withcomments.</param>
-        /// <param name="digest">Algoritmo de resumo criptográfico (padrão SHA1).</param>
-        /// <exception cref="OpenDFeException">Disparada em caso de falha na assinatura.</exception>
-        public static void AssinarDocumento(this XmlDocument doc, string docElement, string infoElement, string signAtribute,
-            X509Certificate2 certificado, bool comments = false, SignDigest digest = SignDigest.SHA1)
+        extension(XmlDocument doc)
         {
-            Guard.Against<ArgumentNullException>(doc == null, "XmlDOcument não pode ser nulo.");
-            Guard.Against<ArgumentException>(docElement.IsEmpty(), "docElement não pode ser nulo ou vazio.");
-
-            var xmlDigitalSignature = GerarAssinatura(doc, infoElement, signAtribute, certificado, comments, digest);
-            var xmlElement = doc.GetElementsByTagName(docElement).Cast<XmlElement>().FirstOrDefault();
-
-            Guard.Against<OpenDFeException>(xmlElement == null, "Elemento principal não encontrado.");
-
-            var element = doc.ImportNode(xmlDigitalSignature, true);
-            xmlElement.AppendChild(element);
-        }
-
-        /// <summary>
-        /// Gera a assinatura digital de uma instância de documento <see cref="DFeSignDocument{TDocument}"/> e retorna a estrutura <see cref="DFeSignature"/>.
-        /// </summary>
-        /// <typeparam name="TDocument">O tipo concreto do documento assinado.</typeparam>
-        /// <param name="document">A instância do documento DFe.</param>
-        /// <param name="certificado">O certificado digital X509 com chave privada.</param>
-        /// <param name="comments">Se <c>true</c>, insere o transform #withcomments.</param>
-        /// <param name="digest">Algoritmo de resumo criptográfico (SHA1 ou SHA256).</param>
-        /// <param name="options">Opções de salvamento e formatação do XML.</param>
-        /// <param name="signedXml">Parâmetro de saída com a string do XML assinado gerado.</param>
-        /// <returns>A instância deserializada de <see cref="DFeSignature"/> correspondente à assinatura gerada.</returns>
-        public static DFeSignature AssinarDocumento<TDocument>(this DFeSignDocument<TDocument> document,
-            X509Certificate2 certificado, bool comments, SignDigest digest,
-            DFeSaveOptions options, out string signedXml) where TDocument : class
-        {
-            Guard.Against<ArgumentNullException>(document == null, nameof(document));
-            Guard.Against<ArgumentNullException>(certificado == null, nameof(certificado));
-            Guard.Against<ArgumentException>(!certificado.HasPrivateKey, "O certificado informado não possui chave privada para assinatura.");
-
-            var signatureInfo = typeof(TDocument).GetAttribute<DFeSignInfoElement>();
-            Guard.Against<ArgumentException>(signatureInfo == null || signatureInfo.SignElement.IsEmpty(), "O elemento a ser assinado (SignElement) não foi informado no atributo [DFeSignInfoElement].");
-
-            var xml = document.GetXml(options, Encoding.UTF8);
-            var xmlDoc = new XmlDocument { PreserveWhitespace = true };
-            xmlDoc.LoadXml(xml);
-
             // Remove qualquer <Signature> já existente (documento assinado anteriormente, ou
             // serializado com um objeto Signature vazio) antes de gerar a nova assinatura.
             // Sem isso, assinar um documento já assinado (ex: reenvio) duplica o elemento
             // <Signature>, quebrando a validação do schema XSD.
-            var existingSignatures = xmlDoc.DocumentElement?
-                .ChildNodes.Cast<XmlNode>()
-                .Where(n => n.LocalName == "Signature" && n.NamespaceURI == SignedXml.XmlDsigNamespaceUrl)
-                .ToList();
-            if (existingSignatures != null)
+            private void RemoveSignNodeIfExists()
             {
+                var existingSignatures = doc.DocumentElement?
+                    .ChildNodes.Cast<XmlNode>()
+                    .Where(n => n.LocalName == "Signature" && n.NamespaceURI == SignedXml.XmlDsigNamespaceUrl)
+                    .ToList();
+                if (existingSignatures == null) return;
+            
                 foreach (var existingSignature in existingSignatures)
-                    xmlDoc.DocumentElement!.RemoveChild(existingSignature);
+                    doc.DocumentElement!.RemoveChild(existingSignature);
             }
 
-            var xmlSignature = GerarAssinatura(xmlDoc, signatureInfo.SignElement, signatureInfo.SignAtribute, certificado, comments, digest);
-
-            // Adiciona a assinatura no documento e retorna o xml assinado no parametro signedXml
-            var element = xmlDoc.ImportNode(xmlSignature, true);
-            xmlDoc.DocumentElement?.AppendChild(element);
-            signedXml = xmlDoc.AsString(!options.HasFlag(DFeSaveOptions.DisableFormatting), !options.HasFlag(DFeSaveOptions.OmitDeclaration));
-
-            return DFeSignature.Load(xmlSignature.OuterXml);
-        }
-
-        /// <summary>
-        /// Valida a integridade criptográfica da assinatura digital em um documento <see cref="DFeSignDocument{TDocument}"/>.
-        /// </summary>
-        /// <typeparam name="TDocument">O tipo do documento assinado.</typeparam>
-        /// <param name="document">A instância do documento.</param>
-        /// <param name="gerarXml">Indica se deve serializar um novo XML para validação se o cache estiver vazio.</param>
-        /// <returns><c>true</c> se a assinatura for válida; caso contrário, <c>false</c>.</returns>
-        public static bool ValidarAssinatura<TDocument>(this DFeSignDocument<TDocument> document, bool gerarXml) where TDocument : class
-        {
-            Guard.Against<ArgumentNullException>(document == null, nameof(document));
-            var xml = document.Xml.IsEmpty() || gerarXml ? document.GetXml(DFeSaveOptions.DisableFormatting, Encoding.UTF8) : document.Xml;
-            var xmlDoc = new XmlDocument { PreserveWhitespace = true };
-            xmlDoc.LoadXml(xml);
-            return ValidarAssinatura(xmlDoc);
-        }
-
-        /// <summary>
-        /// Valida a integridade criptográfica da assinatura digital contida em um <see cref="XmlDocument"/>.
-        /// </summary>
-        /// <param name="doc">O documento <see cref="XmlDocument"/> contendo a tag Signature.</param>
-        /// <returns><c>true</c> se a assinatura for matematicamente válida contra a chave pública contida; caso contrário, <c>false</c>.</returns>
-        public static bool ValidarAssinatura(this XmlDocument doc)
-        {
-            try
+            /// <summary>
+            /// Valida a integridade criptográfica da assinatura digital contida em um <see cref="XmlDocument"/>.
+            /// </summary>
+            /// <returns><c>true</c> se a assinatura for matematicamente válida contra a chave pública contida; caso contrário, <c>false</c>.</returns>
+            public bool ValidarAssinatura()
             {
-                var signElement = doc.GetElementsByTagName("Signature");
-                Guard.Against<OpenDFeException>(signElement.Count < 1, "Verificação falhou: Elemento [Signature] não encontrado no documento.");
-                Guard.Against<OpenDFeException>(signElement.Count > 1, "Verificação falhou: Mais de um elemento [Signature] encontrado no documento.");
+                try
+                {
+                    var signElement = doc.GetElementsByTagName("Signature");
+                    Guard.Against<OpenDFeException>(signElement.Count < 1, "Verificação falhou: Elemento [Signature] não encontrado no documento.");
+                    Guard.Against<OpenDFeException>(signElement.Count > 1, "Verificação falhou: Mais de um elemento [Signature] encontrado no documento.");
 
-                var certificateElement = doc.GetElementsByTagName("X509Certificate");
-                Guard.Against<OpenDFeException>(certificateElement.Count < 1, "Verificação falhou: Elemento [X509Certificate] não encontrado no documento.");
-                Guard.Against<OpenDFeException>(certificateElement.Count > 1, "Verificação falhou: Mais de um elemento [X509Certificate] encontrado no documento.");
+                    var certificateElement = doc.GetElementsByTagName("X509Certificate");
+                    Guard.Against<OpenDFeException>(certificateElement.Count < 1, "Verificação falhou: Elemento [X509Certificate] não encontrado no documento.");
+                    Guard.Against<OpenDFeException>(certificateElement.Count > 1, "Verificação falhou: Mais de um elemento [X509Certificate] encontrado no documento.");
 
-                var signedXml = new SignedXml(doc);
-                signedXml.LoadXml((XmlElement)signElement[0]);
+                    var signedXml = new SignedXml(doc);
+                    signedXml.LoadXml((XmlElement)signElement[0]);
 
-                var certificate = new X509Certificate2(Convert.FromBase64String(certificateElement[0].InnerText));
+                    var certificate = new X509Certificate2(Convert.FromBase64String(certificateElement[0].InnerText));
 
-                return signedXml.CheckSignature(certificate, true);
+                    return signedXml.CheckSignature(certificate, true);
+                }
+                catch (Exception exception)
+                {
+                    var log = LoggerProvider.LoggerFor(typeof(XmlSigning));
+                    log.Error("Erro ao validar a assinatura.", exception);
+                    return false;
+                }
             }
-            catch (Exception exception)
+
+            /// <summary>
+            /// Realiza a assinatura digital diretamente no objeto <see cref="XmlDocument"/> fornecido.
+            /// </summary>
+            /// <param name="docElement">Nome do elemento onde a tag Signature será anexada.</param>
+            /// <param name="infoElement">Nome do elemento assinado referenciado.</param>
+            /// <param name="signAtribute">Nome do atributo identificador da URI assinada.</param>
+            /// <param name="certificado">Certificado digital X509 com chave privada.</param>
+            /// <param name="comments">Se <c>true</c>, insere o transform #withcomments.</param>
+            /// <param name="digest">Algoritmo de resumo criptográfico (padrão SHA1).</param>
+            /// <exception cref="OpenDFeException">Disparada em caso de falha na assinatura.</exception>
+            public void AssinarDocumento(string docElement, string infoElement, string signAtribute,
+                X509Certificate2 certificado, bool comments = false, SignDigest digest = SignDigest.SHA1)
             {
-                var log = LoggerProvider.LoggerFor(typeof(XmlSigning));
-                log.Error("Erro ao validar a assinatura.", exception);
-                return false;
+                Guard.Against<ArgumentNullException>(doc == null, "XmlDOcument não pode ser nulo.");
+                Guard.Against<ArgumentException>(docElement.IsEmpty(), "docElement não pode ser nulo ou vazio.");
+            
+                doc.RemoveSignNodeIfExists();
+
+                var xmlDigitalSignature = GerarAssinatura(doc, infoElement, signAtribute, certificado, comments, digest);
+                var xmlElement = doc.GetElementsByTagName(docElement).Cast<XmlElement>().FirstOrDefault();
+
+                Guard.Against<OpenDFeException>(xmlElement == null, "Elemento principal não encontrado.");
+
+                var element = doc.ImportNode(xmlDigitalSignature, true);
+                xmlElement.AppendChild(element);
             }
         }
-        
+       
+        extension<TDocument>(DFeSignDocument<TDocument> document) where TDocument : class
+        {
+            /// <summary>
+            /// Gera a assinatura digital de uma instância de documento <see cref="DFeSignDocument{TDocument}"/> e retorna a estrutura <see cref="DFeSignature"/>.
+            /// </summary>
+            /// <param name="certificado">O certificado digital X509 com chave privada.</param>
+            /// <param name="comments">Se <c>true</c>, insere o transform #withcomments.</param>
+            /// <param name="digest">Algoritmo de resumo criptográfico (SHA1 ou SHA256).</param>
+            /// <param name="options">Opções de salvamento e formatação do XML.</param>
+            /// <param name="signedXml">Parâmetro de saída com a string do XML assinado gerado.</param>
+            /// <returns>A instância deserializada de <see cref="DFeSignature"/> correspondente à assinatura gerada.</returns>
+            public DFeSignature AssinarDocumento(X509Certificate2 certificado, bool comments, SignDigest digest,
+                DFeSaveOptions options, out string signedXml)
+            {
+                Guard.Against<ArgumentNullException>(document == null, nameof(document));
+                Guard.Against<ArgumentNullException>(certificado == null, nameof(certificado));
+                Guard.Against<ArgumentException>(!certificado.HasPrivateKey, "O certificado informado não possui chave privada para assinatura.");
+
+                var signatureInfo = typeof(TDocument).GetAttribute<DFeSignInfoElement>();
+                Guard.Against<ArgumentException>(signatureInfo == null || signatureInfo.SignElement.IsEmpty(), "O elemento a ser assinado (SignElement) não foi informado no atributo [DFeSignInfoElement].");
+
+                var xml = document.GetXml(options, Encoding.UTF8);
+                var xmlDoc = new XmlDocument { PreserveWhitespace = true };
+                xmlDoc.LoadXml(xml);
+                xmlDoc.RemoveSignNodeIfExists();
+
+                var xmlSignature = GerarAssinatura(xmlDoc, signatureInfo.SignElement, signatureInfo.SignAtribute, certificado, comments, digest);
+
+                // Adiciona a assinatura no documento e retorna o xml assinado no parametro signedXml
+                var element = xmlDoc.ImportNode(xmlSignature, true);
+                xmlDoc.DocumentElement?.AppendChild(element);
+                signedXml = xmlDoc.AsString(!options.HasFlag(DFeSaveOptions.DisableFormatting), !options.HasFlag(DFeSaveOptions.OmitDeclaration));
+
+                return DFeSignature.Load(xmlSignature.OuterXml);
+            }
+
+            /// <summary>
+            /// Valida a integridade criptográfica da assinatura digital em um documento <see cref="DFeSignDocument{TDocument}"/>.
+            /// </summary>
+            /// <param name="gerarXml">Indica se deve serializar um novo XML para validação se o cache estiver vazio.</param>
+            /// <returns><c>true</c> se a assinatura for válida; caso contrário, <c>false</c>.</returns>
+            public bool ValidarAssinatura(bool gerarXml)
+            {
+                Guard.Against<ArgumentNullException>(document == null, nameof(document));
+                var xml = document.Xml.IsEmpty() || gerarXml ? document.GetXml(DFeSaveOptions.DisableFormatting, Encoding.UTF8) : document.Xml;
+                var xmlDoc = new XmlDocument { PreserveWhitespace = true };
+                xmlDoc.LoadXml(xml);
+                return xmlDoc.ValidarAssinatura();
+            }
+        }
+
         private static XmlElement GerarAssinatura(XmlDocument doc, string infoElement, string signAtribute,
             X509Certificate2 certificado, bool comments, SignDigest digest)
         {
@@ -346,17 +353,12 @@ namespace OpenAC.Net.DFe.Core
 
         private static string GetSignatureMethod(SignDigest digest)
         {
-            switch (digest)
+            return digest switch
             {
-                case SignDigest.SHA1:
-                    return SignedXml.XmlDsigRSASHA1Url;
-
-                case SignDigest.SHA256:
-                    return SignedXml.XmlDsigRSASHA256Url;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(digest), digest, null);
-            }
+                SignDigest.SHA1 => SignedXml.XmlDsigRSASHA1Url,
+                SignDigest.SHA256 => SignedXml.XmlDsigRSASHA256Url,
+                _ => throw new ArgumentOutOfRangeException(nameof(digest), digest, null)
+            };
         }
         
         private static string GetDigestMethod(SignDigest digest)
@@ -368,7 +370,7 @@ namespace OpenAC.Net.DFe.Core
                 _ => throw new ArgumentOutOfRangeException(nameof(digest), digest, null)
             };
         }
-
+        
         #endregion Methods
     }
 }
