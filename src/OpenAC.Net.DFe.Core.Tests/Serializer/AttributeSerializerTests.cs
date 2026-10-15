@@ -67,4 +67,20 @@ public class AttributeSerializerTests
         await Assert.That(xDoc.Root?.Attribute("codigoOpcional")).IsNull();
         await Assert.That(xDoc.Root?.Attribute("versao")).IsNotNull();
     }
+
+    [Test]
+    [Arguments("")]
+    [Arguments("   ")]
+    public async Task TestAttributeNaoObrigatoriaOmittedWhenEmptyString(string vazio)
+    {
+        var model = new AttributeTestModel
+        {
+            CodigoOpcional = vazio
+        };
+
+        var xml = model.GetXml();
+        var xDoc = XDocument.Parse(xml);
+
+        await Assert.That(xDoc.Root?.Attribute("codigoOpcional")).IsNull();
+    }
 }

@@ -44,4 +44,35 @@ public class OccurrenceAndValidationSerializerTests
         await Assert.That(xDoc.Root?.Element("campoMaiorQueZero")?.Value).IsEqualTo("15.50");
         await Assert.That(xDoc.Root?.Element("campoCondicional")?.Value).IsEqualTo("20");
     }
+
+    [Test]
+    [Arguments("")]
+    [Arguments("   ")]
+    public async Task TestOcorrenciaNaoObrigatoriaOmittedWhenEmptyString(string vazio)
+    {
+        var model = new OccurrenceTestModel
+        {
+            CampoObrigatorio = "Teste",
+            CampoOpcional = vazio
+        };
+
+        var xml = model.GetXml();
+        var xDoc = XDocument.Parse(xml);
+
+        await Assert.That(xDoc.Root?.Element("campoOpcional")).IsNull();
+    }
+
+    [Test]
+    public async Task TestOcorrenciaObrigatoriaIncludedWhenEmptyString()
+    {
+        var model = new OccurrenceTestModel
+        {
+            CampoObrigatorio = string.Empty
+        };
+
+        var xml = model.GetXml();
+        var xDoc = XDocument.Parse(xml);
+
+        await Assert.That(xDoc.Root?.Element("campoObrigatorio")?.Value).IsEqualTo(string.Empty);
+    }
 }
