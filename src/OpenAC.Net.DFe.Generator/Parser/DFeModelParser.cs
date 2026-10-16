@@ -253,6 +253,7 @@ public static class DFeModelParser
             Namespace: ns,
             ClassName: className,
             TypeFullName: fullTypeName,
+            IsPublic: classSymbol.DeclaredAccessibility == Accessibility.Public,
             IsPartial: isPartial,
             IsRoot: isRoot,
             IsDFeDocument: isDFeDocument,

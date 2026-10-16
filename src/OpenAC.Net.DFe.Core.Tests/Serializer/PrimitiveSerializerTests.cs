@@ -113,6 +113,23 @@ public class PrimitiveSerializerTests
     }
 
     [Test]
+    [Arguments(null)]
+    [Arguments("")]
+    public async Task TestOptionalStringOmittedWhenNullOrEmpty(string? value)
+    {
+        var model = new PrimitiveTestModel
+        {
+            StrVal = "Texto preenchido",
+            OptionalStr = value
+        };
+
+        var root = XElement.Parse(model.GetXml());
+
+        await Assert.That(root.Element("strVal")?.Value).IsEqualTo("Texto preenchido");
+        await Assert.That(root.Element("optionalStr")).IsNull();
+    }
+
+    [Test]
     public async Task TestNullablePrimitivesOmittedWhenNull()
     {
         var model = new PrimitiveTestModel
