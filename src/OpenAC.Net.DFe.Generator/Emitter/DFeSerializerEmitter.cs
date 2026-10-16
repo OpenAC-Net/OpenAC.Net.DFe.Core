@@ -281,7 +281,8 @@ public static class DFeSerializerEmitter
     {
         var formatCall = GetFormatCall(prop, valExpr);
         sb.AppendLine($"{indent}var attrVal_{prop.Name} = {formatCall};");
-        sb.AppendLine($"{indent}if (attrVal_{prop.Name} != null)");
+        // Atributo não obrigatório vazio é omitido, como no PrimitiveSerializer anterior ao gerador.
+        sb.AppendLine($"{indent}if (!string.IsNullOrEmpty(attrVal_{prop.Name}))");
         sb.AppendLine($"{indent}{{");
         sb.AppendLine($"{indent}    element.Add(new XAttribute(\"{prop.TagName}\", attrVal_{prop.Name}));");
         sb.AppendLine($"{indent}}}");
@@ -352,7 +353,9 @@ public static class DFeSerializerEmitter
     {
         var formatCall = GetFormatCall(prop, valExpr);
         sb.AppendLine($"{indent}var elemVal_{prop.Name} = {formatCall};");
-        sb.AppendLine($"{indent}if (elemVal_{prop.Name} != null)");
+        // Elemento não obrigatório vazio é omitido, como no PrimitiveSerializer anterior ao gerador:
+        // <tag></tag> viola o tamanho mínimo dos schemas fiscais.
+        sb.AppendLine($"{indent}if (!string.IsNullOrEmpty(elemVal_{prop.Name}))");
         sb.AppendLine($"{indent}{{");
         var tagNs = string.IsNullOrEmpty(prop.TagNamespace) ? "aw" : $"(XNamespace)\"{prop.TagNamespace}\"";
 
