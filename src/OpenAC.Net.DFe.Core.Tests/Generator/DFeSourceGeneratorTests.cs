@@ -98,7 +98,7 @@ public class DFeSourceGeneratorTests
         var docFiscalCode = docFiscalTree.GetText().ToString();
 
         // Verify generated self-serializing methods
-        await Assert.That(docFiscalCode).Contains("partial class DocumentoFiscal");
+        await Assert.That(docFiscalCode).Contains("public partial class DocumentoFiscal");
         await Assert.That(docFiscalCode).Contains("public XElement WriteToXml");
         await Assert.That(docFiscalCode).Contains("public static global::MyTestNamespace.DocumentoFiscal? ReadFromXml");
         await Assert.That(docFiscalCode).Contains("public void ReadXml");

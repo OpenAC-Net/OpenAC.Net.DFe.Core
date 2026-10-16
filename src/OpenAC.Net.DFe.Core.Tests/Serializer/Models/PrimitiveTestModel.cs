@@ -10,6 +10,9 @@ public partial class PrimitiveTestModel : DFeDocument<PrimitiveTestModel>
     [DFeElement(TipoCampo.Str, "strVal")]
     public string StrVal { get; set; } = string.Empty;
 
+    [DFeElement(TipoCampo.Str, "optionalStr", Ocorrencia = Ocorrencia.NaoObrigatoria)]
+    public string? OptionalStr { get; set; }
+
     [DFeElement(TipoCampo.StrNumber, "strNumVal")]
     public string StrNumVal { get; set; } = string.Empty;
 

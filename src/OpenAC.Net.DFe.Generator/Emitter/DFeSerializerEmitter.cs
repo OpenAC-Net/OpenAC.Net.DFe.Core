@@ -41,7 +41,8 @@ public static class DFeSerializerEmitter
             sb.AppendLine("{");
         }
 
-        var classDecl = $"    partial class {model.ClassName}{genericSig} {genericConstraints}";
+        var accessibility = model.IsPublic ? "public" : "internal";
+        var classDecl = $"    {accessibility} partial class {model.ClassName}{genericSig} {genericConstraints}";
         sb.AppendLine(classDecl);
         sb.AppendLine("    {");
 

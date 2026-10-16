@@ -9,6 +9,7 @@ public sealed record DFeClassModel(
     string Namespace,
     string ClassName,
     string TypeFullName,
+    bool IsPublic,
     bool IsPartial,
     bool IsRoot,
     bool IsDFeDocument,

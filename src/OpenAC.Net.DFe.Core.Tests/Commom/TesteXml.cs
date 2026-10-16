@@ -15,12 +15,12 @@ public partial class TesteXml : DFeDocument<TesteXml>
 {
     public TesteXml()
     {
-        XmlItems = new List<IXmlItem>();
-        XmlProd = new DFeCollection<TesteXml4>();
-        XmlProd2 = new DFeCollection<TesteXml4>();
-        XmlProd3 = Array.Empty<TesteXml4>();
-        TesteListEnum = new DFeCollection<TesteEnum>();
-        TesteDateTime = new DFeCollection<DateTime>();
+        XmlItems = [];
+        XmlProd = [];
+        XmlProd2 = [];
+        XmlProd3 = [];
+        TesteListEnum = [];
+        TesteDateTime = [];
         Xml5 = new TesteXml5();
         Signature = new DFeSignature();
     }
@@ -71,7 +71,7 @@ public partial class TesteXml : DFeDocument<TesteXml>
     [DFeCollection("Itens3")]
     [DFeItem(typeof(TesteXml2), "Item2")]
     [DFeItem(typeof(TesteXml3), "Item3")]
-    public IXmlItem[] XmlItems3 { get; set; } = Array.Empty<IXmlItem>();
+    public IXmlItem[] XmlItems3 { get; set; } = [];
 
     [DFeCollection("prod")]
     public DFeCollection<TesteXml4> XmlProd { get; set; }
@@ -121,7 +121,7 @@ public partial class TesteXml : DFeDocument<TesteXml>
                 (prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(List<>)) ||
                 (prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(DFeCollection<>)))
             {
-                var values = ((IEnumerable<object>?)prop.GetValue(this, null) ?? Array.Empty<object>()).ToArray();
+                var values = ((IEnumerable<object>?)prop.GetValue(this, null) ?? []).ToArray();
 
                 foreach (var value in values)
                     builder.AppendLine($"{prop.Name}: {value.GetType()}{Environment.NewLine}{value}");
