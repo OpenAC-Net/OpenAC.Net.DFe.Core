@@ -571,7 +571,7 @@ public static class DFeSerializerEmitter
         {
             if (prop.TypeKind is DFeTypeKind.Class or DFeTypeKind.RootClass or DFeTypeKind.ValueElement)
             {
-                sb.AppendLine($"{indent}var elem_{prop.Name} = element.Elements().FirstOrDefault(e => e.Name.LocalName == \"{prop.TagName}\");");
+                sb.AppendLine($"{indent}var elem_{prop.Name} = DFeSerializerHelper.FindElement(element, \"{prop.TagName}\");");
                 sb.AppendLine($"{indent}if (elem_{prop.Name} != null)");
                 sb.AppendLine($"{indent}{{");
                 sb.AppendLine($"{indent}    this.{prop.Name} = {FormatType(prop.TypeFullName)}.ReadFromXml(elem_{prop.Name}, options);");
@@ -586,7 +586,7 @@ public static class DFeSerializerEmitter
             }
             else
             {
-                sb.AppendLine($"{indent}var elem_{prop.Name} = element.Elements().FirstOrDefault(e => e.Name.LocalName == \"{prop.TagName}\");");
+                sb.AppendLine($"{indent}var elem_{prop.Name} = DFeSerializerHelper.FindElement(element, \"{prop.TagName}\");");
                 sb.AppendLine($"{indent}if (elem_{prop.Name} != null && !string.IsNullOrEmpty(elem_{prop.Name}.Value))");
                 sb.AppendLine($"{indent}{{");
                 var parseCall = GetParseCall(prop, $"elem_{prop.Name}.Value");
@@ -630,7 +630,7 @@ public static class DFeSerializerEmitter
         var searchTarget = "element";
         if (hasContainer)
         {
-            sb.AppendLine($"{indent}var container_{prop.Name} = element.Elements().FirstOrDefault(e => e.Name.LocalName == \"{prop.CollectionContainerTagName}\");");
+            sb.AppendLine($"{indent}var container_{prop.Name} = DFeSerializerHelper.FindElement(element, \"{prop.CollectionContainerTagName}\");");
             searchTarget = $"container_{prop.Name}";
         }
 
@@ -676,7 +676,7 @@ public static class DFeSerializerEmitter
         }
         else if (prop.CollectionItemTypeKind is DFeTypeKind.Class or DFeTypeKind.RootClass or DFeTypeKind.ValueElement && prop.CollectionItemType != null)
         {
-            sb.AppendLine($"{inner}foreach (var childNode in {searchTarget}.Elements().Where(e => e.Name.LocalName == \"{prop.TagName}\"))");
+            sb.AppendLine($"{inner}foreach (var childNode in DFeSerializerHelper.FindElements({searchTarget}, \"{prop.TagName}\"))");
             sb.AppendLine($"{inner}{{");
             sb.AppendLine($"{inner}    var deserializedItem = {FormatType(prop.CollectionItemType)}.ReadFromXml(childNode, options);");
             sb.AppendLine($"{inner}    if (deserializedItem != null) {listVarName}?.Add(deserializedItem);");
@@ -685,7 +685,7 @@ public static class DFeSerializerEmitter
         else
         {
             // Primitive collection
-            sb.AppendLine($"{inner}foreach (var childNode in {searchTarget}.Elements().Where(e => e.Name.LocalName == \"{prop.TagName}\"))");
+            sb.AppendLine($"{inner}foreach (var childNode in DFeSerializerHelper.FindElements({searchTarget}, \"{prop.TagName}\"))");
             sb.AppendLine($"{inner}{{");
             var parseItemCall = GetPrimitiveOrEnumParseCall(prop, "childNode.Value", itemType);
             sb.AppendLine($"{inner}    {listVarName}?.Add({parseItemCall});");
@@ -720,7 +720,7 @@ public static class DFeSerializerEmitter
 
     private static void EmitDictionaryDeserialize(StringBuilder sb, DFePropertyModel prop, string indent)
     {
-        sb.AppendLine($"{indent}var dictElem_{prop.Name} = element.Elements().FirstOrDefault(e => e.Name.LocalName == \"{prop.TagName}\");");
+        sb.AppendLine($"{indent}var dictElem_{prop.Name} = DFeSerializerHelper.FindElement(element, \"{prop.TagName}\");");
         sb.AppendLine($"{indent}if (dictElem_{prop.Name} != null)");
         sb.AppendLine($"{indent}{{");
         var inner = indent + "    ";

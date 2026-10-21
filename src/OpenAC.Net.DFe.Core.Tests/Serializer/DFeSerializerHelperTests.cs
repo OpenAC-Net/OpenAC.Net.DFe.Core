@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using OpenAC.Net.DFe.Core.Serializer;
 
 namespace OpenAC.Net.DFe.Core.Tests.Serializer;
@@ -94,5 +95,26 @@ public class DFeSerializerHelperTests
     {
         await Assert.That(DFeSerializerHelper.ParseEnum_Generic<TesteHelperEnum>("ItemB")).IsEqualTo(TesteHelperEnum.ItemB);
         await Assert.That(DFeSerializerHelper.ParseEnum_Generic<TesteHelperEnum>("Invalido")).IsEqualTo(TesteHelperEnum.ItemA);
+    }
+
+    [Test]
+    public async Task TestFindElement()
+    {
+        var root = XElement.Parse("<root><wrapper><inner><alvo>2</alvo></inner><alvo>1</alvo></wrapper><direto>0</direto></root>");
+
+        await Assert.That(DFeSerializerHelper.FindElement(root, "direto")?.Value).IsEqualTo("0");
+        await Assert.That(DFeSerializerHelper.FindElement(root, "alvo")?.Value).IsEqualTo("1");
+        await Assert.That(DFeSerializerHelper.FindElement(root, "inexistente")).IsNull();
+        await Assert.That(DFeSerializerHelper.FindElement(null, "alvo")).IsNull();
+    }
+
+    [Test]
+    public async Task TestFindElements()
+    {
+        var root = XElement.Parse("<root><wrapper><item>1</item><outro/><item>2</item></wrapper></root>");
+
+        var items = DFeSerializerHelper.FindElements(root, "item").Select(e => e.Value).ToArray();
+        await Assert.That(items).IsEquivalentTo(new[] { "1", "2" });
+        await Assert.That(DFeSerializerHelper.FindElements(root, "inexistente").Any()).IsFalse();
     }
 }

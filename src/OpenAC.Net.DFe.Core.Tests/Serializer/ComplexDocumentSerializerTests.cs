@@ -16,7 +16,7 @@ public class ComplexDocumentSerializerTests
             TesteEnum1 = TesteEnum.Value1,
             TesteEnum2 = null,
             TestNullInt = 999,
-            TestDateTz = new DateTimeOffset(DateTime.Now, TimeSpan.FromHours(-4))
+            TestDateTz = new DateTimeOffset(DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified), TimeSpan.FromHours(-4))
         };
 
         var cdata = File.ReadAllText("cdata_teste.xml");

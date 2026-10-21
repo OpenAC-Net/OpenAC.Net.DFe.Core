@@ -31,7 +31,10 @@
 
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Xml.Linq;
 using OpenAC.Net.Core.Extensions;
 
 namespace OpenAC.Net.DFe.Core.Serializer;
@@ -284,4 +287,52 @@ public static class DFeSerializerHelper
     public static string ParseValue_Enum(string? val) => val ?? string.Empty;
 
     #endregion Value Parsers
+
+    #region Element Lookup
+
+    /// <summary>
+    /// Localiza o elemento com o nome informado, procurando primeiro nos filhos diretos e,
+    /// caso não encontre, de forma recursiva (em largura) nos descendentes, retornando a ocorrência mais rasa.
+    /// </summary>
+    /// <param name="parent">Elemento onde a busca será iniciada.</param>
+    /// <param name="localName">Nome local (sem namespace) da tag desejada.</param>
+    /// <returns>O elemento encontrado ou nulo.</returns>
+    public static XElement? FindElement(XElement? parent, string localName)
+    {
+        if (parent == null) return null;
+
+        var queue = new Queue<XElement>();
+        queue.Enqueue(parent);
+
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+            foreach (var child in current.Elements())
+            {
+                if (child.Name.LocalName == localName) return child;
+            }
+
+            foreach (var child in current.Elements())
+                queue.Enqueue(child);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Localiza os elementos com o nome informado, procurando primeiro nos filhos diretos e,
+    /// caso não encontre, retorna os irmãos da ocorrência mais rasa encontrada de forma recursiva.
+    /// </summary>
+    /// <param name="parent">Elemento onde a busca será iniciada.</param>
+    /// <param name="localName">Nome local (sem namespace) da tag desejada.</param>
+    /// <returns>Os elementos encontrados, ou uma sequência vazia.</returns>
+    public static IEnumerable<XElement> FindElements(XElement? parent, string localName)
+    {
+        var first = FindElement(parent, localName);
+        if (first?.Parent == null) return Enumerable.Empty<XElement>();
+
+        return first.Parent.Elements().Where(e => e.Name.LocalName == localName);
+    }
+
+    #endregion Element Lookup
 }
