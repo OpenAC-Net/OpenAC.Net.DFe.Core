@@ -15,6 +15,15 @@ public class DFeDocumentValidationTests
         public override void ReadXml(XElement element, SerializerOptions? options = null) { }
     }
 
+    [DFeRoot("DummyWithRoot")]
+    private class DummyDocCapturaRaiz : DFeDocument<DummyDocCapturaRaiz>
+    {
+        public string? RaizLida { get; private set; }
+
+        public override XElement WriteToXml(string? rootName = null, string? rootNamespace = null, SerializerOptions? options = null) => new("Dummy");
+        public override void ReadXml(XElement element, SerializerOptions? options = null) => RaizLida = element.Element("valor")?.Value;
+    }
+
     [DFeRoot("DummySign")]
     [DFeSignInfoElement("infDummy")]
     private class DummySignDocValid : DFeSignDocument<DummySignDocValid>
@@ -54,6 +63,34 @@ public class DFeDocumentValidationTests
     {
         await Assert.That(() => DFeDocument<DummyDocWithRoot>.Load((System.IO.Stream)null!))
             .Throws<ArgumentNullException>();
+    }
+
+    [Test]
+    public async Task ShouldLoadFromRootElement()
+    {
+        var doc = DFeDocument<DummyDocCapturaRaiz>.Load("<DummyWithRoot><valor>raiz</valor></DummyWithRoot>");
+        await Assert.That(doc.RaizLida).IsEqualTo("raiz");
+    }
+
+    [Test]
+    public async Task ShouldLoadFromNestedRootElement()
+    {
+        const string xml = "<evento><infEvento><valor>evento</valor><DummyWithRoot><valor>aninhado</valor></DummyWithRoot></infEvento></evento>";
+
+        var doc = DFeDocument<DummyDocCapturaRaiz>.Load(xml);
+        await Assert.That(doc.RaizLida).IsEqualTo("aninhado");
+        await Assert.That(doc.Xml).IsEqualTo(xml);
+
+        using var stream = new System.IO.MemoryStream(System.Text.Encoding.UTF8.GetBytes(xml));
+        var docStream = DFeDocument<DummyDocCapturaRaiz>.Load(stream);
+        await Assert.That(docStream.RaizLida).IsEqualTo("aninhado");
+    }
+
+    [Test]
+    public async Task ShouldFallbackToDocumentRootWhenRootTagNotFound()
+    {
+        var doc = DFeDocument<DummyDocCapturaRaiz>.Load("<outro><valor>fallback</valor></outro>");
+        await Assert.That(doc.RaizLida).IsEqualTo("fallback");
     }
 
     [Test]

@@ -31,6 +31,8 @@
 
 using System;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
@@ -109,9 +111,10 @@ public abstract class DFeDocument<TDocument> : GenericClone<TDocument> where TDo
         var xmlDoc = XDocument.Parse(content);
 
         var item = (TDocument)Activator.CreateInstance(typeof(TDocument))!;
-        if (item is DFeDocument<TDocument> doc && xmlDoc.Root != null)
+        var root = LocalizarRaiz(xmlDoc);
+        if (item is DFeDocument<TDocument> doc && root != null)
         {
-            doc.ReadXml(xmlDoc.Root, options);
+            doc.ReadXml(root, options);
             doc.Xml = content;
         }
         return item;
@@ -139,12 +142,29 @@ public abstract class DFeDocument<TDocument> : GenericClone<TDocument> where TDo
         var xmlDoc = XDocument.Parse(content);
 
         var item = (TDocument)Activator.CreateInstance(typeof(TDocument))!;
-        if (item is DFeDocument<TDocument> doc && xmlDoc.Root != null)
+        var root = LocalizarRaiz(xmlDoc);
+        if (item is DFeDocument<TDocument> doc && root != null)
         {
-            doc.ReadXml(xmlDoc.Root, options);
+            doc.ReadXml(root, options);
             doc.Xml = content;
         }
         return item;
+    }
+
+    /// <summary>
+    /// Localiza o elemento raiz do documento. Quando a raiz do XML não corresponde à tag definida em
+    /// <see cref="DFeRootAttribute"/> (ex.: documento embrulhado em outra tag), retorna a primeira
+    /// ocorrência dessa tag nos descendentes; se não houver, retorna a raiz do XML.
+    /// </summary>
+    /// <param name="xmlDoc">Documento XML carregado.</param>
+    /// <returns>O elemento a partir do qual o documento será deserializado.</returns>
+    private static XElement? LocalizarRaiz(XDocument xmlDoc)
+    {
+        var root = xmlDoc.Root;
+        var rootName = typeof(TDocument).GetCustomAttribute<DFeRootAttribute>()?.Name;
+        if (root == null || rootName.IsEmpty() || root.Name.LocalName == rootName) return root;
+
+        return root.Descendants().FirstOrDefault(x => x.Name.LocalName == rootName) ?? root;
     }
 
     /// <summary>
