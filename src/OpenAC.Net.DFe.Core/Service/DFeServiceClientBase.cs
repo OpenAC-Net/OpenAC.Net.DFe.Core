@@ -149,6 +149,12 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
     /// <summary>Categoria usada na persistência das respostas.</summary>
     protected virtual string CategoriaResposta => DFeCategorias.RespostaTecnica;
 
+    /// <summary>Limite da chamada, incluindo leitura da resposta e persistência dos envelopes.</summary>
+    protected virtual TimeSpan TimeoutOperacao => Configuracoes.WebServices.TimeOut ?? TimeSpan.FromSeconds(100);
+
+    /// <summary>Indica se falhas técnicas devem ser convertidas em exceções de comunicação DFe.</summary>
+    protected virtual bool EncapsularExcecoesComunicacao => true;
+
     #endregion Properties
 
     #region Methods
@@ -193,7 +199,7 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
         using var operation = CancellationTokenSource.CreateLinkedTokenSource(
             cancellationToken, Configuracoes.OperationToken.Value);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(operation.Token);
-        timeout.CancelAfter(Configuracoes.WebServices.TimeOut ?? TimeSpan.FromSeconds(100));
+        timeout.CancelAfter(TimeoutOperacao);
         var token = timeout.Token;
         StatusCode = default;
         EnvelopeRetorno = string.Empty;
@@ -216,7 +222,7 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
 
             if (!string.IsNullOrEmpty(EnvelopeEnvio))
             {
-                ArquivoEnvio = $"{DateTime.Now:yyyyMMddHHmmssfff}_{NomeArquivo}_envio.xml";
+                ArquivoEnvio = CriarNomeArquivo(false);
                 await GravarSoapAsync(EnvelopeEnvio, ArquivoEnvio, token).ConfigureAwait(false);
             }
 
@@ -225,15 +231,22 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
             var bytes = await DFeHttpResponse.ReadAsByteArrayAsync(response.Content, token).ConfigureAwait(false);
             token.ThrowIfCancellationRequested();
             EnvelopeRetorno = DecodificarResposta(bytes, response.Content.Headers.ContentType?.CharSet);
-            ArquivoResposta = $"{DateTime.Now:yyyyMMddHHmmssfff}_{NomeArquivo}_retorno.xml";
+            ArquivoResposta = CriarNomeArquivo(true);
             await GravarSoapAsync(EnvelopeRetorno, ArquivoResposta, token).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
+            ValidarRespostaHttp(response);
         }
-        catch (Exception ex) when (ex is not OpenDFeCommunicationException && ex is not OperationCanceledException)
+        catch (Exception ex) when (EncapsularExcecoesComunicacao && ex is not OpenDFeCommunicationException && ex is not OperationCanceledException)
         {
             throw new OpenDFeCommunicationException(ex.Message, ex);
         }
     }
+
+    /// <summary>Gera o nome do envelope, permitindo preservar a convenção de cada componente.</summary>
+    protected virtual string CriarNomeArquivo(bool resposta) =>
+        $"{DateTime.Now:yyyyMMddHHmmssfff}_{NomeArquivo}_{(resposta ? "retorno" : "envio")}.xml";
+
+    /// <summary>Valida o status depois de ler e persistir a resposta, permitindo tratar falhas de protocolo.</summary>
+    protected virtual void ValidarRespostaHttp(HttpResponseMessage response) => response.EnsureSuccessStatusCode();
 
     /// <summary>
     /// Lê a string de resposta completa a partir do fluxo de retorno <see cref="WebResponse"/>.

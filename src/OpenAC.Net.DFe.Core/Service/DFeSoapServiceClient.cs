@@ -33,6 +33,9 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Text;
 using System.Xml.Linq;
 using OpenAC.Net.Core;
@@ -106,6 +109,9 @@ public abstract class DFeSoapServiceClient<TDFeConfig, TGeralConfig, TWebservice
     /// </summary>
     protected string CharSet { get; set; } = "utf-8";
 
+    /// <summary>Usa a forma abreviada do elemento Header quando não há conteúdo.</summary>
+    protected virtual bool AbreviarCabecalhoSoapVazio => true;
+
     /// <inheritdoc />
     protected override string CategoriaSolicitacao => DFeCategorias.Solicitacao;
 
@@ -127,57 +133,72 @@ public abstract class DFeSoapServiceClient<TDFeConfig, TGeralConfig, TWebservice
     /// <exception cref="ArgumentOutOfRangeException">Disparado quando a versão SOAP informada for inválida.</exception>
     /// <exception cref="OpenDFeCommunicationException">Disparado quando a resposta obtida não for um XML válido.</exception>
     protected virtual string Execute(string soapAction, string message, string soapHeader, params string[] soapNamespaces)
+        => ExecuteAsync(soapAction, message, soapHeader, Configuracoes.OperationToken.Value, soapNamespaces)
+            .ConfigureAwait(false).GetAwaiter().GetResult();
+
+    /// <summary>Monta, envia e extrai a resposta SOAP sem bloquear o fluxo assíncrono.</summary>
+    protected virtual async Task<string> ExecuteAsync(string soapAction, string message, string soapHeader,
+        CancellationToken cancellationToken = default, params string[] soapNamespaces)
     {
-        string contetType;
-        NameValueCollection headers;
-        switch (MessageVersion)
-        {
-            case SoapVersion.Soap11:
-                contetType = $"text/xml; charset={CharSet}";
-                headers = new NameValueCollection { { "SOAPAction", soapAction } };
-                break;
-
-            case SoapVersion.Soap12:
-                contetType = $"application/soap+xml; charset={CharSet};action={soapAction}";
-                headers = null;
-                break;
-
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
-
-        var envelope = new StringBuilder();
-        switch (MessageVersion)
-        {
-            case SoapVersion.Soap11:
-                envelope.Append("<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"");
-                break;
-
-            case SoapVersion.Soap12:
-                envelope.Append("<soapenv:Envelope xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope\"");
-                break;
-
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
-
-        envelope.Append(soapNamespaces.Aggregate("", (atual, next) => atual + $" {next}", namespaces => namespaces + ">"));
-        envelope.Append(soapHeader.IsEmpty() ? "<soapenv:Header/>" : $"<soapenv:Header>{soapHeader}</soapenv:Header>");
-        envelope.Append("<soapenv:Body>");
-        envelope.Append(message);
-        envelope.Append("</soapenv:Body>");
-        envelope.Append("</soapenv:Envelope>");
-        EnvelopeEnvio = envelope.ToString();
-
-        Execute(contetType, "POST", headers);
-
-        var xmlDocument = XDocument.Parse(EnvelopeRetorno);
-        var body = xmlDocument.ElementAnyNs("Envelope").ElementAnyNs("Body");
-        var retorno = TratarRetorno(body);
-
+        cancellationToken.ThrowIfCancellationRequested();
+        EnvelopeEnvio = CriarEnvelopeSoap(message, soapHeader, soapNamespaces);
+        var headers = MessageVersion == SoapVersion.Soap11
+            ? new NameValueCollection { { "SOAPAction", soapAction } }
+            : null;
+        await ExecuteAsync(CriarContentTypeSoap(soapAction), "POST", headers, cancellationToken).ConfigureAwait(false);
+        var retorno = TratarRetorno(ObterCorpoSoap());
         if (retorno.IsValidXml()) return retorno;
-
         throw new OpenDFeCommunicationException(retorno);
+    }
+
+    /// <summary>Content-Type correspondente à versão SOAP e à ação solicitada.</summary>
+    protected virtual string CriarContentTypeSoap(string soapAction) => MessageVersion switch
+    {
+        SoapVersion.Soap11 => $"text/xml; charset={CharSet}",
+        SoapVersion.Soap12 => $"application/soap+xml; charset={CharSet}; action=\"{soapAction}\"",
+        _ => throw new ArgumentOutOfRangeException()
+    };
+
+    /// <summary>Monta o envelope compartilhado, permitindo especializar detalhes do contrato SOAP.</summary>
+    protected virtual string CriarEnvelopeSoap(string message, string soapHeader, params string[] soapNamespaces)
+    {
+        var soap = MessageVersion switch
+        {
+            SoapVersion.Soap11 => "http://schemas.xmlsoap.org/soap/envelope/",
+            SoapVersion.Soap12 => "http://www.w3.org/2003/05/soap-envelope",
+            _ => throw new ArgumentOutOfRangeException()
+        };
+        var envelope = new StringBuilder();
+        envelope.Append($"<soapenv:Envelope xmlns:soapenv=\"{soap}\"");
+        foreach (var ns in soapNamespaces) envelope.Append($" {ns}");
+        envelope.Append(">");
+        envelope.Append(soapHeader.IsEmpty() && AbreviarCabecalhoSoapVazio
+            ? "<soapenv:Header/>" : $"<soapenv:Header>{soapHeader}</soapenv:Header>");
+        envelope.Append($"<soapenv:Body>{message}</soapenv:Body></soapenv:Envelope>");
+        return envelope.ToString();
+    }
+
+    /// <inheritdoc />
+    protected override void ValidarRespostaHttp(HttpResponseMessage response)
+    {
+        // Servidores fiscais também retornam SOAP Fault com status HTTP 500.
+        if (EnvelopeRetorno.IsValidXml())
+        {
+            var body = ObterCorpoSoap();
+            var fault = body.Elements().FirstOrDefault(element => element.Name == body.Name.Namespace + "Fault");
+            if (fault != null) throw new OpenDFeCommunicationException(fault.Value);
+        }
+        base.ValidarRespostaHttp(response);
+    }
+
+    private XElement ObterCorpoSoap()
+    {
+        var document = XDocument.Parse(EnvelopeRetorno);
+        var envelope = document.Root;
+        var body = envelope?.Element(envelope.Name.Namespace + "Body");
+        if (envelope?.Name.LocalName != "Envelope" || body == null)
+            throw new OpenDFeCommunicationException("Corpo SOAP não encontrado no retorno.");
+        return body;
     }
 
     /// <summary>

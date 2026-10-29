@@ -17,7 +17,7 @@ internal sealed class DFeHttpClientPool
     internal Lease Acquire(DFeHttpTransportOptions options, Uri endpoint)
     {
         var key =
-            $"{options.Certificate?.Thumbprint}|{(int)options.Protocols}|{options.ValidateServerCertificate}|{options.Proxy}|{options.UseCookies}|{(int)options.AutomaticDecompression}|{endpoint.GetLeftPart(UriPartial.Authority)}";
+            $"{options.Certificate?.Thumbprint}|{(int)options.Protocols}|{options.ValidateServerCertificate}|{options.Proxy}|{options.UseCookies}|{options.AllowAutoRedirect}|{(int)options.AutomaticDecompression}|{endpoint.GetLeftPart(UriPartial.Authority)}";
         lock (sync)
         {
             var expired = new List<string>();
@@ -48,6 +48,7 @@ internal sealed class DFeHttpClientPool
         var handler = new HttpClientHandler
         {
             UseCookies = options.UseCookies,
+            AllowAutoRedirect = options.AllowAutoRedirect,
             AutomaticDecompression = options.AutomaticDecompression
         };
         try

@@ -182,6 +182,23 @@ public class DFeHttpTransportTests
         await Assert.That(server.Requests.Count).IsEqualTo(1);
     }
 
+    [Test]
+    public async Task RedirectPolicyUsesSeparateClientsAndCanPreserveTheOriginalResponse()
+    {
+        using var server = new LocalServer(index => index < 3 ? 302 : 200, redirect: true);
+        var config = new HttpTestConfiguration();
+        using var request = new HttpRequestMessage(HttpMethod.Post, server.Url) { Content = new StringContent("emissao") };
+        using var original = await DFeHttpTransport.Instance.SendAsync(request,
+            new(config.WebServices) { AllowAutoRedirect = false });
+        await Assert.That(original.StatusCode).IsEqualTo(HttpStatusCode.Found);
+        await Assert.That(server.Requests.Count).IsEqualTo(1);
+        using var following = new HttpRequestMessage(HttpMethod.Get, server.Url);
+        using var redirected = await DFeHttpTransport.Instance.SendAsync(following,
+            new(config.WebServices) { AllowAutoRedirect = true });
+        await Assert.That(redirected.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(server.Requests.Count).IsEqualTo(3);
+    }
+
     private sealed class SingleAttemptTransport : DFeHttpTransport
     {
         protected override bool ManageRetries => false;
@@ -203,14 +220,14 @@ public class DFeHttpTransportTests
         internal TaskCompletionSource FirstRequest { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal Uri Url { get; }
 
-        internal LocalServer(Func<int, int> status, TimeSpan delay = default, bool gzip = false)
+        internal LocalServer(Func<int, int> status, TimeSpan delay = default, bool gzip = false, bool redirect = false)
         {
             listener.Start();
             Url = new Uri($"http://127.0.0.1:{((IPEndPoint)listener.LocalEndpoint).Port}/");
-            worker = Serve(status, delay, gzip);
+            worker = Serve(status, delay, gzip, redirect);
         }
 
-        private async Task Serve(Func<int, int> status, TimeSpan delay, bool gzip)
+        private async Task Serve(Func<int, int> status, TimeSpan delay, bool gzip, bool redirect)
         {
             try
             {
@@ -245,7 +262,8 @@ public class DFeHttpTransportTests
                         payload = compressed.ToArray();
                     }
                     var encodingHeader = gzip ? "Content-Encoding: gzip\r\n" : string.Empty;
-                    var headers = Encoding.ASCII.GetBytes($"HTTP/1.1 {status(Requests.Count)} Result\r\nContent-Length: {payload.Length}\r\n{encodingHeader}Connection: close\r\nSet-Cookie: tenant=anterior\r\n\r\n");
+                    var redirectHeader = redirect ? "Location: /destino\r\n" : string.Empty;
+                    var headers = Encoding.ASCII.GetBytes($"HTTP/1.1 {status(Requests.Count)} Result\r\nContent-Length: {payload.Length}\r\n{encodingHeader}{redirectHeader}Connection: close\r\nSet-Cookie: tenant=anterior\r\n\r\n");
                     await stream.WriteAsync(headers, cancellation.Token);
                     await stream.WriteAsync(payload, cancellation.Token);
                 }

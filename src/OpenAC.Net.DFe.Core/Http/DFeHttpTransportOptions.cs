@@ -11,7 +11,13 @@ public sealed class DFeHttpTransportOptions
 {
     /// <summary>Captura as configurações de conexão e retentativas da operação.</summary>
     public DFeHttpTransportOptions(DFeWebserviceConfigBase configuration, X509Certificate2? certificate = null,
-        bool validateServerCertificate = true)
+        bool validateServerCertificate = true) : this(configuration, certificate, validateServerCertificate, null)
+    {
+    }
+
+    /// <summary>Captura as opções com um prazo específico para o componente.</summary>
+    public DFeHttpTransportOptions(DFeWebserviceConfigBase configuration, X509Certificate2? certificate,
+        bool validateServerCertificate, TimeSpan? timeout)
     {
         if (configuration == null) throw new ArgumentNullException(nameof(configuration));
         Certificate = certificate;
@@ -20,7 +26,7 @@ public sealed class DFeHttpTransportOptions
         ValidateServerCertificate = validateServerCertificate;
         Attempts = Math.Max(1, configuration.Tentativas);
         RetryDelay = TimeSpan.FromMilliseconds(Math.Max(0, configuration.IntervaloTentativas));
-        Timeout = configuration.TimeOut ?? TimeSpan.FromSeconds(100);
+        Timeout = timeout ?? configuration.TimeOut ?? TimeSpan.FromSeconds(100);
     }
 
     /// <summary>Certificado mTLS emprestado pelo chamador durante o envio.</summary>
@@ -46,6 +52,9 @@ public sealed class DFeHttpTransportOptions
 
     /// <summary>Habilita cookies no cliente reutilizado. O padrão é desabilitado.</summary>
     public bool UseCookies { get; set; }
+
+    /// <summary>Permite seguir redirecionamentos HTTP. O padrão é habilitado.</summary>
+    public bool AllowAutoRedirect { get; set; } = true;
 
     /// <summary>Formatos descompactados automaticamente. O padrão é GZip e Deflate.</summary>
     public DecompressionMethods AutomaticDecompression { get; set; } = DecompressionMethods.GZip | DecompressionMethods.Deflate;
