@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using OpenAC.Net.DFe.Core.Common;
@@ -40,6 +41,18 @@ public sealed class DFeHttpTransportOptions
     /// <summary>Intervalo entre tentativas de métodos seguros.</summary>
     public TimeSpan RetryDelay { get; }
 
-    /// <summary>Limite total da operação, incluindo retentativas e leitura da resposta.</summary>
+    /// <summary>Limite da operação ou de cada tentativa, conforme TimeoutPerAttempt.</summary>
     public TimeSpan Timeout { get; }
+
+    /// <summary>Habilita cookies no cliente reutilizado. O padrão é desabilitado.</summary>
+    public bool UseCookies { get; set; }
+
+    /// <summary>Formatos descompactados automaticamente. O padrão é GZip e Deflate.</summary>
+    public DecompressionMethods AutomaticDecompression { get; set; } = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+
+    /// <summary>Aplica Timeout a cada envio, excluindo o intervalo entre tentativas. O padrão limita a operação inteira.</summary>
+    public bool TimeoutPerAttempt { get; set; }
+
+    /// <summary>Bufferiza e clona também requisições sem retentativas, preservando Content-Length de transportes anteriores.</summary>
+    public bool BufferRequestContent { get; set; }
 }

@@ -1,5 +1,3 @@
-<div align="center">
-
 # OpenAC.Net.DFe.Core
 
 **Núcleo de serialização XML de alta performance, assinatura digital e comunicação com Web Services para Documentos Fiscais Eletrônicos (DF-e).**
@@ -8,8 +6,6 @@
 [![Nuget downloads](https://img.shields.io/nuget/dt/OpenAC.Net.DFe.Core.svg?style=flat-square)](https://www.nuget.org/packages/OpenAC.Net.DFe.Core/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Discord](https://img.shields.io/badge/Chat%20on-Discord-7289DA.svg?style=flat-square&logo=discord&logoColor=white)](https://discord.com/invite/brdmJ7Yv6w)
-
-</div>
 
 ---
 

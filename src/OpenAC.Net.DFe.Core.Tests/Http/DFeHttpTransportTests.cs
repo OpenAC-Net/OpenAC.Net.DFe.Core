@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net;
+using System.IO.Compression;
 using System.Net.Sockets;
 using System.Text;
 using OpenAC.Net.DFe.Core.Http;
@@ -97,6 +98,102 @@ public class DFeHttpTransportTests
             .Throws<OperationCanceledException>();
     }
 
+    [Test]
+    public async Task CompatibilityOptionsPreserveCookiesWithoutSharingThemWithDefaultProfile()
+    {
+        using var server = new LocalServer(_ => 200);
+        var config = new HttpTestConfiguration();
+        var options = new DFeHttpTransportOptions(config.WebServices) { UseCookies = true };
+        for (var index = 0; index < 2; index++)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, server.Url);
+            using var response = await DFeHttpTransport.Instance.SendAsync(request, options);
+        }
+        using var isolatedRequest = new HttpRequestMessage(HttpMethod.Get, server.Url);
+        using var isolatedResponse = await DFeHttpTransport.Instance.SendAsync(isolatedRequest, new(config.WebServices));
+        var requests = server.Requests.ToArray();
+        await Assert.That(requests[1]).Contains("Cookie: tenant=anterior");
+        await Assert.That(requests[2].Contains("Cookie:", StringComparison.OrdinalIgnoreCase)).IsFalse();
+    }
+
+    [Test]
+    public async Task PerAttemptTimeoutDoesNotLimitRetryDelayOrWholeOperation()
+    {
+        using var server = new LocalServer(index => index < 3 ? 503 : 200);
+        var config = new HttpTestConfiguration();
+        config.WebServices.TimeOut = TimeSpan.FromMilliseconds(500);
+        config.WebServices.IntervaloTentativas = 600;
+        var options = new DFeHttpTransportOptions(config.WebServices) { TimeoutPerAttempt = true };
+        using var request = new HttpRequestMessage(HttpMethod.Get, server.Url);
+        using var response = await DFeHttpTransport.Instance.SendAsync(request, options);
+        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(server.Requests.Count).IsEqualTo(3);
+    }
+
+    [Test]
+    public async Task BufferedPostPreservesLengthAndIsNeverRetried()
+    {
+        using var server = new LocalServer(_ => 503);
+        var config = new HttpTestConfiguration();
+        using var request = new HttpRequestMessage(HttpMethod.Post, server.Url) { Content = new UnknownLengthContent() };
+        var options = new DFeHttpTransportOptions(config.WebServices) { BufferRequestContent = true };
+        using var response = await DFeHttpTransport.Instance.SendAsync(request, options);
+        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.ServiceUnavailable);
+        await Assert.That(server.Requests.Count).IsEqualTo(1);
+        await Assert.That(server.Requests.Single()).Contains("Content-Length: 7");
+        await Assert.That(server.Requests.Single().EndsWith("emissao")).IsTrue();
+    }
+
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task DecompressionCanPreserveOriginalCompressedResponse(bool decompress)
+    {
+        using var server = new LocalServer(_ => 200, gzip: true);
+        var config = new HttpTestConfiguration();
+        var options = new DFeHttpTransportOptions(config.WebServices)
+        {
+            AutomaticDecompression = decompress ? DecompressionMethods.GZip : DecompressionMethods.None
+        };
+        using var request = new HttpRequestMessage(HttpMethod.Get, server.Url);
+        using var response = await DFeHttpTransport.Instance.SendAsync(request, options);
+        var bytes = await response.Content.ReadAsByteArrayAsync();
+        if (decompress)
+        {
+            await Assert.That(Encoding.ASCII.GetString(bytes)).IsEqualTo("retorno");
+            await Assert.That(response.Content.Headers.ContentEncoding.Count).IsEqualTo(0);
+        }
+        else
+        {
+            await Assert.That(bytes[0]).IsEqualTo((byte)0x1f);
+            await Assert.That(bytes[1]).IsEqualTo((byte)0x8b);
+            await Assert.That(response.Content.Headers.ContentEncoding.Single()).IsEqualTo("gzip");
+        }
+    }
+
+    [Test]
+    public async Task ComponentCanKeepSingleAttemptForSafeMethods()
+    {
+        using var server = new LocalServer(_ => 503);
+        var config = new HttpTestConfiguration();
+        using var request = new HttpRequestMessage(HttpMethod.Get, server.Url);
+        using var response = await new SingleAttemptTransport().SendAsync(request, new(config.WebServices));
+        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.ServiceUnavailable);
+        await Assert.That(server.Requests.Count).IsEqualTo(1);
+    }
+
+    private sealed class SingleAttemptTransport : DFeHttpTransport
+    {
+        protected override bool ManageRetries => false;
+    }
+
+    private sealed class UnknownLengthContent : HttpContent
+    {
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context) =>
+            stream.WriteAsync(Encoding.ASCII.GetBytes("emissao")).AsTask();
+        protected override bool TryComputeLength(out long length) { length = 0; return false; }
+    }
+
     private sealed class LocalServer : IDisposable
     {
         private readonly TcpListener listener = new(IPAddress.Loopback, 0);
@@ -106,14 +203,14 @@ public class DFeHttpTransportTests
         internal TaskCompletionSource FirstRequest { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal Uri Url { get; }
 
-        internal LocalServer(Func<int, int> status, TimeSpan delay = default)
+        internal LocalServer(Func<int, int> status, TimeSpan delay = default, bool gzip = false)
         {
             listener.Start();
             Url = new Uri($"http://127.0.0.1:{((IPEndPoint)listener.LocalEndpoint).Port}/");
-            worker = Serve(status, delay);
+            worker = Serve(status, delay, gzip);
         }
 
-        private async Task Serve(Func<int, int> status, TimeSpan delay)
+        private async Task Serve(Func<int, int> status, TimeSpan delay, bool gzip)
         {
             try
             {
@@ -139,8 +236,18 @@ public class DFeHttpTransportTests
                     Requests.Enqueue(raw.ToString());
                     FirstRequest.TrySetResult();
                     await Task.Delay(delay, cancellation.Token);
-                    var response = Encoding.ASCII.GetBytes($"HTTP/1.1 {status(Requests.Count)} Result\r\nContent-Length: 7\r\nConnection: close\r\nSet-Cookie: tenant=anterior\r\n\r\nretorno");
-                    await stream.WriteAsync(response, cancellation.Token);
+                    var payload = Encoding.ASCII.GetBytes("retorno");
+                    if (gzip)
+                    {
+                        using var compressed = new MemoryStream();
+                        using (var compressor = new GZipStream(compressed, CompressionMode.Compress, true))
+                            compressor.Write(payload);
+                        payload = compressed.ToArray();
+                    }
+                    var encodingHeader = gzip ? "Content-Encoding: gzip\r\n" : string.Empty;
+                    var headers = Encoding.ASCII.GetBytes($"HTTP/1.1 {status(Requests.Count)} Result\r\nContent-Length: {payload.Length}\r\n{encodingHeader}Connection: close\r\nSet-Cookie: tenant=anterior\r\n\r\n");
+                    await stream.WriteAsync(headers, cancellation.Token);
+                    await stream.WriteAsync(payload, cancellation.Token);
                 }
             }
             catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }

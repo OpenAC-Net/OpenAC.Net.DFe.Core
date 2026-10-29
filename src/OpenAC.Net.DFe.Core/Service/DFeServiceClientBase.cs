@@ -56,7 +56,7 @@ namespace OpenAC.Net.DFe.Core.Service;
 /// <typeparam name="TCertificadosConfig">Tipo das configurações de certificados digitais.</typeparam>
 /// <typeparam name="TArquivosConfig">Tipo das configurações de arquivos.</typeparam>
 public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebserviceConfig, TCertificadosConfig,
-    TArquivosConfig> : IDisposable
+    TArquivosConfig> : DFeHttpServiceClient, IDisposable
     where TDFeConfig : DFeConfigBase<TGeralConfig, TWebserviceConfig, TCertificadosConfig, TArquivosConfig>
     where TGeralConfig : DFeGeralConfigBase
     where TWebserviceConfig : DFeWebserviceConfigBase
@@ -132,6 +132,16 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
 
     /// <summary>Código HTTP retornado pela última operação, inclusive em caso de erro HTTP.</summary>
     public HttpStatusCode StatusCode { get; protected set; }
+
+    /// <inheritdoc />
+    protected override IDFeHttpTransport TransporteHttp => Configuracoes.HttpTransport;
+
+    /// <inheritdoc />
+    protected override CancellationToken TokenOperacao => Configuracoes.OperationToken.Value;
+
+    /// <inheritdoc />
+    protected override DFeHttpTransportOptions CriarOpcoesHttp() =>
+        new(Configuracoes.WebServices, Certificado, ValidarCertificadoServidor());
 
     /// <summary>Categoria usada na persistência das requisições.</summary>
     protected virtual string CategoriaSolicitacao => DFeCategorias.SolicitacaoTecnica;
@@ -210,12 +220,9 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
                 await GravarSoapAsync(EnvelopeEnvio, ArquivoEnvio, token).ConfigureAwait(false);
             }
 
-            var options = new DFeHttpTransportOptions(Configuracoes.WebServices, Certificado,
-                ValidarCertificadoServidor());
-            using var response = await Configuracoes.HttpTransport.SendAsync(request, options, token)
-                .ConfigureAwait(false);
+            using var response = await EnviarRequisicaoAsync(request, token).ConfigureAwait(false);
             StatusCode = response.StatusCode;
-            var bytes = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+            var bytes = await DFeHttpResponse.ReadAsByteArrayAsync(response.Content, token).ConfigureAwait(false);
             token.ThrowIfCancellationRequested();
             EnvelopeRetorno = DecodificarResposta(bytes, response.Content.Headers.ContentType?.CharSet);
             ArquivoResposta = $"{DateTime.Now:yyyyMMddHHmmssfff}_{NomeArquivo}_retorno.xml";
@@ -225,41 +232,6 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
         catch (Exception ex) when (ex is not OpenDFeCommunicationException && ex is not OperationCanceledException)
         {
             throw new OpenDFeCommunicationException(ex.Message, ex);
-        }
-    }
-
-    /// <summary>Prioriza UTF-8 válido e usa o charset declarado ou ISO-8859-1 para respostas legadas.</summary>
-    protected virtual string DecodificarResposta(byte[] bytes, string? headerCharset)
-    {
-        // StreamReader reconhecia estes BOMs no transporte anterior; mantém esse suporte.
-        if (bytes.Length >= 4 && bytes[0] == 0xff && bytes[1] == 0xfe && bytes[2] == 0 && bytes[3] == 0)
-            return Encoding.UTF32.GetString(bytes, 4, bytes.Length - 4);
-        if (bytes.Length >= 4 && bytes[0] == 0 && bytes[1] == 0 && bytes[2] == 0xfe && bytes[3] == 0xff)
-            return new UTF32Encoding(true, false).GetString(bytes, 4, bytes.Length - 4);
-        if (bytes.Length >= 2 && bytes[0] == 0xff && bytes[1] == 0xfe)
-            return Encoding.Unicode.GetString(bytes, 2, bytes.Length - 2);
-        if (bytes.Length >= 2 && bytes[0] == 0xfe && bytes[1] == 0xff)
-            return Encoding.BigEndianUnicode.GetString(bytes, 2, bytes.Length - 2);
-
-        try
-        {
-            return new UTF8Encoding(false, true).GetString(bytes).TrimStart('\uFEFF');
-        }
-        catch (DecoderFallbackException)
-        {
-            var encoding = Encoding.GetEncoding("ISO-8859-1");
-            if (string.IsNullOrWhiteSpace(headerCharset)) 
-                return encoding.GetString(bytes).TrimStart('\uFEFF');
-            
-            try
-            {
-                encoding = Encoding.GetEncoding(headerCharset.Trim('"'));
-            }
-            catch (ArgumentException)
-            {
-            }
-
-            return encoding.GetString(bytes).TrimStart('\uFEFF');
         }
     }
 
