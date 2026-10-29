@@ -35,7 +35,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using OpenAC.Net.Core.Extensions;
-using OpenAC.Net.DFe.Core.Storage;
 
 namespace OpenAC.Net.DFe.Core.Common;
 
@@ -170,11 +169,13 @@ public abstract class DFeArquivosConfigBase
     protected abstract void ArquivoServicoChange();
 
     /// <summary>Resolve o diretório de um documento; componentes podem especializar por categoria.</summary>
-    public virtual string GetDocumentPath(DFeDocument document)
+    public virtual string GetDocumentPath(string categoria, string? documentoContribuinte = null, DateTime? data = null)
     {
-        if (document == null) throw new ArgumentNullException(nameof(document));
-        return GetPath(PathSalvar, document.Tipo.ToString(), document.DocumentoContribuinte ?? string.Empty,
-            document.Data);
+        if (string.IsNullOrWhiteSpace(categoria) || categoria == "." || categoria == ".." ||
+            categoria.IndexOfAny(['/', '\\', ':']) >= 0 || categoria.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            throw new ArgumentException("Informe uma categoria válida, sem diretórios.", nameof(categoria));
+
+        return GetPath(PathSalvar, categoria, documentoContribuinte ?? string.Empty, data);
     }
 
     /// <summary>

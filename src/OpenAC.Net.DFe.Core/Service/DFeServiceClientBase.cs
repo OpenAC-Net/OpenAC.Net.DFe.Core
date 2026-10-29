@@ -55,7 +55,8 @@ namespace OpenAC.Net.DFe.Core.Service;
 /// <typeparam name="TWebserviceConfig">Tipo das configurações de Web Services.</typeparam>
 /// <typeparam name="TCertificadosConfig">Tipo das configurações de certificados digitais.</typeparam>
 /// <typeparam name="TArquivosConfig">Tipo das configurações de arquivos.</typeparam>
-public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebserviceConfig, TCertificadosConfig, TArquivosConfig> : IDisposable
+public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebserviceConfig, TCertificadosConfig,
+    TArquivosConfig> : IDisposable
     where TDFeConfig : DFeConfigBase<TGeralConfig, TWebserviceConfig, TCertificadosConfig, TArquivosConfig>
     where TGeralConfig : DFeGeralConfigBase
     where TWebserviceConfig : DFeWebserviceConfigBase
@@ -133,10 +134,10 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
     public HttpStatusCode StatusCode { get; protected set; }
 
     /// <summary>Categoria usada na persistência das requisições.</summary>
-    protected virtual DFeTipoDocumento TipoSolicitacao => DFeTipoDocumento.SolicitacaoTecnica;
+    protected virtual string CategoriaSolicitacao => DFeCategorias.SolicitacaoTecnica;
 
     /// <summary>Categoria usada na persistência das respostas.</summary>
-    protected virtual DFeTipoDocumento TipoResposta => DFeTipoDocumento.RespostaTecnica;
+    protected virtual string CategoriaResposta => DFeCategorias.RespostaTecnica;
 
     #endregion Properties
 
@@ -164,10 +165,12 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
         {
             var mediaType = MediaTypeHeaderValue.Parse(contentType);
             var encoding = string.IsNullOrWhiteSpace(mediaType.CharSet)
-                ? Encoding.UTF8 : Encoding.GetEncoding(mediaType.CharSet.Trim('"'));
+                ? Encoding.UTF8
+                : Encoding.GetEncoding(mediaType.CharSet.Trim('"'));
             content = new ByteArrayContent(encoding.GetBytes(EnvelopeEnvio));
             content.Headers.ContentType = mediaType;
         }
+
         await ExecuteAsync(content, new HttpMethod(string.IsNullOrWhiteSpace(method) ? "POST" : method), headers,
             cancellationToken).ConfigureAwait(false);
     }
@@ -245,11 +248,17 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
         catch (DecoderFallbackException)
         {
             var encoding = Encoding.GetEncoding("ISO-8859-1");
-            if (!string.IsNullOrWhiteSpace(headerCharset))
+            if (string.IsNullOrWhiteSpace(headerCharset)) 
+                return encoding.GetString(bytes).TrimStart('\uFEFF');
+            
+            try
             {
-                try { encoding = Encoding.GetEncoding(headerCharset.Trim('"')); }
-                catch (ArgumentException) { }
+                encoding = Encoding.GetEncoding(headerCharset.Trim('"'));
             }
+            catch (ArgumentException)
+            {
+            }
+
             return encoding.GetString(bytes).TrimStart('\uFEFF');
         }
     }
@@ -288,10 +297,14 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
     protected virtual void GravarSoap(string conteudoArquivo, string nomeArquivo)
     {
         if (!Configuracoes.WebServices.Salvar) return;
-        var tipo = nomeArquivo.EndsWith("_retorno.xml", StringComparison.OrdinalIgnoreCase)
-            ? TipoResposta : TipoSolicitacao;
-        Configuracoes.DocumentStore.SaveAsync(new DFeDocument(tipo, conteudoArquivo, nomeArquivo, null, DateTime.Now),
-            Configuracoes.Arquivos, Configuracoes.OperationToken.Value).ConfigureAwait(false).GetAwaiter().GetResult();
+        var categoria = nomeArquivo.EndsWith("_retorno.xml", StringComparison.OrdinalIgnoreCase)
+            ? CategoriaResposta
+            : CategoriaSolicitacao;
+        Configuracoes.OperationToken.Value.ThrowIfCancellationRequested();
+        var diretorio = Configuracoes.Arquivos.GetDocumentPath(categoria, data: DateTime.Now);
+        var caminho = Path.GetFullPath(Path.Combine(diretorio, nomeArquivo));
+        Configuracoes.DocumentStore.SaveAsync(new DFeDocument(caminho, conteudoArquivo),
+            Configuracoes.OperationToken.Value).ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
     /// <summary>Persiste envelopes permitindo especialização assíncrona, preservando overrides síncronos existentes.</summary>
@@ -309,6 +322,7 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
         {
             Configuracoes.OperationToken.Value = previousToken;
         }
+
         return Task.CompletedTask;
     }
 

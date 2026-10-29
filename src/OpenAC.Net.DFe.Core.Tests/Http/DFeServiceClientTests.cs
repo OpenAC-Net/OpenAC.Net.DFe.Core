@@ -16,6 +16,7 @@ public class DFeServiceClientTests
         var store = new MemoryStore();
         config.DocumentStore = store;
         config.WebServices.Salvar = true;
+        config.Arquivos.AdicionarLiteral = true;
         config.HttpTransport = new TestTransport((_, _, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
         {
             Content = new StringContent("rejeição fiscal")
@@ -25,8 +26,8 @@ public class DFeServiceClientTests
         await Assert.That(client.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
         await Assert.That(client.EnvelopeRetorno).IsEqualTo("rejeição fiscal");
         await Assert.That(store.Documents.Count).IsEqualTo(2);
-        await Assert.That(store.Documents[0].Tipo).IsEqualTo(DFeTipoDocumento.SolicitacaoTecnica);
-        await Assert.That(store.Documents[1].Tipo).IsEqualTo(DFeTipoDocumento.RespostaTecnica);
+        await Assert.That(Path.GetFileName(Path.GetDirectoryName(store.Documents[0].Caminho))).IsEqualTo("SolicitacaoTecnica");
+        await Assert.That(Path.GetFileName(Path.GetDirectoryName(store.Documents[1].Caminho))).IsEqualTo("RespostaTecnica");
         await Assert.That(store.Documents[1].Conteudo).IsEqualTo("rejeição fiscal");
     }
 
@@ -118,8 +119,8 @@ public class DFeServiceClientTests
 
     private sealed class MemoryStore : IDFeDocumentStore
     {
-        internal List<DFeDocument> Documents { get; } = new();
-        public Task SaveAsync(DFeDocument document, Common.DFeArquivosConfigBase configuration,
+        internal List<IDFeDocument> Documents { get; } = new();
+        public Task SaveAsync(IDFeDocument document,
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();

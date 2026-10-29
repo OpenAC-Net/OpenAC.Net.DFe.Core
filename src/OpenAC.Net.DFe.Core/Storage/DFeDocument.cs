@@ -1,40 +1,35 @@
 using System;
+using System.IO;
 
 namespace OpenAC.Net.DFe.Core.Storage;
 
-/// <summary>Conteúdo textual produzido por uma operação fiscal ou de comunicação.</summary>
-public sealed class DFeDocument
+/// <summary>Implementação padrão de um arquivo textual pronto para persistência.</summary>
+public sealed class DFeDocument : IDFeDocument
 {
-    /// <summary>Inicializa um documento e os metadados usados para organizar sua persistência.</summary>
-    public DFeDocument(DFeTipoDocumento tipo, string conteudo, string nomeArquivo,
-        string? documentoContribuinte, DateTime data, bool preservarNomeArquivo = false)
+    /// <summary>Inicializa o documento com seu caminho completo, conteúdo e comportamento de gravação.</summary>
+    public DFeDocument(string caminho, string conteudo,
+        DFeArquivoExiste arquivoExiste = DFeArquivoExiste.AdicionarSufixo)
     {
-        if (string.IsNullOrWhiteSpace(nomeArquivo) || nomeArquivo == "." || nomeArquivo == ".." ||
-            nomeArquivo.IndexOfAny(['/', '\\', ':']) >= 0)
-            throw new ArgumentException("Informe apenas o nome do arquivo, sem diretórios.", nameof(nomeArquivo));
-        Tipo = tipo;
+        if (string.IsNullOrWhiteSpace(caminho) || !Path.IsPathRooted(caminho) ||
+            string.IsNullOrWhiteSpace(Path.GetFileName(caminho)) ||
+            Path.GetFileName(caminho) == "." || Path.GetFileName(caminho) == "..")
+            throw new ArgumentException("Informe o caminho completo do arquivo, incluindo nome e extensão.",
+                nameof(caminho));
+        
+        if (!Enum.IsDefined(typeof(DFeArquivoExiste), arquivoExiste))
+            throw new ArgumentOutOfRangeException(nameof(arquivoExiste));
+
+        Caminho = caminho;
         Conteudo = conteudo ?? throw new ArgumentNullException(nameof(conteudo));
-        NomeArquivo = nomeArquivo;
-        DocumentoContribuinte = documentoContribuinte;
-        Data = data;
-        PreservarNomeArquivo = preservarNomeArquivo;
+        ArquivoExiste = arquivoExiste;
     }
 
-    /// <summary>Categoria do documento ou payload.</summary>
-    public DFeTipoDocumento Tipo { get; }
+    /// <inheritdoc />
+    public string Caminho { get; }
 
-    /// <summary>Conteúdo a persistir.</summary>
+    /// <inheritdoc />
     public string Conteudo { get; }
 
-    /// <summary>Nome sugerido, incluindo a extensão.</summary>
-    public string NomeArquivo { get; }
-
-    /// <summary>CPF ou CNPJ usado para organizar diretórios.</summary>
-    public string? DocumentoContribuinte { get; }
-
-    /// <summary>Data de referência do documento.</summary>
-    public DateTime Data { get; }
-
-    /// <summary>Quando verdadeiro, uma colisão gera erro em vez de acrescentar um sufixo.</summary>
-    public bool PreservarNomeArquivo { get; }
+    /// <inheritdoc />
+    public DFeArquivoExiste ArquivoExiste { get; }
 }

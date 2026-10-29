@@ -107,10 +107,10 @@ public abstract class DFeSoapServiceClient<TDFeConfig, TGeralConfig, TWebservice
     protected string CharSet { get; set; } = "utf-8";
 
     /// <inheritdoc />
-    protected override DFeTipoDocumento TipoSolicitacao => DFeTipoDocumento.Solicitacao;
+    protected override string CategoriaSolicitacao => DFeCategorias.Solicitacao;
 
     /// <inheritdoc />
-    protected override DFeTipoDocumento TipoResposta => DFeTipoDocumento.Resposta;
+    protected override string CategoriaResposta => DFeCategorias.Resposta;
 
     #endregion Properties
 
