@@ -33,10 +33,17 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Security.Cryptography.X509Certificates;
 using OpenAC.Net.Core;
 using OpenAC.Net.Core.Extensions;
 using OpenAC.Net.DFe.Core.Common;
+using OpenAC.Net.DFe.Core.Http;
+using OpenAC.Net.DFe.Core.Storage;
 
 namespace OpenAC.Net.DFe.Core.Service;
 
@@ -115,12 +122,21 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
     /// <summary>
     /// Obtém o certificado digital configurado para a requisição mTLS.
     /// </summary>
-    protected X509Certificate2 Certificado => Configuracoes.Certificados.ObterCertificado();
+    protected virtual X509Certificate2? Certificado => Configuracoes.Certificados.ObterCertificado();
 
     /// <summary>
     /// Indica se o cliente já teve seus recursos liberados (disposed).
     /// </summary>
     protected bool IsDisposed { get; private set; }
+
+    /// <summary>Código HTTP retornado pela última operação, inclusive em caso de erro HTTP.</summary>
+    public HttpStatusCode StatusCode { get; protected set; }
+
+    /// <summary>Categoria usada na persistência das requisições.</summary>
+    protected virtual DFeTipoDocumento TipoSolicitacao => DFeTipoDocumento.SolicitacaoTecnica;
+
+    /// <summary>Categoria usada na persistência das respostas.</summary>
+    protected virtual DFeTipoDocumento TipoResposta => DFeTipoDocumento.RespostaTecnica;
 
     #endregion Properties
 
@@ -135,52 +151,106 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
     /// <exception cref="OpenDFeCommunicationException">Disparada em caso de falha de conexão ou erro HTTP.</exception>
     protected void Execute(string contentType, string method, NameValueCollection? headers = null)
     {
-        var protocolos = ServicePointManager.SecurityProtocol;
-        ServicePointManager.SecurityProtocol = Configuracoes.WebServices.Protocolos;
+        ExecuteAsync(contentType, method, headers, Configuracoes.OperationToken.Value)
+            .ConfigureAwait(false).GetAwaiter().GetResult();
+    }
 
+    /// <summary>Envia o envelope de forma assíncrona pelo transporte configurado.</summary>
+    protected async Task ExecuteAsync(string contentType, string method, NameValueCollection? headers = null,
+        CancellationToken cancellationToken = default)
+    {
+        HttpContent? content = null;
+        if (!string.IsNullOrEmpty(EnvelopeEnvio))
+        {
+            var mediaType = MediaTypeHeaderValue.Parse(contentType);
+            var encoding = string.IsNullOrWhiteSpace(mediaType.CharSet)
+                ? Encoding.UTF8 : Encoding.GetEncoding(mediaType.CharSet.Trim('"'));
+            content = new ByteArrayContent(encoding.GetBytes(EnvelopeEnvio));
+            content.Headers.ContentType = mediaType;
+        }
+        await ExecuteAsync(content, new HttpMethod(string.IsNullOrWhiteSpace(method) ? "POST" : method), headers,
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Envia conteúdo HTTP, incluindo multipart, preservando o corpo das respostas de erro.</summary>
+    protected async Task ExecuteAsync(HttpContent? content, HttpMethod method, NameValueCollection? headers = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (IsDisposed) throw new ObjectDisposedException(GetType().Name);
+        using var operation = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken, Configuracoes.OperationToken.Value);
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(operation.Token);
+        timeout.CancelAfter(Configuracoes.WebServices.TimeOut ?? TimeSpan.FromSeconds(100));
+        var token = timeout.Token;
+        StatusCode = default;
+        EnvelopeRetorno = string.Empty;
+        ArquivoEnvio = string.Empty;
+        ArquivoResposta = string.Empty;
+        using var request = new HttpRequestMessage(method, Url) { Content = content };
         try
         {
-#pragma warning disable SYSLIB0014
-            var request = WebRequest.CreateHttp(Url);
-#pragma warning restore SYSLIB0014
-            request.Method = method.IsEmpty() ? "POST" : method;
-            request.ContentType = contentType;
-
-            if (!ValidarCertificadoServidor())
-                request.ServerCertificateValidationCallback += (_, _, _, _) => true;
-
-            if (Configuracoes.WebServices.TimeOut.HasValue)
-                request.Timeout = Configuracoes.WebServices.TimeOut.Value.Milliseconds;
-
-            if (headers?.Count > 0)
-                request.Headers.Add(headers);
-
-            if (Certificado != null)
-                request.ClientCertificates.Add(Certificado);
-
-            if (!EnvelopeEnvio.IsEmpty())
+            token.ThrowIfCancellationRequested();
+            request.Headers.ExpectContinue = false;
+            if (headers != null)
             {
-                ArquivoEnvio = $"{DateTime.Now:yyyyMMddssfff}_{NomeArquivo}_envio.xml";
-                GravarSoap(EnvelopeEnvio, ArquivoEnvio);
-
-                using var streamWriter = new StreamWriter(request.GetRequestStream());
-                streamWriter.Write(EnvelopeEnvio);
-                streamWriter.Flush();
+                foreach (var key in headers.AllKeys)
+                {
+                    if (key == null) continue;
+                    if (!request.Headers.TryAddWithoutValidation(key, headers.GetValues(key)) && content != null)
+                        content.Headers.TryAddWithoutValidation(key, headers.GetValues(key));
+                }
             }
 
-            var response = request.GetResponse();
-            EnvelopeRetorno = GetResponse(response);
+            if (!string.IsNullOrEmpty(EnvelopeEnvio))
+            {
+                ArquivoEnvio = $"{DateTime.Now:yyyyMMddHHmmssfff}_{NomeArquivo}_envio.xml";
+                await GravarSoapAsync(EnvelopeEnvio, ArquivoEnvio, token).ConfigureAwait(false);
+            }
 
-            ArquivoResposta = $"{DateTime.Now:yyyyMMddssfff}_{NomeArquivo}_retorno.xml";
-            GravarSoap(EnvelopeRetorno, ArquivoResposta);
+            var options = new DFeHttpTransportOptions(Configuracoes.WebServices, Certificado,
+                ValidarCertificadoServidor());
+            using var response = await Configuracoes.HttpTransport.SendAsync(request, options, token)
+                .ConfigureAwait(false);
+            StatusCode = response.StatusCode;
+            var bytes = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+            token.ThrowIfCancellationRequested();
+            EnvelopeRetorno = DecodificarResposta(bytes, response.Content.Headers.ContentType?.CharSet);
+            ArquivoResposta = $"{DateTime.Now:yyyyMMddHHmmssfff}_{NomeArquivo}_retorno.xml";
+            await GravarSoapAsync(EnvelopeRetorno, ArquivoResposta, token).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
         }
-        catch (Exception ex) when (ex is not OpenDFeCommunicationException)
+        catch (Exception ex) when (ex is not OpenDFeCommunicationException && ex is not OperationCanceledException)
         {
             throw new OpenDFeCommunicationException(ex.Message, ex);
         }
-        finally
+    }
+
+    /// <summary>Prioriza UTF-8 válido e usa o charset declarado ou ISO-8859-1 para respostas legadas.</summary>
+    protected virtual string DecodificarResposta(byte[] bytes, string? headerCharset)
+    {
+        // StreamReader reconhecia estes BOMs no transporte anterior; mantém esse suporte.
+        if (bytes.Length >= 4 && bytes[0] == 0xff && bytes[1] == 0xfe && bytes[2] == 0 && bytes[3] == 0)
+            return Encoding.UTF32.GetString(bytes, 4, bytes.Length - 4);
+        if (bytes.Length >= 4 && bytes[0] == 0 && bytes[1] == 0 && bytes[2] == 0xfe && bytes[3] == 0xff)
+            return new UTF32Encoding(true, false).GetString(bytes, 4, bytes.Length - 4);
+        if (bytes.Length >= 2 && bytes[0] == 0xff && bytes[1] == 0xfe)
+            return Encoding.Unicode.GetString(bytes, 2, bytes.Length - 2);
+        if (bytes.Length >= 2 && bytes[0] == 0xfe && bytes[1] == 0xff)
+            return Encoding.BigEndianUnicode.GetString(bytes, 2, bytes.Length - 2);
+
+        try
         {
-            ServicePointManager.SecurityProtocol = protocolos;
+            return new UTF8Encoding(false, true).GetString(bytes).TrimStart('\uFEFF');
+        }
+        catch (DecoderFallbackException)
+        {
+            var encoding = Encoding.GetEncoding("ISO-8859-1");
+            if (!string.IsNullOrWhiteSpace(headerCharset))
+            {
+                try { encoding = Encoding.GetEncoding(headerCharset.Trim('"')); }
+                catch (ArgumentException) { }
+            }
+            return encoding.GetString(bytes).TrimStart('\uFEFF');
         }
     }
 
@@ -215,7 +285,32 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
     /// </summary>
     /// <param name="conteudoArquivo">Conteúdo do envelope/arquivo a ser salvo.</param>
     /// <param name="nomeArquivo">Nome do arquivo.</param>
-    protected abstract void GravarSoap(string conteudoArquivo, string nomeArquivo);
+    protected virtual void GravarSoap(string conteudoArquivo, string nomeArquivo)
+    {
+        if (!Configuracoes.WebServices.Salvar) return;
+        var tipo = nomeArquivo.EndsWith("_retorno.xml", StringComparison.OrdinalIgnoreCase)
+            ? TipoResposta : TipoSolicitacao;
+        Configuracoes.DocumentStore.SaveAsync(new DFeDocument(tipo, conteudoArquivo, nomeArquivo, null, DateTime.Now),
+            Configuracoes.Arquivos, Configuracoes.OperationToken.Value).ConfigureAwait(false).GetAwaiter().GetResult();
+    }
+
+    /// <summary>Persiste envelopes permitindo especialização assíncrona, preservando overrides síncronos existentes.</summary>
+    protected virtual Task GravarSoapAsync(string conteudoArquivo, string nomeArquivo,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var previousToken = Configuracoes.OperationToken.Value;
+        try
+        {
+            Configuracoes.OperationToken.Value = cancellationToken;
+            GravarSoap(conteudoArquivo, nomeArquivo);
+        }
+        finally
+        {
+            Configuracoes.OperationToken.Value = previousToken;
+        }
+        return Task.CompletedTask;
+    }
 
     /// <inheritdoc />
     public void Dispose()

@@ -35,6 +35,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using OpenAC.Net.Core.Extensions;
+using OpenAC.Net.DFe.Core.Storage;
 
 namespace OpenAC.Net.DFe.Core.Common;
 
@@ -167,6 +168,14 @@ public abstract class DFeArquivosConfigBase
     /// Método invocado quando o caminho do arquivo de serviços (<see cref="ArquivoServicos"/>) é alterado.
     /// </summary>
     protected abstract void ArquivoServicoChange();
+
+    /// <summary>Resolve o diretório de um documento; componentes podem especializar por categoria.</summary>
+    public virtual string GetDocumentPath(DFeDocument document)
+    {
+        if (document == null) throw new ArgumentNullException(nameof(document));
+        return GetPath(PathSalvar, document.Tipo.ToString(), document.DocumentoContribuinte ?? string.Empty,
+            document.Data);
+    }
 
     /// <summary>
     /// Constrói e retorna o caminho completo da pasta para salvamento do arquivo, criando os diretórios se necessário.

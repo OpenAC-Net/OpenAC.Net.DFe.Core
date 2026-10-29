@@ -39,6 +39,7 @@ using OpenAC.Net.Core;
 using OpenAC.Net.Core.Extensions;
 using OpenAC.Net.DFe.Core.Common;
 using OpenAC.Net.DFe.Core.Extensions;
+using OpenAC.Net.DFe.Core.Storage;
 
 namespace OpenAC.Net.DFe.Core.Service;
 
@@ -104,6 +105,12 @@ public abstract class DFeSoapServiceClient<TDFeConfig, TGeralConfig, TWebservice
     /// Obtém ou define o conjunto de caracteres informado no header Content-Type (padrão utf-8).
     /// </summary>
     protected string CharSet { get; set; } = "utf-8";
+
+    /// <inheritdoc />
+    protected override DFeTipoDocumento TipoSolicitacao => DFeTipoDocumento.Solicitacao;
+
+    /// <inheritdoc />
+    protected override DFeTipoDocumento TipoResposta => DFeTipoDocumento.Resposta;
 
     #endregion Properties
 
@@ -171,22 +178,6 @@ public abstract class DFeSoapServiceClient<TDFeConfig, TGeralConfig, TWebservice
         if (retorno.IsValidXml()) return retorno;
 
         throw new OpenDFeCommunicationException(retorno);
-    }
-
-    /// <summary>
-    /// Grava em disco o envelope SOAP enviado ou recebido.
-    /// </summary>
-    /// <param name="conteudoArquivo">Conteúdo do arquivo.</param>
-    /// <param name="nomeArquivo">Nome do arquivo.</param>
-    protected override void GravarSoap(string conteudoArquivo, string nomeArquivo)
-    {
-        if (Configuracoes.WebServices.Salvar == false) return;
-
-        if (!Directory.Exists(Configuracoes.Arquivos.PathSalvar))
-            Directory.CreateDirectory(Configuracoes.Arquivos.PathSalvar);
-
-        nomeArquivo = Path.Combine(Configuracoes.Arquivos.PathSalvar, nomeArquivo);
-        File.WriteAllText(nomeArquivo, conteudoArquivo, Encoding.UTF8);
     }
 
     /// <summary>

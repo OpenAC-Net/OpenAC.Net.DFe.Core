@@ -41,6 +41,8 @@ namespace OpenAC.Net.DFe.Core.Common;
 /// </summary>
 public abstract class DFeWebserviceConfigBase
 {
+    private TimeSpan? configuredTimeOut;
+
     #region Constructor
 
     /// <summary>
@@ -108,19 +110,24 @@ public abstract class DFeWebserviceConfigBase
     /// </summary>
     public SecurityProtocolType Protocolos { get; set; }
 
+    /// <summary>Endereço opcional do proxy HTTP.</summary>
+    public string Proxy { get; set; } = string.Empty;
+
     /// <summary>
-    /// Obtém o timeout customizado calculado para a requisição SOAP.
+    /// Obtém ou define o timeout total HTTP. Quando nulo, usa o ajuste de espera configurado.
     /// </summary>
     public TimeSpan? TimeOut
     {
         get
         {
+            if (configuredTimeOut.HasValue) return configuredTimeOut;
             TimeSpan? timeOut = null;
             if (AjustaAguardaConsultaRet)
                 timeOut = TimeSpan.FromSeconds((int)AguardarConsultaRet);
 
             return timeOut;
         }
+        set => configuredTimeOut = value;
     }
 
     #endregion Properties
