@@ -60,8 +60,9 @@ public abstract class DFeSignDocument<TDocument> : DFeDocument<TDocument> where 
     /// <summary>
     /// Obtém ou define a assinatura digital XMLDSig (<c>&lt;Signature&gt;</c>) anexada ao documento fiscal.
     /// </summary>
-    [DFeElement("Signature", Namespace = "http://www.w3.org/2000/09/xmldsig#", Ocorrencia = Ocorrencia.NaoObrigatoria, Ordem = int.MaxValue)]
-    public DFeSignature Signature { get; set; } = new();
+    [DFeElement("Signature", Namespace = "http://www.w3.org/2000/09/xmldsig#", 
+        Ocorrencia = Ocorrencia.NaoObrigatoria, Ordem = int.MaxValue)]
+    public DFeSignature? Signature { get; set; }
 
     #endregion Properties
 
@@ -74,10 +75,11 @@ public abstract class DFeSignDocument<TDocument> : DFeDocument<TDocument> where 
     /// <param name="options">Opções de formatação e salvamento do XML.</param>
     /// <param name="comments">Indica se comentários XML devem ser preservados durante a canonicalização.</param>
     /// <param name="digest">O algoritmo de hash criptográfico utilizado (SHA-1 ou SHA-256).</param>
-    protected void AssinarDocumento(X509Certificate2 certificado, DFeSaveOptions options, bool comments, SignDigest digest = SignDigest.SHA1)
+    protected void AssinarDocumento(X509Certificate2 certificado, DFeSaveOptions options, bool comments,
+        SignDigest digest = SignDigest.SHA1)
     {
-        Guard.Against<ArgumentNullException>(certificado == null, nameof(certificado));
-        Guard.Against<ArgumentException>(!certificado.HasPrivateKey, "O certificado informado não possui chave privada para assinatura.");
+        Guard.Against<ArgumentException>(!certificado.HasPrivateKey,
+            "O certificado informado não possui chave privada para assinatura.");
 
         Signature = this.AssinarDocumento(certificado, comments, digest, options, out var xml);
         Xml = xml;
@@ -89,7 +91,8 @@ public abstract class DFeSignDocument<TDocument> : DFeDocument<TDocument> where 
     /// <returns><c>true</c> se a assinatura digital deve ser serializada; caso contrário, <c>false</c>.</returns>
     protected virtual bool ShouldSerializeSignature()
     {
-        return !Signature.SignatureValue.IsEmpty() &&
+        return Signature != null &&
+               !Signature.SignatureValue.IsEmpty() &&
                !Signature.SignedInfo.Reference.DigestValue.IsEmpty() &&
                !Signature.KeyInfo.X509Data.X509Certificate.IsEmpty();
     }
