@@ -130,5 +130,20 @@ public abstract class DFeWebserviceConfigBase
         set => configuredTimeOut = value;
     }
 
+    /// <summary>Prazo total da operação; compartilha o valor de TimeOut.</summary>
+    public TimeSpan TimeoutOperacao { get => TimeOut ?? TimeSpan.FromSeconds(100); set => TimeOut = value; }
+
+    /// <summary>Limite de cada tentativa HTTP, incluindo a leitura do corpo.</summary>
+    public TimeSpan TimeoutTentativa { get; set; } = TimeSpan.FromSeconds(60);
+
+    /// <summary>Habilita o circuit breaker isolado pelo perfil de conexão.</summary>
+    public bool CircuitBreakerHabilitado { get; set; }
+
+    /// <summary>Tempo de reutilização do handler HTTP.</summary>
+    public TimeSpan TempoVidaHandler { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>Tempo de reutilização das conexões em runtimes com SocketsHttpHandler.</summary>
+    public TimeSpan TempoVidaConexaoPool { get; set; } = TimeSpan.FromMinutes(2);
+
     #endregion Properties
 }

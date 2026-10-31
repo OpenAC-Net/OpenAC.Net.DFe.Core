@@ -16,8 +16,7 @@ internal sealed class DFeHttpClientPool
 
     internal Lease Acquire(DFeHttpTransportOptions options, Uri endpoint)
     {
-        var key =
-            $"{options.Certificate?.Thumbprint}|{(int)options.Protocols}|{options.ValidateServerCertificate}|{options.Proxy}|{options.UseCookies}|{options.AllowAutoRedirect}|{(int)options.AutomaticDecompression}|{endpoint.GetLeftPart(UriPartial.Authority)}";
+        var key = options.GetPoolKey(endpoint);
         lock (sync)
         {
             var expired = new List<string>();
@@ -45,14 +44,31 @@ internal sealed class DFeHttpClientPool
     private static Entry CreateEntry(DFeHttpTransportOptions options)
     {
         var certificate = options.Certificate == null ? null : new X509Certificate2(options.Certificate);
+#if NET8_0_OR_GREATER
+        var handler = new SocketsHttpHandler
+        {
+            UseCookies = options.UseCookies,
+            AllowAutoRedirect = options.AllowAutoRedirect,
+            AutomaticDecompression = options.AutomaticDecompression,
+            PooledConnectionLifetime = options.TempoVidaConexaoPool
+        };
+#else
         var handler = new HttpClientHandler
         {
             UseCookies = options.UseCookies,
             AllowAutoRedirect = options.AllowAutoRedirect,
             AutomaticDecompression = options.AutomaticDecompression
         };
+#endif
         try
         {
+#if NET8_0_OR_GREATER
+            handler.SslOptions.EnabledSslProtocols = options.Protocols;
+            if (!options.ValidateServerCertificate)
+                handler.SslOptions.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+            if (certificate != null)
+                handler.SslOptions.ClientCertificates = new X509CertificateCollection { certificate };
+#else
 #if NETFRAMEWORK
             // As referências do .NET 4.6.2 não expõem o setter presente em runtimes mais recentes.
             typeof(HttpClientHandler).GetProperty("SslProtocols")?.SetValue(handler, options.Protocols);
@@ -62,8 +78,9 @@ internal sealed class DFeHttpClientPool
             if (!options.ValidateServerCertificate)
                 handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
             if (certificate != null) handler.ClientCertificates.Add(certificate);
+#endif
             if (!string.IsNullOrWhiteSpace(options.Proxy)) handler.Proxy = new WebProxy(options.Proxy, true);
-            return new Entry(new HttpClient(handler) { Timeout = Timeout.InfiniteTimeSpan }, certificate);
+            return new Entry(new HttpClient(handler) { Timeout = Timeout.InfiniteTimeSpan }, certificate, options);
         }
         catch
         {
@@ -75,15 +92,17 @@ internal sealed class DFeHttpClientPool
 
     internal sealed class Entry : IDisposable
     {
-        internal Entry(HttpClient client, X509Certificate2? certificate)
+        internal Entry(HttpClient client, X509Certificate2? certificate, DFeHttpTransportOptions options)
         {
             Client = client;
             Certificate = certificate;
-            Expires = DateTime.UtcNow.AddMinutes(10);
+            Expires = DateTime.UtcNow + options.TempoVidaHandler;
+            Pipeline = DFeHttpResilience.CreatePipeline(options);
             if (certificate != null && certificate.NotAfter.ToUniversalTime() < Expires)
                 Expires = certificate.NotAfter.ToUniversalTime();
         }
 
+        internal Polly.ResiliencePipeline<HttpResponseMessage> Pipeline { get; }
         internal HttpClient Client { get; }
         private X509Certificate2? Certificate { get; }
         internal DateTime Expires { get; }
@@ -110,6 +129,7 @@ internal sealed class DFeHttpClientPool
         }
 
         internal HttpClient Client => entry.Client;
+        internal Polly.ResiliencePipeline<HttpResponseMessage> Pipeline => entry.Pipeline;
 
         public void Dispose()
         {

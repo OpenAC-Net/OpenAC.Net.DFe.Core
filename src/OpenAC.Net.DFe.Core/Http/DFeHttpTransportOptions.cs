@@ -26,8 +26,30 @@ public sealed class DFeHttpTransportOptions
         ValidateServerCertificate = validateServerCertificate;
         Attempts = Math.Max(1, configuration.Tentativas);
         RetryDelay = TimeSpan.FromMilliseconds(Math.Max(0, configuration.IntervaloTentativas));
-        Timeout = timeout ?? configuration.TimeOut ?? TimeSpan.FromSeconds(100);
+        Timeout = timeout ?? configuration.TimeoutOperacao;
+        TimeoutTentativa = configuration.TimeoutTentativa;
+        CircuitBreakerHabilitado = configuration.CircuitBreakerHabilitado;
+        TempoVidaHandler = configuration.TempoVidaHandler;
+        TempoVidaConexaoPool = configuration.TempoVidaConexaoPool;
+        if (Timeout <= TimeSpan.Zero || TimeoutTentativa <= TimeSpan.Zero
+            || TempoVidaHandler < TimeSpan.FromSeconds(1) || TempoVidaConexaoPool <= TimeSpan.Zero)
+            throw new ArgumentException("Configurações de transporte HTTP inválidas.", nameof(configuration));
     }
+
+    /// <summary>Limite por tentativa capturado da configuração da empresa.</summary>
+    public TimeSpan TimeoutTentativa { get; }
+    /// <summary>Habilita o circuit breaker para o perfil de conexão.</summary>
+    public bool CircuitBreakerHabilitado { get; }
+    /// <summary>Duração do handler no pool.</summary>
+    public TimeSpan TempoVidaHandler { get; }
+    /// <summary>Duração das conexões nos runtimes que suportam esse controle.</summary>
+    public TimeSpan TempoVidaConexaoPool { get; }
+    /// <summary>Margem mínima de validade do certificado da operação.</summary>
+    public TimeSpan MargemValidadeCertificado { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>Identidade do pool, incluindo as políticas capturadas para a operação.</summary>
+    public string GetPoolKey(Uri endpoint) =>
+        $"{Certificate?.Thumbprint}|{(int)Protocols}|{Proxy}|{ValidateServerCertificate}|{UseCookies}|{AllowAutoRedirect}|{(int)AutomaticDecompression}|{endpoint.GetLeftPart(UriPartial.Authority)}|{Timeout.Ticks}|{TimeoutTentativa.Ticks}|{TimeoutPerAttempt}|{CircuitBreakerHabilitado}|{TempoVidaHandler.Ticks}|{TempoVidaConexaoPool.Ticks}";
 
     /// <summary>Certificado mTLS emprestado pelo chamador durante o envio.</summary>
     public X509Certificate2? Certificate { get; }

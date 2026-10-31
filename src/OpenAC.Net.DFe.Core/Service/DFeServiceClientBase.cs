@@ -141,7 +141,8 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
 
     /// <inheritdoc />
     protected override DFeHttpTransportOptions CriarOpcoesHttp() =>
-        new(Configuracoes.WebServices, Certificado, ValidarCertificadoServidor());
+        new(Configuracoes.WebServices, Certificado, ValidarCertificadoServidor(), TimeoutOperacao)
+        { MargemValidadeCertificado = Configuracoes.Certificados.MargemValidadeCertificado };
 
     /// <summary>Categoria usada na persistência das requisições.</summary>
     protected virtual string CategoriaSolicitacao => DFeCategorias.SolicitacaoTecnica;
@@ -150,7 +151,7 @@ public abstract class DFeServiceClientBase<TDFeConfig, TGeralConfig, TWebservice
     protected virtual string CategoriaResposta => DFeCategorias.RespostaTecnica;
 
     /// <summary>Limite da chamada, incluindo leitura da resposta e persistência dos envelopes.</summary>
-    protected virtual TimeSpan TimeoutOperacao => Configuracoes.WebServices.TimeOut ?? TimeSpan.FromSeconds(100);
+    protected virtual TimeSpan TimeoutOperacao => Configuracoes.WebServices.TimeoutOperacao;
 
     /// <summary>Indica se falhas técnicas devem ser convertidas em exceções de comunicação DFe.</summary>
     protected virtual bool EncapsularExcecoesComunicacao => true;

@@ -222,3 +222,15 @@ Participe da comunidade de desenvolvedores do OpenAC .Net:
 ## 📄 Licença
 
 Este projeto é distribuído sob a licença **MIT**. Consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+## Configuração compartilhada no DFe.Core
+
+As políticas são definidas na configuração da empresa: `WebServices.TimeoutOperacao` (100 segundos,
+mesmo valor de `TimeOut`), `TimeoutTentativa` (60 segundos), `TempoVidaHandler` (5 minutos),
+`TempoVidaConexaoPool` (2 minutos) e `CircuitBreakerHabilitado` (false). A margem fica em
+`Certificados.MargemValidadeCertificado` (5 minutos). Os transportes padrão e Web usam o mesmo
+pipeline de timeout e circuit breaker do Core; POST fiscal não é repetido automaticamente.
+
+`Arquivos.Salvar` e `WebServices.Salvar` controlam documentos e mensagens técnicas separadamente.
+As integrações Web preservam os diretórios definidos na configuração e acrescentam o hash da empresa a cada raiz.
+As políticas do handler participam da identidade do pool, para não compartilhar configurações diferentes.

@@ -21,7 +21,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageProjectUrl>https://openac.net.br/</PackageProjectUrl>
-    <PackageVersion>1.8.0-beta.7</PackageVersion>
+    <PackageVersion>1.8.0-beta.8</PackageVersion>
     <AssemblyVersion>1.8.0</AssemblyVersion>
     <FileVersion>1.8.0</FileVersion>
     <Version>1.8.0</Version>
@@ -41,6 +41,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Polly.Core" Version="8.9.0" />
     <PackageReference Include="OpenAC.Net.Core" Version="1.6.0" />
   </ItemGroup>
 
