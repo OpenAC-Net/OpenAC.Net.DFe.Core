@@ -34,7 +34,7 @@ public class DFeSourceGenerator : IIncrementalGenerator
 
         context.RegisterSourceOutput(compilationAndRoots, static (spc, source) =>
         {
-            var (_, roots) = source;
+            var (compilation, roots) = source;
             if (roots.IsDefaultOrEmpty) return;
 
             var queue = new Queue<INamedTypeSymbol>();
@@ -52,7 +52,7 @@ public class DFeSourceGenerator : IIncrementalGenerator
             while (queue.Count > 0)
             {
                 var currentClass = queue.Dequeue();
-                var classModel = DFeModelParser.ParseClass(currentClass, out var referencedTypes);
+                var classModel = DFeModelParser.ParseClass(currentClass, out var referencedTypes, compilation);
                 if (classModel == null) continue;
 
                 classModels.Add(classModel);

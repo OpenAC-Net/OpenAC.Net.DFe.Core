@@ -125,6 +125,23 @@ public abstract class DFeCertificadosConfigBase
 
     #endregion Properties
 
+    /// <summary>Antecedência mínima exigida antes do vencimento do certificado.</summary>
+    public TimeSpan MargemValidadeCertificado { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>Valida a chave privada e a validade do certificado para a operação.</summary>
+    public void ValidarCertificado(X509Certificate2 certificado) => ValidarCertificado(certificado, MargemValidadeCertificado);
+
+    /// <summary>Valida um certificado com a margem capturada pela operação.</summary>
+    public static void ValidarCertificado(X509Certificate2 certificado, TimeSpan margem)
+    {
+        if (margem < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(margem));
+        if (certificado == null || !certificado.HasPrivateKey)
+            throw new InvalidOperationException("Certificado com chave privada não informado.");
+        var now = DateTime.UtcNow;
+        if (certificado.NotBefore.ToUniversalTime() > now || certificado.NotAfter.ToUniversalTime() <= now + margem)
+            throw new InvalidOperationException("Certificado fora do período de validade ou próximo do vencimento.");
+    }
+
     #region Methods
 
     /// <summary>

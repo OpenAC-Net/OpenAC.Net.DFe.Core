@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net6.0;net7.0;net462;net47;net48</TargetFrameworks>
+    <TargetFrameworks>net462;net48;netstandard2.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Nullable>annotations</Nullable>
     <AssemblyName>OpenAC.Net.DFe.Core</AssemblyName>
@@ -21,9 +21,10 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageProjectUrl>https://openac.net.br/</PackageProjectUrl>
-    <AssemblyVersion>1.7.1</AssemblyVersion>
-    <FileVersion>1.7.1</FileVersion>
-    <Version>1.7.1</Version>
+    <PackageVersion>1.8.0-beta.8</PackageVersion>
+    <AssemblyVersion>1.8.0</AssemblyVersion>
+    <FileVersion>1.8.0</FileVersion>
+    <Version>1.8.0</Version>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <DebugType>embedded</DebugType>
@@ -36,10 +37,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.402">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.403">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Polly.Core" Version="8.9.0" />
     <PackageReference Include="OpenAC.Net.Core" Version="1.6.0" />
   </ItemGroup>
 
@@ -57,6 +59,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'net47' or '$(TargetFramework)' == 'net48' ">
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Security" />
   </ItemGroup>  
@@ -77,19 +80,9 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    <PackageReference Include="System.Drawing.Common" Version="10.0.13" />
-    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.13" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
-    <PackageReference Include="System.Drawing.Common" Version="10.0.13" />
-    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.13" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="System.Drawing.Common" Version="10.0.13" />
-    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.13" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net9.0' or '$(TargetFramework)' == 'net10.0'">
+    <PackageReference Include="System.Drawing.Common" Version="10.0.14" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.14" />
   </ItemGroup>
 
 </Project>

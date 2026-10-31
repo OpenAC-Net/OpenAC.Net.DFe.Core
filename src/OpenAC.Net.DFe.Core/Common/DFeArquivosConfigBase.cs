@@ -168,6 +168,16 @@ public abstract class DFeArquivosConfigBase
     /// </summary>
     protected abstract void ArquivoServicoChange();
 
+    /// <summary>Resolve o diretório de um documento; componentes podem especializar por categoria.</summary>
+    public virtual string GetDocumentPath(string categoria, string? documentoContribuinte = null, DateTime? data = null)
+    {
+        if (string.IsNullOrWhiteSpace(categoria) || categoria == "." || categoria == ".." ||
+            categoria.IndexOfAny(['/', '\\', ':']) >= 0 || categoria.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            throw new ArgumentException("Informe uma categoria válida, sem diretórios.", nameof(categoria));
+
+        return GetPath(PathSalvar, categoria, documentoContribuinte ?? string.Empty, data);
+    }
+
     /// <summary>
     /// Constrói e retorna o caminho completo da pasta para salvamento do arquivo, criando os diretórios se necessário.
     /// </summary>

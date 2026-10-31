@@ -67,6 +67,10 @@ public partial class DFeServiceInfo<TTIpo> where TTIpo : Enum
     /// </summary>
     [DFeAttribute(TipoCampo.Enum, "TipoEmissao")]
     public DFeTipoEmissao TipoEmissao { get; set; } = DFeTipoEmissao.Normal;
+
+    /// <summary>Obtém ou define a versão do catálogo, quando informada pelo documento.</summary>
+    [DFeAttribute(TipoCampo.Str, "Versao", Ocorrencia = Ocorrencia.NaoObrigatoria)]
+    public string? Versao { get; set; }
     
     /// <summary>
     /// Obtém ou define a coleção de ambientes e UFs configurados para este serviço.

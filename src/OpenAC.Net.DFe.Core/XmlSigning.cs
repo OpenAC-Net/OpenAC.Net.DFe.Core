@@ -215,7 +215,11 @@ namespace OpenAC.Net.DFe.Core
                     var signedXml = new SignedXml(doc);
                     signedXml.LoadXml((XmlElement)signElement[0]);
 
-                    var certificate = new X509Certificate2(Convert.FromBase64String(certificateElement[0].InnerText));
+#if NET9_0_OR_GREATER
+                    using var certificate = X509CertificateLoader.LoadCertificate(Convert.FromBase64String(certificateElement[0].InnerText));
+#else
+                    using var certificate = new X509Certificate2(Convert.FromBase64String(certificateElement[0].InnerText));
+#endif
 
                     return signedXml.CheckSignature(certificate, true);
                 }

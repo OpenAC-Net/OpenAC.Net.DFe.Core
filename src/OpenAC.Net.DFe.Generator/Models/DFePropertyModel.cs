@@ -24,6 +24,8 @@ public sealed record DFePropertyModel(
     bool UseCData,
     bool IsNullable,
     bool HasShouldSerialize,
+    string? CustomSerializeMethod,
+    string? CustomDeserializeMethod,
     string? CollectionItemType,
     DFeTypeKind CollectionItemTypeKind,
     bool CollectionItemTypeIsNullable,
