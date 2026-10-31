@@ -78,6 +78,7 @@ public abstract class DFeSignDocument<TDocument> : DFeDocument<TDocument> where 
     protected void AssinarDocumento(X509Certificate2 certificado, DFeSaveOptions options, bool comments,
         SignDigest digest = SignDigest.SHA1)
     {
+        Guard.Against<ArgumentNullException>(certificado == null, nameof(certificado));
         Guard.Against<ArgumentException>(!certificado.HasPrivateKey,
             "O certificado informado não possui chave privada para assinatura.");
 
