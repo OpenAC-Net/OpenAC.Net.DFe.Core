@@ -29,6 +29,10 @@
 // <summary></summary>
 // ***********************************************************************
 
+using System.Threading;
+using OpenAC.Net.DFe.Core.Http;
+using OpenAC.Net.DFe.Core.Storage;
+
 namespace OpenAC.Net.DFe.Core.Common;
 
 /// <summary>
@@ -45,6 +49,15 @@ public abstract class DFeConfigBase<TGeralConfig, TWebserviceConfig, TCertificad
     where TArquivosConfig : DFeArquivosConfigBase
 {
     #region Properties
+
+    /// <summary>Transporte HTTP usado por REST, SOAP e multipart.</summary>
+    public IDFeHttpTransport HttpTransport { get; set; } = DFeHttpTransport.Instance;
+
+    /// <summary>Armazenamento de documentos fiscais e mensagens técnicas.</summary>
+    public IDFeDocumentStore DocumentStore { get; set; } = DFeFileSystemDocumentStore.Instance;
+
+    /// <summary>Cancelamento da operação corrente, isolado por fluxo assíncrono.</summary>
+    public AsyncLocal<CancellationToken> OperationToken { get; } = new();
 
     /// <summary>
     /// Obtém as configurações gerais do componente DFe.

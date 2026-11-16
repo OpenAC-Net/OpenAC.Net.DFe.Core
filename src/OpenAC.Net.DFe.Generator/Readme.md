@@ -162,3 +162,32 @@ dotnet test
 ## 📄 Licença
 
 Distribuído sob a licença **MIT**. Veja o arquivo [LICENSE](../../LICENSE) para mais detalhes.
+## Hooks de campos Custom e ShouldSerialize
+
+Em propriedades escalares mapeadas com `TipoCampo.Custom` (`DFeElement`, `DFeAttribute` ou
+`DFeItemValue`), o gerador reconhece os métodos pelo **nome CLR da propriedade**:
+
+```csharp
+[DFeElement(TipoCampo.Custom, "indOperacao")]
+public bool Indicador { get; set; }
+
+private string SerializeIndicador() => Indicador ? "1" : "0";
+private object DeserializeIndicador(string value) => value == "1";
+private bool ShouldSerializeIndicador() => Indicador;
+```
+
+- `string SerializeCampo()` escreve o valor XML já formatado, sem alterar o valor da propriedade.
+- `DeserializeCampo(string value)` devolve o tipo da propriedade, um tipo conversível ou `object`;
+  o código gerado converte o retorno para o tipo original, preservando os tipos anuláveis.
+- Os métodos são de instância, não genéricos. Podem ser privados na própria classe ou herdados
+  quando acessíveis. As chamadas são diretas, sem reflexão em tempo de execução.
+- Cada direção é independente. Quando não existe o hook correspondente, permanece a conversão
+  padrão. Uma assinatura incompatível em um hook encontrado produz o diagnóstico `DFE0004`.
+- Um valor XML explicitamente vazio é entregue ao deserializador Custom; um campo ausente não chama
+  esse hook. Na escrita, o resultado vazio de um campo opcional continua sendo omitido.
+
+`bool ShouldSerializeCampo()` é independente de `TipoCampo`: aplica-se a campos padrão e Custom,
+atributos, elementos, coleções e valores de texto (`DFeItemValue`). Pode ser privado na própria classe
+ou herdado quando acessível. Quando retorna `false`, a saída do campo é omitida **antes** de chamar
+seu formatador ou `SerializeCampo()`, inclusive quando o campo está marcado como obrigatório.
+As regras de leitura permanecem independentes de `ShouldSerialize`.

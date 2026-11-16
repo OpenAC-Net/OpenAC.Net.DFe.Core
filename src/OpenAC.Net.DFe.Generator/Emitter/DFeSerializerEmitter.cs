@@ -138,8 +138,14 @@ public static class DFeSerializerEmitter
         if (model.IsValueElement && model.ValueElementProperty != null)
         {
             var valProp = model.ValueElementProperty;
-            sb.AppendLine($"            var valStr = DFeSerializerHelper.FormatValue_{valProp.TipoCampo}(this.{valProp.Name}, {valProp.Min}, options);");
+            if (valProp.HasShouldSerialize)
+            {
+                sb.AppendLine($"            if (this.ShouldSerialize{valProp.Name}())");
+                sb.AppendLine("            {");
+            }
+            sb.AppendLine($"            var valStr = {GetFormatCall(valProp, $"this.{valProp.Name}")};");
             sb.AppendLine("            element.Value = valStr ?? string.Empty;");
+            if (valProp.HasShouldSerialize) sb.AppendLine("            }");
             sb.AppendLine();
         }
 
@@ -185,7 +191,9 @@ public static class DFeSerializerEmitter
         foreach (var prop in model.Properties.Where(p => p.PropertyKind == DFePropertyKind.Attribute))
         {
             sb.AppendLine($"            var attr_{prop.Name} = element.Attribute(\"{prop.TagName}\");");
-            sb.AppendLine($"            if (attr_{prop.Name} != null && !string.IsNullOrEmpty(attr_{prop.Name}.Value))");
+            sb.AppendLine(prop.CustomDeserializeMethod != null
+                ? $"            if (attr_{prop.Name} != null)"
+                : $"            if (attr_{prop.Name} != null && !string.IsNullOrEmpty(attr_{prop.Name}.Value))");
             sb.AppendLine("            {");
             var parseCall = GetParseCall(prop, $"attr_{prop.Name}.Value");
             sb.AppendLine($"                this.{prop.Name} = {parseCall};");
@@ -293,7 +301,7 @@ public static class DFeSerializerEmitter
     {
         var valExpr = $"this.{prop.Name}";
 
-        if (prop.TypeKind is DFeTypeKind.Class or DFeTypeKind.RootClass or DFeTypeKind.ValueElement)
+        if (prop.CustomSerializeMethod == null && prop.TypeKind is (DFeTypeKind.Class or DFeTypeKind.RootClass or DFeTypeKind.ValueElement))
         {
             sb.AppendLine($"{indent}if ({valExpr} != null)");
             sb.AppendLine($"{indent}{{");
@@ -336,7 +344,8 @@ public static class DFeSerializerEmitter
                 sb.AppendLine($"{indent}element.Add(new XElement({tagNs} + \"{prop.TagName}\", elemVal_{prop.Name}));");
             }
         }
-        else if (prop.IsNullable || prop.TypeFullName == "string")
+        else if (prop.IsNullable || prop.TypeFullName == "string"
+                 || prop.CustomSerializeMethod != null && prop.TypeKind is (DFeTypeKind.Class or DFeTypeKind.RootClass or DFeTypeKind.InterfaceOrAbstract or DFeTypeKind.ValueElement))
         {
             sb.AppendLine($"{indent}if ({valExpr} != null)");
             sb.AppendLine($"{indent}{{");
@@ -569,7 +578,7 @@ public static class DFeSerializerEmitter
 
         if (prop.PropertyKind == DFePropertyKind.Element)
         {
-            if (prop.TypeKind is DFeTypeKind.Class or DFeTypeKind.RootClass or DFeTypeKind.ValueElement)
+            if (prop.CustomDeserializeMethod == null && prop.TypeKind is (DFeTypeKind.Class or DFeTypeKind.RootClass or DFeTypeKind.ValueElement))
             {
                 sb.AppendLine($"{indent}var elem_{prop.Name} = element.Elements().FirstOrDefault(e => e.Name.LocalName == \"{prop.TagName}\");");
                 sb.AppendLine($"{indent}if (elem_{prop.Name} != null)");
@@ -587,7 +596,9 @@ public static class DFeSerializerEmitter
             else
             {
                 sb.AppendLine($"{indent}var elem_{prop.Name} = element.Elements().FirstOrDefault(e => e.Name.LocalName == \"{prop.TagName}\");");
-                sb.AppendLine($"{indent}if (elem_{prop.Name} != null && !string.IsNullOrEmpty(elem_{prop.Name}.Value))");
+                sb.AppendLine(prop.CustomDeserializeMethod != null
+                    ? $"{indent}if (elem_{prop.Name} != null)"
+                    : $"{indent}if (elem_{prop.Name} != null && !string.IsNullOrEmpty(elem_{prop.Name}.Value))");
                 sb.AppendLine($"{indent}{{");
                 var parseCall = GetParseCall(prop, $"elem_{prop.Name}.Value");
                 sb.AppendLine($"{indent}    this.{prop.Name} = {parseCall};");
@@ -913,6 +924,9 @@ public static class DFeSerializerEmitter
 
     private static string GetFormatCall(DFePropertyModel prop, string valExpr)
     {
+        if (prop.CustomSerializeMethod != null)
+            return $"this.{prop.CustomSerializeMethod}()";
+
         if (prop.EnumInfo != null)
         {
             return $"FormatEnum_{GetSafeIdentifier(prop.EnumInfo.EnumFullName)}({valExpr})";
@@ -936,6 +950,12 @@ public static class DFeSerializerEmitter
 
     private static string GetParseCall(DFePropertyModel prop, string valExpr)
     {
+        if (prop.CustomDeserializeMethod != null)
+        {
+            var targetType = FormatType(prop.TypeFullName) + (prop.IsNullable ? "?" : "");
+            return $"({targetType})this.{prop.CustomDeserializeMethod}({valExpr})!";
+        }
+
         if (prop.EnumInfo != null)
         {
             return $"ParseEnum_{GetSafeIdentifier(prop.EnumInfo.EnumFullName)}({valExpr})";

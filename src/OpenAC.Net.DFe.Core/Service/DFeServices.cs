@@ -59,6 +59,20 @@ public partial class DFeServices<TTIpo> : DFeDocument<DFeServices<TTIpo>>
         get { return Webservices?.SingleOrDefault(x => x.TipoEmissao == emissao); }
     }
 
+    /// <summary>Busca a configuração correspondente à forma de emissão e à versão informadas.</summary>
+    /// <param name="emissao">Tipo de emissão desejado.</param>
+    /// <param name="versao">Versão exata do catálogo.</param>
+    /// <returns>A configuração correspondente ou <c>null</c> quando não encontrada.</returns>
+    [DFeIgnore]
+    public DFeServiceInfo<TTIpo> this[DFeTipoEmissao emissao, string versao]
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(versao)) throw new ArgumentException("Informe a versão do catálogo.", nameof(versao));
+            return Webservices?.SingleOrDefault(x => x.TipoEmissao == emissao && x.Versao == versao);
+        }
+    }
+
     /// <summary>
     /// Obtém ou define a coleção de serviços e webservices disponíveis por forma de emissão.
     /// </summary>

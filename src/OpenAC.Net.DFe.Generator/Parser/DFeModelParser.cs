@@ -67,7 +67,7 @@ public static class DFeModelParser
         if (context.TargetSymbol is not INamedTypeSymbol classSymbol)
             return null;
 
-        return ParseClass(classSymbol, out _);
+        return ParseClass(classSymbol, out _, context.SemanticModel.Compilation);
     }
 
     /// <summary>
@@ -81,7 +81,7 @@ public static class DFeModelParser
     /// <summary>
     /// Analisa os atributos e propriedades de um símbolo de classe (<see cref="INamedTypeSymbol"/>) construindo o modelo <see cref="DFeClassModel"/> e retornando os tipos filhos referenciados.
     /// </summary>
-    public static DFeClassModel? ParseClass(INamedTypeSymbol classSymbol, out List<INamedTypeSymbol> referencedTypes)
+    public static DFeClassModel? ParseClass(INamedTypeSymbol classSymbol, out List<INamedTypeSymbol> referencedTypes, Compilation? compilation = null)
     {
         referencedTypes = new List<INamedTypeSymbol>();
 
@@ -231,7 +231,7 @@ public static class DFeModelParser
             if (prop.HasAttribute("DFeIgnore") || prop.IsReadOnly || prop.IsWriteOnly || prop.IsStatic)
                 continue;
 
-            var propModel = ParseProperty(prop, classSymbol);
+            var propModel = ParseProperty(prop, classSymbol, compilation, diagnostics);
             if (propModel == null) continue;
 
             if (propModel.PropertyKind == DFePropertyKind.ItemValue)
@@ -271,7 +271,7 @@ public static class DFeModelParser
         );
     }
 
-    private static DFePropertyModel? ParseProperty(IPropertySymbol prop, INamedTypeSymbol ownerClass)
+    private static DFePropertyModel? ParseProperty(IPropertySymbol prop, INamedTypeSymbol ownerClass, Compilation? compilation, List<DFeDiagnosticInfo> diagnostics)
     {
         var propName = prop.Name;
         var propType = prop.Type;
@@ -279,8 +279,7 @@ public static class DFeModelParser
         var isNullable = propType.IsNullable();
         var typeKind = propType.GetDFeTypeKind();
 
-        var shouldSerializeMethod = ownerClass.GetMembers().OfType<IMethodSymbol>().FirstOrDefault(m => m.Name == $"ShouldSerialize{propName}");
-        var hasShouldSerialize = shouldSerializeMethod != null && shouldSerializeMethod.DeclaredAccessibility != Accessibility.Private;
+        var hasShouldSerialize = HasShouldSerializeHook(ownerClass, propName, compilation);
 
         var attrAttribute = prop.GetAttribute("DFeAttribute");
         var elemAttribute = prop.GetAttribute("DFeElement");
@@ -538,6 +537,13 @@ public static class DFeModelParser
             enumInfo = new DFeEnumInfoModel(targetEnumType.ToCleanDisplayString(), new EquatableArray<DFeEnumMemberModel>(members));
         }
 
+        var scalarCustom = tipoCampo == TipoCampoModel.Custom
+            && propertyKind is (DFePropertyKind.Element or DFePropertyKind.Attribute or DFePropertyKind.ItemValue);
+        var customSerialize = scalarCustom
+            ? FindCustomHook(prop, ownerClass, compilation, diagnostics, deserialize: false) : null;
+        var customDeserialize = scalarCustom
+            ? FindCustomHook(prop, ownerClass, compilation, diagnostics, deserialize: true) : null;
+
         return new DFePropertyModel(
             Name: propName,
             TypeFullName: typeFullName,
@@ -557,6 +563,8 @@ public static class DFeModelParser
             UseCData: useCData,
             IsNullable: isNullable,
             HasShouldSerialize: hasShouldSerialize,
+            CustomSerializeMethod: customSerialize,
+            CustomDeserializeMethod: customDeserialize,
             CollectionItemType: collectionItemType,
             CollectionItemTypeKind: collectionItemTypeKind,
             CollectionItemTypeIsNullable: collectionItemTypeIsNullable,
@@ -568,6 +576,64 @@ public static class DFeModelParser
             ItemMappings: new EquatableArray<DFeItemMappingModel>(itemMappings),
             EnumInfo: enumInfo
         );
+    }
+
+    private static bool HasShouldSerializeHook(INamedTypeSymbol owner, string propertyName, Compilation? compilation)
+    {
+        for (var type = owner; type != null; type = type.BaseType)
+            foreach (var method in type.GetMembers("ShouldSerialize" + propertyName).OfType<IMethodSymbol>())
+                if (!method.IsStatic && !method.IsGenericMethod && method.Parameters.Length == 0
+                    && !method.ReturnsByRef && !method.ReturnsByRefReadonly
+                    && method.ReturnType.SpecialType == SpecialType.System_Boolean
+                    && (compilation?.IsSymbolAccessibleWithin(method, owner)
+                        ?? (SymbolEqualityComparer.Default.Equals(method.ContainingType, owner)
+                            || method.DeclaredAccessibility is Accessibility.Public or Accessibility.Protected or Accessibility.ProtectedOrInternal)))
+                    return true;
+        return false;
+    }
+
+    private static string? FindCustomHook(IPropertySymbol property, INamedTypeSymbol owner,
+        Compilation? compilation, List<DFeDiagnosticInfo> diagnostics, bool deserialize)
+    {
+        var name = (deserialize ? "Deserialize" : "Serialize") + property.Name;
+        var candidates = new List<IMethodSymbol>();
+        for (var type = owner; type != null; type = type.BaseType)
+        {
+            foreach (var method in type.GetMembers(name).OfType<IMethodSymbol>())
+            {
+                var accessible = compilation?.IsSymbolAccessibleWithin(method, owner)
+                    ?? (SymbolEqualityComparer.Default.Equals(method.ContainingType, owner)
+                        || method.DeclaredAccessibility is Accessibility.Public or Accessibility.Protected or Accessibility.ProtectedOrInternal);
+                if (accessible) candidates.Add(method);
+            }
+        }
+        if (candidates.Count == 0) return null;
+
+        foreach (var method in candidates)
+        {
+            if (method.IsStatic || method.IsGenericMethod || method.ReturnsVoid || method.ReturnsByRef || method.ReturnsByRefReadonly)
+                continue;
+            if (!deserialize && method.Parameters.Length == 0 && method.ReturnType.SpecialType == SpecialType.System_String)
+                return name;
+            if (deserialize && method.Parameters.Length == 1
+                && method.Parameters[0].Type.SpecialType == SpecialType.System_String
+                && method.Parameters[0].RefKind == RefKind.None
+                && (method.ReturnType.SpecialType == SpecialType.System_Object
+                    || SymbolEqualityComparer.Default.Equals(method.ReturnType, property.Type)
+                    || compilation?.ClassifyCommonConversion(method.ReturnType, property.Type).Exists == true))
+                return name;
+        }
+
+        var span = property.Locations.FirstOrDefault()?.GetLineSpan() ?? default;
+        diagnostics.Add(new DFeDiagnosticInfo(
+            Id: "DFE0004", Title: "Hook Custom com assinatura inválida",
+            Message: $"O hook '{name}' da propriedade '{property.Name}' deve ser um método de instância não genérico: "
+                + (deserialize ? $"Deserialize{property.Name}(string), retornando object ou um valor conversível para o tipo da propriedade."
+                    : $"string Serialize{property.Name}(), sem parâmetros."),
+            Severity: DiagnosticSeverity.Error, FilePath: span.Path,
+            StartLine: span.StartLinePosition.Line, StartCharacter: span.StartLinePosition.Character,
+            EndLine: span.EndLinePosition.Line, EndCharacter: span.EndLinePosition.Character));
+        return null;
     }
 
     private static void CollectReferencedTypes(IPropertySymbol prop, List<INamedTypeSymbol> referencedTypes)

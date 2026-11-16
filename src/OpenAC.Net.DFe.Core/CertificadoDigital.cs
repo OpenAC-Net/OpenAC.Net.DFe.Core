@@ -104,8 +104,11 @@ public static class CertificadoDigital
         Guard.Against<ArgumentNullException>(caminho.IsEmpty(), "Caminho do arquivo não poder ser nulo ou vazio !");
         Guard.Against<ArgumentException>(!File.Exists(caminho), "Arquivo do Certificado digital não encontrado !");
 
-        var cert = new X509Certificate2(caminho, senha, X509KeyStorageFlags.MachineKeySet);
-        return cert;
+#if NET9_0_OR_GREATER
+        return X509CertificateLoader.LoadPkcs12FromFile(caminho, senha, X509KeyStorageFlags.MachineKeySet);
+#else
+        return new X509Certificate2(caminho, senha, X509KeyStorageFlags.MachineKeySet);
+#endif
     }
 
     /// <summary>
@@ -121,8 +124,11 @@ public static class CertificadoDigital
         Guard.Against<ArgumentNullException>(certificado == null, "O certificado não poder ser nulo !");
         Guard.Against<ArgumentException>(certificado.Length == 0, "O tamanhado do certificado não pode ser zero !");
 
-        var cert = new X509Certificate2(certificado, senha, X509KeyStorageFlags.MachineKeySet);
-        return cert;
+#if NET9_0_OR_GREATER
+        return X509CertificateLoader.LoadPkcs12(certificado, senha, X509KeyStorageFlags.MachineKeySet);
+#else
+        return new X509Certificate2(certificado, senha, X509KeyStorageFlags.MachineKeySet);
+#endif
     }
 
 #if NETFULL

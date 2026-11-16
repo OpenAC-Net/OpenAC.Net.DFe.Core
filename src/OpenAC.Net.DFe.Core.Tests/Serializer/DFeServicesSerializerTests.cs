@@ -8,6 +8,23 @@ namespace OpenAC.Net.DFe.Core.Tests.Serializer;
 public class DFeServicesSerializerTests
 {
     [Test]
+    public async Task PreservaVersoesDistintasDaMesmaEmissao()
+    {
+        const string xml = """
+            <DFeServices xmlns="https://www.openac.net.br/">
+              <Services Tipo="CTe" TipoEmissao="1" Versao="3.00" />
+              <Services Tipo="CTe" TipoEmissao="1" Versao="4.00" />
+            </DFeServices>
+            """;
+        var catalogo = DFeServices<DFeTipo>.Load(xml);
+        var recarregado = DFeServices<DFeTipo>.Load(catalogo.GetXml());
+
+        await Assert.That(recarregado[DFeTipoEmissao.Normal, "3.00"]?.Versao).IsEqualTo("3.00");
+        await Assert.That(recarregado[DFeTipoEmissao.Normal, "4.00"]?.Versao).IsEqualTo("4.00");
+        await Assert.That(recarregado[DFeTipoEmissao.Normal, "2.00"]).IsNull();
+    }
+
+    [Test]
     public async Task TestSerializeAndDeserializeDFeServicesDocument()
     {
         var services = new DFeServices<DFeTipo>();
@@ -47,6 +64,7 @@ public class DFeServicesSerializerTests
         var loadedXml = loaded.GetXml();
 
         await Assert.That(loadedXml).IsEqualTo(xml);
+        await Assert.That(loadedXml.Contains("Versao=")).IsFalse();
         await Assert.That(loaded[DFeTipoEmissao.Normal]).IsNotNull();
         await Assert.That(loaded[DFeTipoEmissao.Normal][DFeTipoAmbiente.Producao, DFeSiglaUF.SP]).IsNotNull();
         await Assert.That(loaded[DFeTipoEmissao.Normal][DFeTipoAmbiente.Producao, DFeSiglaUF.SP][DFeTipo.Envio])
