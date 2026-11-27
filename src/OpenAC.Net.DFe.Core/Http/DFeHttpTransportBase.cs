@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Polly.Timeout;
 
 namespace OpenAC.Net.DFe.Core.Http;
 
@@ -61,7 +62,8 @@ public abstract class DFeHttpTransportBase : IDFeHttpTransport
                 if (attempt == attempts || !IsTransient(response.StatusCode)) return response;
                 response.Dispose();
             }
-            catch (HttpRequestException) when (attempt < attempts && !token.IsCancellationRequested)
+            catch (Exception exception) when (exception is HttpRequestException or TimeoutRejectedException
+                                               && attempt < attempts && !token.IsCancellationRequested)
             {
                 // Apenas GET, HEAD, OPTIONS e TRACE podem repetir falhas de transporte.
             }
