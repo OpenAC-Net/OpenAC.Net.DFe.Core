@@ -47,9 +47,12 @@ public sealed class DFeHttpTransportOptions
     /// <summary>Margem mínima de validade do certificado da operação.</summary>
     public TimeSpan MargemValidadeCertificado { get; set; } = TimeSpan.FromMinutes(5);
 
+    /// <summary>Partição opcional de clientes e políticas por tenant.</summary>
+    public string? TenantId { get; set; }
+
     /// <summary>Identidade do pool, incluindo as políticas capturadas para a operação.</summary>
     public string GetPoolKey(Uri endpoint) =>
-        $"{Certificate?.Thumbprint}|{(int)Protocols}|{Proxy}|{ValidateServerCertificate}|{UseCookies}|{AllowAutoRedirect}|{(int)AutomaticDecompression}|{endpoint.GetLeftPart(UriPartial.Authority)}|{Timeout.Ticks}|{TimeoutTentativa.Ticks}|{TimeoutPerAttempt}|{CircuitBreakerHabilitado}|{TempoVidaHandler.Ticks}|{TempoVidaConexaoPool.Ticks}";
+        $"{TenantId?.Length ?? 0}:{TenantId}|{Certificate?.Thumbprint}|{(int)Protocols}|{Proxy}|{ValidateServerCertificate}|{UseCookies}|{AllowAutoRedirect}|{(int)AutomaticDecompression}|{endpoint.GetLeftPart(UriPartial.Authority)}|{Timeout.Ticks}|{TimeoutTentativa.Ticks}|{TimeoutPerAttempt}|{CircuitBreakerHabilitado}|{TempoVidaHandler.Ticks}|{TempoVidaConexaoPool.Ticks}";
 
     /// <summary>Certificado mTLS emprestado pelo chamador durante o envio.</summary>
     public X509Certificate2? Certificate { get; }

@@ -124,6 +124,25 @@ public class DFeHttpTransportTests
     }
 
     [Test]
+    public async Task CookiesStayInsideTheTenantPool()
+    {
+        using var server = new LocalServer(_ => 200);
+        var config = new HttpTestConfiguration();
+        foreach (var tenant in new[] { "empresa-a", "empresa-b", "empresa-a" })
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, server.Url);
+            using var response = await DFeHttpTransport.Instance.SendAsync(request,
+                new(config.WebServices) { TenantId = tenant, UseCookies = true });
+        }
+
+        var requests = server.Requests.ToArray();
+        await Assert.That(requests.Length).IsEqualTo(3);
+        await Assert.That(requests[0].Contains("Cookie:", StringComparison.OrdinalIgnoreCase)).IsFalse();
+        await Assert.That(requests[1].Contains("Cookie:", StringComparison.OrdinalIgnoreCase)).IsFalse();
+        await Assert.That(requests[2]).Contains("Cookie: tenant=anterior");
+    }
+
+    [Test]
     public async Task PerAttemptTimeoutDoesNotLimitRetryDelayOrWholeOperation()
     {
         using var server = new LocalServer(index => index < 3 ? 503 : 200);
