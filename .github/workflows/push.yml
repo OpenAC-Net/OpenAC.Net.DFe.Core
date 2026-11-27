@@ -31,12 +31,10 @@ jobs:
           8.x
           9.x
           10.x
+          11.x
 
-    - name: Setup NuGet
-      uses: nuget/setup-nuget@v2
-      
     - name: Restore NuGet packages
-      run: nuget restore OpenAC.Net.DFe.Core.sln
+      run: dotnet restore OpenAC.Net.DFe.Core.sln
       working-directory: src
 
     - name: Build solution

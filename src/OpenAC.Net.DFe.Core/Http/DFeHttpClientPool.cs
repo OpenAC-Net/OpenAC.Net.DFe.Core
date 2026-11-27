@@ -69,10 +69,7 @@ internal sealed class DFeHttpClientPool
             if (certificate != null)
                 handler.SslOptions.ClientCertificates = new X509CertificateCollection { certificate };
 #else
-#if NETFRAMEWORK
-            // As referências do .NET 4.6.2 não expõem o setter presente em runtimes mais recentes.
-            typeof(HttpClientHandler).GetProperty("SslProtocols")?.SetValue(handler, options.Protocols);
-#else
+#if !NETFRAMEWORK
             handler.SslProtocols = options.Protocols;
 #endif
             if (!options.ValidateServerCertificate)

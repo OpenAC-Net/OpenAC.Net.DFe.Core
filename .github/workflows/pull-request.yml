@@ -1,0 +1,49 @@
+name: Pull Request CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: src
+
+jobs:
+  validate:
+    name: Build, Test and Pack
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            8.x
+            9.x
+            10.x
+            11.x
+
+      - name: Build solution
+        run: dotnet build OpenAC.Net.DFe.Core.sln --configuration Release -p:GeneratePackageOnBuild=false
+
+      - name: Run tests on .NET 8
+        run: dotnet run --project OpenAC.Net.DFe.Core.Tests/OpenAC.Net.DFe.Core.Tests.csproj --configuration Release --framework net8.0 --no-build
+
+      - name: Run tests on .NET 11
+        run: dotnet run --project OpenAC.Net.DFe.Core.Tests/OpenAC.Net.DFe.Core.Tests.csproj --configuration Release --framework net11.0 --no-build
+
+      - name: Pack NuGet package
+        run: dotnet pack OpenAC.Net.DFe.Core/OpenAC.Net.DFe.Core.csproj --configuration Release --no-build --output ../nuget
+
+      - name: Upload NuGet package
+        uses: actions/upload-artifact@v7
+        with:
+          name: nuget
+          if-no-files-found: error
+          retention-days: 7
+          path: nuget/*.nupkg

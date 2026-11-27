@@ -75,17 +75,24 @@ public class DFeHttpTransportTests
     }
 
     [Test]
+#pragma warning disable SYSLIB0014 // Verifica que o transporte não altera a configuração TLS global legada.
     public async Task TimeoutUsesTheWholeTimeSpanAndDoesNotChangeGlobalTls()
     {
         using var server = new LocalServer(_ => 200, TimeSpan.FromMilliseconds(1100));
-        var config = new HttpTestConfiguration();
-        config.WebServices.TimeOut = TimeSpan.FromMilliseconds(1800);
+        var config = new HttpTestConfiguration
+        {
+            WebServices =
+            {
+                TimeOut = TimeSpan.FromMilliseconds(1800)
+            }
+        };
         var originalProtocols = ServicePointManager.SecurityProtocol;
         using var request = new HttpRequestMessage(HttpMethod.Get, server.Url);
         using var response = await DFeHttpTransport.Instance.SendAsync(request, new(config.WebServices));
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
         await Assert.That(ServicePointManager.SecurityProtocol).IsEqualTo(originalProtocols);
     }
+#pragma warning restore SYSLIB0014
 
     [Test]
     public async Task TimeoutCancelsResponseRead()
